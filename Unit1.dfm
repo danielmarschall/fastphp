@@ -135,6 +135,7 @@ object Form1: TForm1
   end
   object OpenDialog1: TOpenDialog
     DefaultExt = '.chm'
+    FileName = 'php_manual_en.chm'
     Filter = 'Help files (*.chm)|*.chm'
     Options = [ofReadOnly, ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
     Title = 'Please select your PHP Help file (CHM format)'
@@ -152,6 +153,7 @@ object Form1: TForm1
   end
   object OpenDialog3: TOpenDialog
     DefaultExt = '.php'
+    FileName = 'scap.php'
     Filter = 'PHP file (*.php)|*.php|All files (*.*)|*.*'
     Options = [ofHideReadOnly, ofPathMustExist, ofEnableSizing]
     Title = 'Where should the scrap file be saved?'

@@ -12,6 +12,9 @@ unit Unit1;
 // - verschiedene php versionen?
 // - webbrowser1 nur laden, wenn man den tab anwählt?
 // - doppelklick auf tab soll diesen schließen
+// - Strg+A
+// - tastenkombo für "springe zu zeile"
+// - Onlinehelp aufrufen
 
 interface
 
