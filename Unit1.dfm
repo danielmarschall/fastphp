@@ -87,20 +87,31 @@ object Form1: TForm1
     OnChanging = PageControl2Changing
     object TabSheet3: TTabSheet
       Caption = 'Scrap'
-      object Memo1: TMemo
+      object SynEdit1: TSynEdit
         Left = 0
         Top = 0
         Width = 1112
         Height = 357
         Align = alClient
-        Font.Charset = ANSI_CHARSET
+        Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
-        Font.Height = -11
+        Font.Height = -13
         Font.Name = 'Courier New'
         Font.Style = []
-        ParentFont = False
         TabOrder = 0
         OnKeyDown = Memo1KeyDown
+        Gutter.Font.Charset = DEFAULT_CHARSET
+        Gutter.Font.Color = clWindowText
+        Gutter.Font.Height = -11
+        Gutter.Font.Name = 'Courier New'
+        Gutter.Font.Style = []
+        Gutter.ShowLineNumbers = True
+        Highlighter = SynPHPSyn1
+        Lines.Strings = (
+          'SynEdit1')
+        Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollByOneLess, eoShowScrollHint, eoSmartTabDelete, eoSmartTabs, eoTabIndent, eoTabsToSpaces, eoTrimTrailingSpaces]
+        WantTabs = True
+        FontSmoothing = fsmNone
       end
     end
     object HelpTabsheet: TTabSheet
@@ -159,5 +170,19 @@ object Form1: TForm1
     Title = 'Where should the scrap file be saved?'
     Left = 608
     Top = 248
+  end
+  object SynPHPSyn1: TSynPHPSyn
+    Options.AutoDetectEnabled = False
+    Options.AutoDetectLineLimit = 0
+    Options.Visible = False
+    CommentAttri.Foreground = 33023
+    IdentifierAttri.Foreground = clOlive
+    KeyAttri.Foreground = 4227072
+    NumberAttri.Foreground = 213
+    StringAttri.Foreground = 16744576
+    SymbolAttri.Foreground = 4227072
+    VariableAttri.Foreground = 213
+    Left = 72
+    Top = 80
   end
 end

@@ -1,5 +1,14 @@
 unit Unit1;
 
+(*
+  This program requires
+  - Microsoft Internet Controls (TWebBrowser)
+    If you are using Delphi 10.1 Starter Edition, please import the ActiveX TLB
+    "Microsoft Internet Controls"
+  - SynEdit
+    You can obtain SynEdit via Embarcadero GetIt
+*)
+
 // TODO: localize
 
 // TODO: wieso geht copy paste im twebbrowser nicht???
@@ -8,11 +17,11 @@ unit Unit1;
 // Future ideas
 // - ToDo list
 // - Open/Save real files
-// - configurable scraps dir. multiple scraps?
+// - multiple scraps?
 // - verschiedene php versionen?
 // - webbrowser1 nur laden, wenn man den tab anwählt?
 // - doppelklick auf tab soll diesen schließen
-// - Strg+A
+// - Strg+S
 // - tastenkombo für "springe zu zeile"
 // - Onlinehelp aufrufen
 
@@ -20,7 +29,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, OleCtrls, SHDocVw, ComCtrls, ExtCtrls, ToolWin, IniFiles;
+  Dialogs, StdCtrls, OleCtrls, ComCtrls, ExtCtrls, ToolWin, IniFiles,
+  SynEditHighlighter, SynHighlighterPHP, SynEdit, SHDocVw_TLB;
 
 type
   TForm1 = class(TForm)
@@ -34,11 +44,12 @@ type
     TabSheet3: TTabSheet;
     HelpTabsheet: TTabSheet;
     WebBrowser2: TWebBrowser;
-    Memo1: TMemo;
     OpenDialog1: TOpenDialog;
     Panel1: TPanel;
     OpenDialog2: TOpenDialog;
     OpenDialog3: TOpenDialog;
+    SynEdit1: TSynEdit;
+    SynPHPSyn1: TSynPHPSyn;
     procedure Run(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure Memo1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -113,7 +124,7 @@ begin
     end;
   end;
 
-  memo1.Lines.SaveToFile(GetScrapFile);
+  SynEdit1.Lines.SaveToFile(GetScrapFile);
 
   memo2.Lines.Text := GetDosOutput('"'+phpExe+'" "'+GetScrapFile+'"', ExtractFileDir(Application.ExeName));
 
@@ -127,7 +138,7 @@ end;
 
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Memo1.Lines.SaveToFile(GetScrapFile);
+  SynEdit1.Lines.SaveToFile(GetScrapFile);
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -160,7 +171,7 @@ begin
     Close;
     exit;
   end;
-  Memo1.Lines.LoadFromFile(ScrapFile);
+  SynEdit1.Lines.LoadFromFile(ScrapFile);
 
   PageControl1.ActivePage := PlaintextTabSheet;
 
@@ -188,8 +199,8 @@ begin
       exit;
     end;
 
-    Memo1.Lines.Clear;
-    Memo1.Lines.SaveToFile(result);
+    SynEdit1.Lines.Clear;
+    SynEdit1.Lines.SaveToFile(result);
 
     FastPHPConfig.WriteString('Paths', 'ScrapFile', result);
   end;
@@ -262,7 +273,7 @@ begin
     ChmIndex := TMemIniFile.Create(IndexFile);
   end;
 
-  w := GetWordUnderCaret(Memo1);
+  w := GetWordUnderCaret(SynEdit1);
   if w = '' then exit;
   if w[1] in ['0'..'9'] then exit;  
   w := StringReplace(w, '_', '-', [rfReplaceAll]);

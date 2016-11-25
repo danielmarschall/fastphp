@@ -4,7 +4,13 @@ interface
 
 uses
   Windows, Messages, SysUtils, StrUtils, IniFiles, Classes, Forms, Variants, MsHTML,
-  SHDocVw, StdCtrls;
+  SHDocVw_TLB, StdCtrls, SynEdit,
+
+
+
+
+
+  dialogs;
 
 function GetDosOutput(CommandLine: string; Work: string = ''): string;
 function StrIPos(const SubStr, S: string): Integer;
@@ -15,7 +21,7 @@ function ParseCHM(chmFile: string): boolean;
 procedure BrowseURL(WebBrowser1: TWebBrowser; url: string);
 procedure BrowseContent(WebBrowser1: TWebBrowser; html: string);
 function IsTextHTML(s: string): boolean;
-function GetWordUnderCaret(AMemo: TMemo): string;
+function GetWordUnderCaret(AMemo: TSynEdit): string;
 function IsValidPHPExe(const exeFile: string): boolean;
 
 implementation
@@ -323,7 +329,7 @@ begin
 end;
 
 // Template: http://stackoverflow.com/questions/6339446/delphi-get-the-whole-word-where-the-caret-is-in-a-memo
-function GetWordUnderCaret(AMemo: TMemo): string;
+function GetWordUnderCaret(AMemo: TSynEdit): string;
 
   function ValidChar(c: char): boolean;
   begin
@@ -338,8 +344,19 @@ var
    EndPos  : Integer;
 begin
    //Get the caret position
-   Line   := AMemo.Perform(EM_LINEFROMCHAR,AMemo.SelStart, 0) ;
-   Column := AMemo.SelStart - AMemo.Perform(EM_LINEINDEX, Line, 0) ;
+   (*
+   if AMemo is TMemo then
+   begin
+     Line   := AMemo.Perform(EM_LINEFROMCHAR,AMemo.SelStart, 0);
+     Column := AMemo.SelStart - AMemo.Perform(EM_LINEINDEX, Line, 0);
+   end;
+   *)
+   if AMemo is TSynEdit then
+   begin
+     Line := AMemo.CaretY-1;
+     Column := AMemo.CaretX-1;
+   end;
+
    //Validate the line number
    if AMemo.Lines.Count-1 < Line then Exit;
 
