@@ -254,7 +254,11 @@ var
   lineno: integer;
 begin
   InputQuery('Go to', 'Line number:', val);
-  if not TryStrToInt(val, lineno) then exit;
+  if not TryStrToInt(val, lineno) then
+  begin
+    if SynEdit1.CanFocus then SynEdit1.SetFocus;
+    exit;
+  end;
   GotoLineNo(lineno);
 end;
 
