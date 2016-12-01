@@ -53,6 +53,7 @@ object Form1: TForm1
         ReadOnly = True
         ScrollBars = ssBoth
         TabOrder = 0
+        OnDblClick = Memo2DblClick
       end
     end
     object HtmlTabSheet: TTabSheet
@@ -65,6 +66,7 @@ object Form1: TForm1
         Height = 245
         Align = alClient
         TabOrder = 0
+        OnBeforeNavigate2 = WebBrowser1BeforeNavigate2
         ExplicitWidth = 348
         ExplicitHeight = 150
         ControlData = {
@@ -78,28 +80,31 @@ object Form1: TForm1
   end
   object PageControl2: TPageControl
     Left = 0
-    Top = 0
+    Top = 36
     Width = 1120
-    Height = 385
-    ActivePage = TabSheet3
+    Height = 349
+    ActivePage = HelpTabsheet
     Align = alClient
     TabOrder = 1
     OnChanging = PageControl2Changing
+    ExplicitTop = 0
+    ExplicitHeight = 385
     object TabSheet3: TTabSheet
       Caption = 'Scrap'
+      ExplicitHeight = 357
       object SynEdit1: TSynEdit
         Left = 0
         Top = 0
         Width = 1112
-        Height = 357
+        Height = 321
         Align = alClient
+        ActiveLineColor = clInfoBk
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -13
         Font.Name = 'Courier New'
         Font.Style = []
         TabOrder = 0
-        OnKeyDown = Memo1KeyDown
         Gutter.Font.Charset = DEFAULT_CHARSET
         Gutter.Font.Color = clWindowText
         Gutter.Font.Height = -11
@@ -109,25 +114,28 @@ object Form1: TForm1
         Highlighter = SynPHPSyn1
         Lines.Strings = (
           'SynEdit1')
-        Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollByOneLess, eoShowScrollHint, eoSmartTabDelete, eoSmartTabs, eoTabIndent, eoTabsToSpaces, eoTrimTrailingSpaces]
+        Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceHomeKey, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollByOneLess, eoShowScrollHint, eoTabIndent, eoTrimTrailingSpaces]
         WantTabs = True
         FontSmoothing = fsmNone
+        ExplicitTop = 1
+        ExplicitHeight = 316
       end
     end
     object HelpTabsheet: TTabSheet
       Caption = 'Help'
       ImageIndex = 1
+      ExplicitHeight = 357
       object WebBrowser2: TWebBrowser
         Left = 0
         Top = 0
         Width = 1112
-        Height = 357
+        Height = 321
         Align = alClient
         TabOrder = 0
         ExplicitWidth = 300
         ExplicitHeight = 150
         ControlData = {
-          4C000000EE720000E62400000000000000000000000000000000000000000000
+          4C000000EE7200002D2100000000000000000000000000000000000000000000
           000000004C000000000000000000000001000000E0D057007335CF11AE690800
           2B2E126208000000000000004C0000000114020000000000C000000000000046
           8000000000000000000000000000000000000000000000000000000000000000
@@ -143,6 +151,41 @@ object Form1: TForm1
     Caption = 'Generating help. Please wait...'
     TabOrder = 2
     Visible = False
+  end
+  object Panel2: TPanel
+    Left = 0
+    Top = 0
+    Width = 1120
+    Height = 36
+    Align = alTop
+    TabOrder = 3
+    object Button1: TButton
+      Left = 4
+      Top = 0
+      Width = 75
+      Height = 35
+      Caption = 'Run'
+      TabOrder = 0
+      OnClick = Button1Click
+    end
+    object Button2: TButton
+      Left = 85
+      Top = 0
+      Width = 75
+      Height = 35
+      Caption = 'Help'
+      TabOrder = 1
+      OnClick = Button2Click
+    end
+    object Button3: TButton
+      Left = 166
+      Top = 0
+      Width = 75
+      Height = 35
+      Caption = 'Goto'
+      TabOrder = 2
+      OnClick = Button3Click
+    end
   end
   object OpenDialog1: TOpenDialog
     DefaultExt = '.chm'
@@ -184,5 +227,12 @@ object Form1: TForm1
     VariableAttri.Foreground = 213
     Left = 72
     Top = 80
+  end
+  object SynEditFocusTimer: TTimer
+    Enabled = False
+    Interval = 500
+    OnTimer = SynEditFocusTimerTimer
+    Left = 668
+    Top = 249
   end
 end

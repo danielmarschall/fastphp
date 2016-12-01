@@ -350,18 +350,22 @@ begin
      Line   := AMemo.Perform(EM_LINEFROMCHAR,AMemo.SelStart, 0);
      Column := AMemo.SelStart - AMemo.Perform(EM_LINEINDEX, Line, 0);
    end;
-   *)
    if AMemo is TSynEdit then
    begin
+   *)
      Line := AMemo.CaretY-1;
      Column := AMemo.CaretX-1;
+   (*
    end;
+   *)
 
    //Validate the line number
    if AMemo.Lines.Count-1 < Line then Exit;
 
    //Get the text of the line
    LineText := AMemo.Lines[Line];
+
+   if LineText = '' then exit('');
 
    // Column zeigt auf das Zeichen LINKS vom Cursor!
 

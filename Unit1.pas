@@ -13,6 +13,13 @@ unit Unit1;
 
 // TODO: wieso geht copy paste im twebbrowser nicht???
 // Wieso dauert webbrowser1 erste kompilierung so lange???
+// TODO: wieso kommt syntax fehler zweimal? einmal stderr einmal stdout?
+// TODO: Browser titlebar (link preview)
+
+// TODO: strg+f / h
+// TODO: font bigger
+// TODO: code in bildschirmmitte?
+// TODO: regelmäßig scrap zwischenspeichern, oder bei strg+s
 
 // Future ideas
 // - ToDo list
@@ -22,8 +29,7 @@ unit Unit1;
 // - webbrowser1 nur laden, wenn man den tab anwählt?
 // - doppelklick auf tab soll diesen schließen
 // - Strg+S
-// - tastenkombo für "springe zu zeile"
-// - Onlinehelp aufrufen
+// - Onlinehelp (www) aufrufen
 
 interface
 
@@ -50,21 +56,35 @@ type
     OpenDialog3: TOpenDialog;
     SynEdit1: TSynEdit;
     SynPHPSyn1: TSynPHPSyn;
+    Panel2: TPanel;
+    SynEditFocusTimer: TTimer;
+    Button1: TButton;
+    Button2: TButton;
+    Button3: TButton;
     procedure Run(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure Memo1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure PageControl2Changing(Sender: TObject; var AllowChange: Boolean);
+    procedure Memo2DblClick(Sender: TObject);
+    procedure WebBrowser1BeforeNavigate2(ASender: TObject;
+      const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
+      Headers: OleVariant; var Cancel: WordBool);
+    procedure SynEditFocusTimerTimer(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
   private
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
     procedure Help;
     procedure ApplicationOnMessage(var Msg: tagMSG; var Handled: Boolean);
+    function MarkUpLineReference(cont: string): string;
   protected
     FastPHPConfig: TMemIniFile;
     ChmIndex: TMemIniFile;
+    procedure GotoLineNo(LineNo:integer);
     function GetScrapFile: string;
   end;
 
@@ -76,16 +96,21 @@ implementation
 {$R *.dfm}
 
 uses
-  Functions;
+  Functions, StrUtils;
 
 procedure TForm1.ApplicationOnMessage(var Msg: tagMSG; var Handled: Boolean);
-begin                     
+var
+  val: string;
+  lineno: integer;
+begin
   case Msg.message of
     WM_KEYUP:
     begin
       case Msg.wParam of
+        {$REGION 'Esc'}
         VK_ESCAPE:
         begin
+          Handled := true;
           // It is necessary to use Application.OnMessage, because Form1.KeyPreview does not work when TWebBrowser has the focus
           if (HlpPrevPageIndex <> -1) and (PageControl2.ActivePage = HelpTabSheet) and
              (HelpTabsheet.TabVisible) then
@@ -93,7 +118,41 @@ begin
             PageControl2.ActivePageIndex := HlpPrevPageIndex;
             HelpTabsheet.TabVisible := false;
           end;
-          Handled := true;
+        end;
+        {$ENDREGION}
+
+        {$REGION 'Ctrl+G : Go to line'}
+        ord('G'):
+        begin
+          // TODO: VK_LMENU does not work! only works with AltGr but not Alt
+          // http://stackoverflow.com/questions/16828250/delphi-xe2-how-to-prevent-the-alt-key-stealing-focus ?
+          if (GetKeyState(VK_CONTROL) < 0) then
+          begin
+            Handled := true;
+            InputQuery('Go to', 'Line number:', val);
+            if not TryStrToInt(val, lineno) then exit;
+            GotoLineNo(lineno);
+          end;
+        end;
+        {$ENDREGION}
+
+        VK_F1:
+        begin
+          if SynEdit1.Focused then
+          begin
+            Handled := true;
+            Help;
+          end;
+        end;
+
+        VK_F5:
+        begin
+          Run(Self);
+        end;
+
+        VK_F9:
+        begin
+          Run(Self);
         end;
       end;
     end;
@@ -104,36 +163,99 @@ procedure TForm1.Run(Sender: TObject);
 var
   phpExe: string;
 begin
-  if not FileExists(phpExe) then
-  begin
-    phpExe := FastPHPConfig.ReadString('Paths', 'PHPInterpreter', '');
+  memo2.Lines.Text := '';
+  BrowseContent(Webbrowser1, memo2.Lines.Text);
+  Screen.Cursor := crHourGlass;
+  Application.ProcessMessages;
+
+  try
     if not FileExists(phpExe) then
     begin
-      if not OpenDialog2.Execute then exit;
-      if not FileExists(OpenDialog2.FileName) then exit;
-      phpExe := OpenDialog2.FileName;
-
-      if not IsValidPHPExe(phpExe) then
+      phpExe := FastPHPConfig.ReadString('Paths', 'PHPInterpreter', '');
+      if not FileExists(phpExe) then
       begin
-        ShowMessage('This is not a valid PHP executable.');
-        exit;
-      end;
+        if not OpenDialog2.Execute then exit;
+        if not FileExists(OpenDialog2.FileName) then exit;
+        phpExe := OpenDialog2.FileName;
 
-      FastPHPConfig.WriteString('Paths', 'PHPInterpreter', phpExe);
-      FastPHPConfig.UpdateFile;
+        if not IsValidPHPExe(phpExe) then
+        begin
+          ShowMessage('This is not a valid PHP executable.');
+          exit;
+        end;
+
+        FastPHPConfig.WriteString('Paths', 'PHPInterpreter', phpExe);
+        FastPHPConfig.UpdateFile;
+      end;
+    end;
+
+    SynEdit1.Lines.SaveToFile(GetScrapFile);
+
+    memo2.Lines.Text := GetDosOutput('"'+phpExe+'" "'+GetScrapFile+'"', ExtractFileDir(Application.ExeName));
+
+    BrowseContent(Webbrowser1, MarkUpLineReference(memo2.Lines.Text));
+
+    if IsTextHTML(memo2.lines.text) then
+      PageControl1.ActivePage := HtmlTabSheet
+    else
+      PageControl1.ActivePage := PlaintextTabSheet;
+  finally
+    Screen.Cursor := crDefault;
+  end;
+end;
+
+procedure TForm1.SynEditFocusTimerTimer(Sender: TObject);
+begin
+  SynEditFocusTimer.Enabled := false;
+  Button1.SetFocus; // Workaround for weird bug... This (and the timer) is necessary to get the focus to SynEdit1
+  SynEdit1.SetFocus;
+end;
+
+procedure TForm1.WebBrowser1BeforeNavigate2(ASender: TObject;
+  const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
+  Headers: OleVariant; var Cancel: WordBool);
+const
+  MAG_BEGIN = 'fastphp://gotoline/';
+var
+  s: string;
+  lineno: integer;
+begin
+  if Copy(URL, 1, length(MAG_BEGIN)) = MAG_BEGIN then
+  begin
+    try
+      s := copy(URL, length(MAG_BEGIN)+1, 99);
+      if not TryStrToInt(s, lineno) then exit;
+      GotoLineNo(lineno);
+      SynEditFocusTimer.Enabled := true;
+    finally
+      Cancel := true;
     end;
   end;
+end;
 
-  SynEdit1.Lines.SaveToFile(GetScrapFile);
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+  Run(Sender);
+  SynEdit1.SetFocus;
+end;
 
-  memo2.Lines.Text := GetDosOutput('"'+phpExe+'" "'+GetScrapFile+'"', ExtractFileDir(Application.ExeName));
+procedure TForm1.Button2Click(Sender: TObject);
+begin
+  Help;
+  if PageControl2.ActivePage = HelpTabsheet then
+    WebBrowser2.SetFocus
+  else if PageControl2.ActivePage = TabSheet3{Scrap} then
+    SynEdit1.SetFocus;
+end;
 
-  BrowseContent(Webbrowser1, memo2.Lines.Text);
-
-  if IsTextHTML(memo2.lines.text) then
-    PageControl1.ActivePage := HtmlTabSheet
-  else
-    PageControl1.ActivePage := PlaintextTabSheet;
+procedure TForm1.Button3Click(Sender: TObject);
+var
+  val: string;
+  lineno: integer;
+begin
+  InputQuery('Go to', 'Line number:', val);
+  if not TryStrToInt(val, lineno) then exit;
+  GotoLineNo(lineno);
 end;
 
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -177,6 +299,8 @@ begin
 
   PageControl2.ActivePageIndex := 0; // Scraps
   HelpTabsheet.TabVisible := false;
+
+  SynEdit1.SetFocus;
 end;
 
 function TForm1.GetScrapFile: string;
@@ -297,13 +421,39 @@ begin
   BrowseURL(WebBrowser2, url);
 end;
 
-procedure TForm1.Memo1KeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure TForm1.GotoLineNo(LineNo:integer);
+var
+  line: string;
+  i: integer;
 begin
-  if (Key = VK_F9) or (Key = VK_F5) then
-    Run(Sender)
-  else if Key = VK_F1 then
-    Help;
+  SynEdit1.GotoLineAndCenter(LineNo);
+
+  // Skip indent
+  line := SynEdit1.Lines[SynEdit1.CaretY];
+  for i := 1 to Length(line) do
+  begin
+    if not (line[i] in [' ', #9]) then
+    begin
+      SynEdit1.CaretX := i-1;
+      break;
+    end;
+  end;
+
+  PageControl2.ActivePage := TabSheet3{Scrap};
+  if SynEdit1.CanFocus then SynEdit1.SetFocus;
+end;
+
+procedure TForm1.Memo2DblClick(Sender: TObject);
+var
+  line: string;
+  p, lineno: integer;
+begin
+  line := memo2.Lines.Strings[Memo2.CaretPos.Y];
+  p := Pos(' on line ', line);
+  if p = 0 then exit;
+  line := copy(line, p+length(' on line '), 99);
+  if not TryStrToInt(line, lineno) then exit;
+  GotoLineNo(lineno);
 end;
 
 procedure TForm1.PageControl2Changing(Sender: TObject;
@@ -315,6 +465,39 @@ begin
     HlpPrevPageIndex := PageControl2.ActivePageIndex;
 
   AllowChange := true;
+end;
+
+function TForm1.MarkUpLineReference(cont: string): string;
+var
+  p, a, b: integer;
+  num: integer;
+  insert_a, insert_b: string;
+begin
+  // TODO: make it more specific to PHP error messages. "on line" is too broad.
+  p := Pos(' on line ', cont);
+  while p >= 1 do
+  begin
+    a := p+1;
+    b := p+length(' on line ');
+    num := 0;
+    while cont[b] in ['0'..'9'] do
+    begin
+      num := num*10 + StrToInt(cont[b]);
+      inc(b);
+    end;
+
+    insert_b := '</a>';
+    insert_a := '<a href="fastphp://gotoline/'+IntToStr(num)+'">';
+
+    insert(insert_b, cont, b);
+    insert(insert_a, cont, a);
+
+    p := b + Length(insert_a) + Length(insert_b);
+
+    p := PosEx(' on line ', cont, p+1);
+  end;
+
+  result := cont;
 end;
 
 end.
