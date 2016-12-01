@@ -87,11 +87,8 @@ object Form1: TForm1
     Align = alClient
     TabOrder = 1
     OnChanging = PageControl2Changing
-    ExplicitTop = 0
-    ExplicitHeight = 385
     object TabSheet3: TTabSheet
       Caption = 'Scrap'
-      ExplicitHeight = 357
       object SynEdit1: TSynEdit
         Left = 0
         Top = 0
@@ -117,14 +114,11 @@ object Form1: TForm1
         Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceHomeKey, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollByOneLess, eoShowScrollHint, eoTabIndent, eoTrimTrailingSpaces]
         WantTabs = True
         FontSmoothing = fsmNone
-        ExplicitTop = 1
-        ExplicitHeight = 316
       end
     end
     object HelpTabsheet: TTabSheet
       Caption = 'Help'
       ImageIndex = 1
-      ExplicitHeight = 357
       object WebBrowser2: TWebBrowser
         Left = 0
         Top = 0

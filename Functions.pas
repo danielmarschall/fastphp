@@ -4,13 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, StrUtils, IniFiles, Classes, Forms, Variants, MsHTML,
-  SHDocVw_TLB, StdCtrls, SynEdit,
-
-
-
-
-
-  dialogs;
+  SHDocVw_TLB, StdCtrls, SynEdit;
 
 function GetDosOutput(CommandLine: string; Work: string = ''): string;
 function StrIPos(const SubStr, S: string): Integer;

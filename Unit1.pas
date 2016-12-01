@@ -169,24 +169,21 @@ begin
   Application.ProcessMessages;
 
   try
+    phpExe := FastPHPConfig.ReadString('Paths', 'PHPInterpreter', '');
     if not FileExists(phpExe) then
     begin
-      phpExe := FastPHPConfig.ReadString('Paths', 'PHPInterpreter', '');
-      if not FileExists(phpExe) then
+      if not OpenDialog2.Execute then exit;
+      if not FileExists(OpenDialog2.FileName) then exit;
+      phpExe := OpenDialog2.FileName;
+
+      if not IsValidPHPExe(phpExe) then
       begin
-        if not OpenDialog2.Execute then exit;
-        if not FileExists(OpenDialog2.FileName) then exit;
-        phpExe := OpenDialog2.FileName;
-
-        if not IsValidPHPExe(phpExe) then
-        begin
-          ShowMessage('This is not a valid PHP executable.');
-          exit;
-        end;
-
-        FastPHPConfig.WriteString('Paths', 'PHPInterpreter', phpExe);
-        FastPHPConfig.UpdateFile;
+        ShowMessage('This is not a valid PHP executable.');
+        exit;
       end;
+
+      FastPHPConfig.WriteString('Paths', 'PHPInterpreter', phpExe);
+      FastPHPConfig.UpdateFile;
     end;
 
     SynEdit1.Lines.SaveToFile(GetScrapFile);
@@ -217,9 +214,11 @@ procedure TForm1.WebBrowser1BeforeNavigate2(ASender: TObject;
 const
   MAG_BEGIN = 'fastphp://gotoline/';
 var
-  s: string;
+  s, myURL, phpExe, scrapDir: string;
   lineno: integer;
+  p: integer;
 begin
+  {$REGION 'Line number references (PHP errors and warnings)'}
   if Copy(URL, 1, length(MAG_BEGIN)) = MAG_BEGIN then
   begin
     try
@@ -231,6 +230,30 @@ begin
       Cancel := true;
     end;
   end;
+  {$ENDREGION}
+
+  {$REGION 'Intelligent browser'}
+  if URL <> 'about:blank' then
+  begin
+    p := Pos('?', URL);
+    myUrl := URL;
+
+    myURL := StringReplace(myURL, 'about:', '', []); // TODO: ??? wenn ich von about:blank komme, dann ist ein link about:xyz.php !
+
+    // TODO: unabhängig vom scrap verzeichnis machen!
+    scrapDir := FastPHPConfig.ReadString('Paths', 'ScrapFile', '');
+    myURL := ExtractFileDir({Application.ExeName}scrapDir) + '\' + myURL;
+
+    if p >= 1 then myURL := copy(myURL, 1, p-1);
+    if FileExists(myURL) then
+    begin
+      phpExe := FastPHPConfig.ReadString('Paths', 'PHPInterpreter', ''); // TODO: check if available (auslagern)
+
+      BrowseContent(WebBrowser1, GetDosOutput('"'+phpExe+'" "'+myURL+'"', ExtractFileDir(Application.ExeName)));
+      Cancel := true;
+    end;
+  end;
+  {$ENDREGION}
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);
