@@ -12,7 +12,7 @@ function LoadFileToStr(const FileName: TFileName): AnsiString;
 function LastPos(const SubStr, S: string): integer;
 function IsTextHTML(s: string): boolean;
 function GetWordUnderCaret(AMemo: TSynEdit): string;
-function IsValidPHPExe(const exeFile: string): boolean;
+function MyVarToStr(v: Variant): string;
 
 implementation
 
@@ -191,13 +191,30 @@ begin
    Result := Copy(LineText, InitPos, EndPos - InitPos + 1);
 end;
 
-function IsValidPHPExe(const exeFile: string): boolean;
+function MyVarToStr(v: Variant): string;
 var
-  cont: string;
+  _Lo, _Hi, i: integer;
 begin
-  cont := LoadFileToStr(exeFile);
-  result := (Pos('php://stdout', cont) >= 0) or
-            (Pos('PHP_SELF', cont) >= 0);
+  if VarIsNull(v) then
+  begin
+    result := '';
+  end
+  else if VarIsArray(v) then
+  begin
+    _Lo := VarArrayLowBound(v, 1);
+    _Hi := VarArrayHighBound(v, 1);
+    result := '';
+    for i := _Lo to _Hi do
+    begin
+      if v[i] = 0 then break;
+      result := result + chr(integer(v[i]));
+    end;
+  end
+  else
+  begin
+    // At least try it...
+    result := VarToStr(v);
+  end;
 end;
 
 end.

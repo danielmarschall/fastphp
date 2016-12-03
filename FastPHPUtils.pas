@@ -12,6 +12,7 @@ function FastPHPConfig: TMemIniFile;
 function GetPHPExe: string;
 function RunPHPScript(APHPFileName: string): string;
 function ParseCHM(chmFile: string): boolean;
+function IsValidPHPExe(const exeFile: string): boolean;
 
 implementation
 
@@ -183,6 +184,15 @@ begin
   finally
     ini.Free;
   end;
+end;
+
+function IsValidPHPExe(const exeFile: string): boolean;
+var
+  cont: string;
+begin
+  cont := LoadFileToStr(exeFile);
+  result := (Pos('php://stdout', cont) >= 0) or
+            (Pos('PHP_SELF', cont) >= 0);
 end;
 
 initialization
