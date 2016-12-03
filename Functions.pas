@@ -4,16 +4,12 @@ interface
 
 uses
   Windows, Messages, SysUtils, StrUtils, IniFiles, Classes, Forms, Variants, MsHTML,
-  SHDocVw_TLB, StdCtrls, SynEdit;
+  SHDocVw_TLB, StdCtrls, SynEdit, ActiveX;
 
 function GetDosOutput(CommandLine: string; Work: string = ''): string;
 function StrIPos(const SubStr, S: string): Integer;
-procedure WaitForBrowser(WB: TWebbrowser);
 function LoadFileToStr(const FileName: TFileName): AnsiString;
 function LastPos(const SubStr, S: string): integer;
-function ParseCHM(chmFile: string): boolean;
-procedure BrowseURL(WebBrowser1: TWebBrowser; url: string);
-procedure BrowseContent(WebBrowser1: TWebBrowser; html: string);
 function IsTextHTML(s: string): boolean;
 function GetWordUnderCaret(AMemo: TSynEdit): string;
 function IsValidPHPExe(const exeFile: string): boolean;
@@ -82,16 +78,6 @@ begin
   Result := Pos(UpperCase(SubStr), UpperCase(S));
 end;
 
-procedure WaitForBrowser(WB: TWebbrowser);
-begin
-  while (WB.Busy)
-    and not (Application.Terminated) do
-  begin
-    Application.ProcessMessages;
-    Sleep(100);
-  end;
-end;
-
 function LoadFileToStr(const FileName: TFileName): AnsiString;
 var
   FileStream : TFileStream;
@@ -132,175 +118,6 @@ begin
   end;
 end;
 
-function ParseCHM(chmFile: string): boolean;
-var
-  test, candidate, candidate2: string;
-  p, p2, q: integer;
-  i: integer;
-  good: Boolean;
-  ini: TMemIniFile;
-  domain: string;
-  sl: TStringList;
-  symbolCount: Integer;
-  sl2: TStrings;
-  outFile: string;
-begin
-  // TODO: problem:  mysqli::commit has /res/mysqli.commit.html -> keyword is NOT commit alone
-
-  outFile := ChangeFileExt(chmFile, '.ini');
-  DeleteFile(outFile);
-  test := LoadFileToStr(chmFile);
-  if Pos('/php_manual_', test) = -1 then
-  begin
-    result := false;
-    exit;
-  end;
-  p := 0;
-  ini := TMemIniFile.Create(outFile);
-  try
-    ini.WriteString('_Info_', 'Source', chmFile);
-    ini.WriteString('_Info_', 'Generated', DateTimeToStr(Now));
-    ini.WriteString('_Info_', 'GeneratorVer', '1.0');
-    ini.WriteString('_Info_', 'Signature', '$ViaThinkSoft$');
-    {$REGION 'Excludes'}
-    // TODO: more excludes
-    ini.WriteBool('_HelpExclude_', 'about', true);
-    ini.WriteBool('_HelpExclude_', 'apache', true);
-    {$ENDREGION}
-    while true do
-    begin
-      Application.ProcessMessages;
-
-      p := PosEx('/res/', Test, p+1);
-      if p = 0 then break;
-      p2 := PosEx('.html', Test, p);
-      if p = 0 then break;
-      candidate := copy(Test, p+5, p2-p-5);
-      if candidate = '' then continue;
-      if Length(candidate) > 50 then continue;
-      good := true;
-      for i := p+5 to p2-1 do
-      begin
-        if ord(test[i]) < 32 then
-        begin
-          good := false;
-          break;
-        end;
-        if not (test[i] in ['a'..'z', 'A'..'Z', '.', '-', '_', '0'..'9']) then
-        begin
-          ini.WriteInteger('_Errors_', 'Contains unexpected character! ' + candidate, ini.ReadInteger('_Errors_', 'Contains unexpected character! ' + candidate, 0)+1);
-          good := false;
-          break;
-        end;
-      end;
-      if good then
-      begin
-        candidate2 := LowerCase(StringReplace(candidate, '-', '_', [rfReplaceAll]));
-        q := LastPos('.', candidate2);
-        domain := copy(candidate2, 1, q-1);
-        if domain = '' then continue;
-        candidate2 := copy(candidate2, q+1, Length(candidate2)-q);
-        ini.WriteInteger('_Category_', domain, ini.ReadInteger('_Category_', domain, 0)+1);
-        ini.WriteString(domain, candidate2, '/res/'+candidate+'.html');
-        if not ini.ReadBool('_HelpExclude_', domain, false)
-           and (candidate2 <> 'configuration')
-           and (candidate2 <> 'constants')
-           and (candidate2 <> 'installation')
-           and (candidate2 <> 'requirements')
-           and (candidate2 <> 'resources')
-           and (candidate2 <> 'setup') then
-        begin
-          if ini.ReadString('_HelpWords_', candidate2, '') <> '' then
-          begin
-            ini.WriteInteger('_Conflicts_', candidate2, ini.ReadInteger('_Conflicts_', candidate2, 0)+1);
-          end;
-
-          ini.WriteString('_HelpWords_', candidate2, '/res/'+candidate+'.html');
-        end;
-      end;
-    end;
-
-    sl := TStringList.Create;
-    sl2 := TStringList.Create;
-    try
-      ini.ReadSections(sl);
-      ini.WriteInteger('_Info_', 'TotalDomains', sl.Count);
-      symbolCount := 0;
-      for domain in sl do
-      begin
-        ini.ReadSection(domain, sl2);
-        Inc(symbolCount, sl2.Count)
-      end;
-      ini.WriteInteger('_Info_', 'TotalSymbols', symbolCount);
-    finally
-      sl.Free;
-      sl2.Free;
-    end;
-
-    ini.UpdateFile;
-    result := true;
-  finally
-    ini.Free;
-  end;
-end;
-
-procedure BrowseURL(WebBrowser1: TWebBrowser; url: string);
-var
-  BrowserFlags : olevariant;
-  MyTargetFrameName : olevariant;
-  MyPostaData : olevariant;
-  MyHeaders : olevariant;
-begin
-{ Flags:
-Constant            Value Meaning
-NavOpenInNewWindow  $01  Open the resource or file in a new window.
-NavNoHistory        $02  Do not add the resource or file to the history list. The new page replaces the current page in the list.
-NavNoReadFromCache  $04  Do not read from the disk cache for this navigation.
-NavNoWriteToCache   $08  Do not write the results of this navigation to the disk cache.
-NavAllowAutosearch  $10  If the navigation fails, the Web browser attempts to navigate common root domains (.com, .org, and so on). If this still fails, the URL is passed to a search engine.
-}
-  BrowserFlags := $02;
-  MyTargetFrameName := null;
-  MyPostaData := null;
-  MyHeaders := null;
-  WebBrowser1.Silent := true; // no JavaScript errors
-  Webbrowser1.Navigate(url, BrowserFlags,MyTargetFrameName,MyPostaData,MyHeaders);
-  WaitForBrowser(WebBrowser1);
-end;
-
-procedure BrowseContent(WebBrowser1: TWebBrowser; html: string);
-var
-  BrowserFlags : olevariant;
-  MyTargetFrameName : olevariant;
-  MyPostaData : olevariant;
-  MyHeaders : olevariant;
-  Doc: Variant;
-begin
-{ Flags:
-Constant            Value Meaning
-NavOpenInNewWindow  $01  Open the resource or file in a new window.
-NavNoHistory        $02  Do not add the resource or file to the history list. The new page replaces the current page in the list.
-NavNoReadFromCache  $04  Do not read from the disk cache for this navigation.
-NavNoWriteToCache   $08  Do not write the results of this navigation to the disk cache.
-NavAllowAutosearch  $10  If the navigation fails, the Web browser attempts to navigate common root domains (.com, .org, and so on). If this still fails, the URL is passed to a search engine.
-}
-  if WebBrowser1.Document = nil then
-  begin
-    BrowserFlags := $02 + $04 + $08 + $10;
-    MyTargetFrameName := null;
-    MyPostaData := null;
-    MyHeaders := null;
-    Webbrowser1.Navigate('about:blank', BrowserFlags,MyTargetFrameName,MyPostaData,MyHeaders);
-    WaitForBrowser(WebBrowser1);
-  end;
-
-  Doc := WebBrowser1.Document;
-  Doc.Clear;
-  Doc.Write(html);
-  Doc.Close;
-  WaitForBrowser(WebBrowser1);
-end;
-
 function IsTextHTML(s: string): boolean;
 
   function _Tag(const tag: string): integer;
@@ -327,7 +144,7 @@ function GetWordUnderCaret(AMemo: TSynEdit): string;
 
   function ValidChar(c: char): boolean;
   begin
-    result := c in ['a'..'z', 'A'..'Z', '0'..'9', '_'];
+    result := CharInSet(c, ['a'..'z', 'A'..'Z', '0'..'9', '_']);
   end;
 
 var

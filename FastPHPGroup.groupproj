@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{D62A5C3E-2552-479C-9CB1-A57171216170}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="FastPHPEditor.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="FastPHPBrowser.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="FastPHPEditor">
+        <MSBuild Projects="FastPHPEditor.dproj"/>
+    </Target>
+    <Target Name="FastPHPEditor:Clean">
+        <MSBuild Projects="FastPHPEditor.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FastPHPEditor:Make">
+        <MSBuild Projects="FastPHPEditor.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="FastPHPBrowser">
+        <MSBuild Projects="FastPHPBrowser.dproj"/>
+    </Target>
+    <Target Name="FastPHPBrowser:Clean">
+        <MSBuild Projects="FastPHPBrowser.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FastPHPBrowser:Make">
+        <MSBuild Projects="FastPHPBrowser.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="FastPHPEditor;FastPHPBrowser"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="FastPHPEditor:Clean;FastPHPBrowser:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="FastPHPEditor:Make;FastPHPBrowser:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

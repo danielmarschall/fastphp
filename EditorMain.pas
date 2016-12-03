@@ -1,4 +1,4 @@
-unit Unit1;
+unit EditorMain;
 
 (*
   This program requires
@@ -28,7 +28,6 @@ unit Unit1;
 // - verschiedene php versionen?
 // - webbrowser1 nur laden, wenn man den tab anw‰hlt?
 // - doppelklick auf tab soll diesen schlieﬂen
-// - Strg+S
 // - Onlinehelp (www) aufrufen
 
 interface
@@ -52,7 +51,6 @@ type
     WebBrowser2: TWebBrowser;
     OpenDialog1: TOpenDialog;
     Panel1: TPanel;
-    OpenDialog2: TOpenDialog;
     OpenDialog3: TOpenDialog;
     SynEdit1: TSynEdit;
     SynPHPSyn1: TSynPHPSyn;
@@ -82,7 +80,6 @@ type
     procedure ApplicationOnMessage(var Msg: tagMSG; var Handled: Boolean);
     function MarkUpLineReference(cont: string): string;
   protected
-    FastPHPConfig: TMemIniFile;
     ChmIndex: TMemIniFile;
     procedure GotoLineNo(LineNo:integer);
     function GetScrapFile: string;
@@ -96,7 +93,7 @@ implementation
 {$R *.dfm}
 
 uses
-  Functions, StrUtils;
+  Functions, StrUtils, WebBrowserUtils, FastPHPUtils;
 
 procedure TForm1.ApplicationOnMessage(var Msg: tagMSG; var Handled: Boolean);
 var
@@ -121,7 +118,7 @@ begin
         end;
         {$ENDREGION}
 
-        {$REGION 'Ctrl+G : Go to line'}
+        {$REGION 'Ctrl+G (Go to line)'}
         ord('G'):
         begin
           // TODO: VK_LMENU does not work! only works with AltGr but not Alt
@@ -136,6 +133,18 @@ begin
         end;
         {$ENDREGION}
 
+        {$REGION 'Ctrl+S (Save)'}
+        ord('S'):
+        begin
+          if (GetKeyState(VK_CONTROL) < 0) and (SynEdit1.Focused) then
+          begin
+            Handled := true;
+            SynEdit1.Lines.SaveToFile(GetScrapFile);
+          end;
+        end;
+        {$ENDREGION}
+
+        {$REGION 'F1 (Help)'}
         VK_F1:
         begin
           if SynEdit1.Focused then
@@ -144,53 +153,39 @@ begin
             Help;
           end;
         end;
+        {$ENDREGION}
 
+        {$REGION 'F5 (Run)'}
         VK_F5:
         begin
           Run(Self);
         end;
+        {$ENDREGION}
 
+        {$REGION 'F9 (Run)'}
         VK_F9:
         begin
           Run(Self);
         end;
+        {$ENDREGION}
       end;
     end;
   end;
 end;
 
 procedure TForm1.Run(Sender: TObject);
-var
-  phpExe: string;
 begin
   memo2.Lines.Text := '';
-  BrowseContent(Webbrowser1, memo2.Lines.Text);
+  Webbrowser1.Clear;
   Screen.Cursor := crHourGlass;
   Application.ProcessMessages;
 
   try
-    phpExe := FastPHPConfig.ReadString('Paths', 'PHPInterpreter', '');
-    if not FileExists(phpExe) then
-    begin
-      if not OpenDialog2.Execute then exit;
-      if not FileExists(OpenDialog2.FileName) then exit;
-      phpExe := OpenDialog2.FileName;
-
-      if not IsValidPHPExe(phpExe) then
-      begin
-        ShowMessage('This is not a valid PHP executable.');
-        exit;
-      end;
-
-      FastPHPConfig.WriteString('Paths', 'PHPInterpreter', phpExe);
-      FastPHPConfig.UpdateFile;
-    end;
-
     SynEdit1.Lines.SaveToFile(GetScrapFile);
 
-    memo2.Lines.Text := GetDosOutput('"'+phpExe+'" "'+GetScrapFile+'"', ExtractFileDir(Application.ExeName));
+    memo2.Lines.Text := RunPHPScript(GetScrapFile);
 
-    BrowseContent(Webbrowser1, MarkUpLineReference(memo2.Lines.Text));
+    Webbrowser1.LoadHTML(MarkUpLineReference(memo2.Lines.Text), GetScrapFile);
 
     if IsTextHTML(memo2.lines.text) then
       PageControl1.ActivePage := HtmlTabSheet
@@ -211,45 +206,40 @@ end;
 procedure TForm1.WebBrowser1BeforeNavigate2(ASender: TObject;
   const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
   Headers: OleVariant; var Cancel: WordBool);
-const
-  MAG_BEGIN = 'fastphp://gotoline/';
 var
-  s, myURL, phpExe, scrapDir: string;
+  s, myURL: string;
   lineno: integer;
   p: integer;
 begin
   {$REGION 'Line number references (PHP errors and warnings)'}
-  if Copy(URL, 1, length(MAG_BEGIN)) = MAG_BEGIN then
+  if Copy(URL, 1, length(FASTPHP_GOTO_URI_PREFIX)) = FASTPHP_GOTO_URI_PREFIX then
   begin
     try
-      s := copy(URL, length(MAG_BEGIN)+1, 99);
+      s := copy(URL, length(FASTPHP_GOTO_URI_PREFIX)+1, 99);
       if not TryStrToInt(s, lineno) then exit;
       GotoLineNo(lineno);
       SynEditFocusTimer.Enabled := true;
     finally
       Cancel := true;
     end;
+    Exit;
   end;
   {$ENDREGION}
 
-  {$REGION 'Intelligent browser'}
+  {$REGION 'Intelligent browser (executes PHP scripts)'}
   if URL <> 'about:blank' then
   begin
-    p := Pos('?', URL);
     myUrl := URL;
 
-    myURL := StringReplace(myURL, 'about:', '', []); // TODO: ??? wenn ich von about:blank komme, dann ist ein link about:xyz.php !
-
-    // TODO: unabh‰ngig vom scrap verzeichnis machen!
-    scrapDir := FastPHPConfig.ReadString('Paths', 'ScrapFile', '');
-    myURL := ExtractFileDir({Application.ExeName}scrapDir) + '\' + myURL;
-
+    p := Pos('?', myUrl);
     if p >= 1 then myURL := copy(myURL, 1, p-1);
-    if FileExists(myURL) then
-    begin
-      phpExe := FastPHPConfig.ReadString('Paths', 'PHPInterpreter', ''); // TODO: check if available (auslagern)
 
-      BrowseContent(WebBrowser1, GetDosOutput('"'+phpExe+'" "'+myURL+'"', ExtractFileDir(Application.ExeName)));
+    // TODO: myURL urldecode
+    // TODO: maybe we could even open that file in the editor!
+
+    if FileExists(myURL) and (EndsText('.php', myURL) or EndsText('.php3', myURL) or EndsText('.php4', myURL) or EndsText('.php5', myURL) or EndsText('.phps', myURL)) then
+    begin
+      WebBrowser1.LoadHTML(GetDosOutput('"'+GetPHPExe+'" "'+myURL+'"', ExtractFileDir(Application.ExeName)), myUrl);
       Cancel := true;
     end;
   end;
@@ -295,8 +285,6 @@ begin
   HlpPrevPageIndex := -1;
   CurSearchTerm := '';
   Application.OnMessage := ApplicationOnMessage;
-
-  FastPHPConfig := TMemIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
@@ -305,9 +293,6 @@ begin
   begin
     FreeAndNil(ChmIndex);
   end;
-
-  FastPHPConfig.UpdateFile;
-  FreeAndNil(FastPHPConfig);
 end;
 
 procedure TForm1.FormShow(Sender: TObject);
@@ -426,7 +411,7 @@ begin
 
   w := GetWordUnderCaret(SynEdit1);
   if w = '' then exit;
-  if w[1] in ['0'..'9'] then exit;  
+  if CharInSet(w[1], ['0'..'9']) then exit;
   w := StringReplace(w, '_', '-', [rfReplaceAll]);
   w := LowerCase(w);
   CurSearchTerm := w;
@@ -445,7 +430,8 @@ begin
   HlpPrevPageIndex := PageControl2.ActivePageIndex; // Return by pressing ESC
   HelpTabsheet.TabVisible := true;
   PageControl2.ActivePage := HelpTabsheet;
-  BrowseURL(WebBrowser2, url);
+  WebBrowser2.Navigate(url);
+  WebBrowser2.Wait;
 end;
 
 procedure TForm1.GotoLineNo(LineNo:integer);
@@ -459,7 +445,7 @@ begin
   line := SynEdit1.Lines[SynEdit1.CaretY];
   for i := 1 to Length(line) do
   begin
-    if not (line[i] in [' ', #9]) then
+    if not CharInSet(line[i], [' ', #9]) then
     begin
       SynEdit1.CaretX := i-1;
       break;
@@ -468,6 +454,17 @@ begin
 
   PageControl2.ActivePage := TabSheet3{Scrap};
   if SynEdit1.CanFocus then SynEdit1.SetFocus;
+end;
+
+procedure TForm1.PageControl2Changing(Sender: TObject;
+  var AllowChange: Boolean);
+begin
+  if PageControl2.ActivePage = HelpTabsheet then
+    HlpPrevPageIndex := -1
+  else
+    HlpPrevPageIndex := PageControl2.ActivePageIndex;
+
+  AllowChange := true;
 end;
 
 procedure TForm1.Memo2DblClick(Sender: TObject);
@@ -483,17 +480,6 @@ begin
   GotoLineNo(lineno);
 end;
 
-procedure TForm1.PageControl2Changing(Sender: TObject;
-  var AllowChange: Boolean);
-begin
-  if PageControl2.ActivePage = HelpTabsheet then
-    HlpPrevPageIndex := -1
-  else
-    HlpPrevPageIndex := PageControl2.ActivePageIndex;
-
-  AllowChange := true;
-end;
-
 function TForm1.MarkUpLineReference(cont: string): string;
 var
   p, a, b: integer;
@@ -507,14 +493,14 @@ begin
     a := p+1;
     b := p+length(' on line ');
     num := 0;
-    while cont[b] in ['0'..'9'] do
+    while CharInSet(cont[b], ['0'..'9']) do
     begin
       num := num*10 + StrToInt(cont[b]);
       inc(b);
     end;
 
     insert_b := '</a>';
-    insert_a := '<a href="fastphp://gotoline/'+IntToStr(num)+'">';
+    insert_a := '<a href="'+FASTPHP_GOTO_URI_PREFIX+IntToStr(num)+'">';
 
     insert(insert_b, cont, b);
     insert(insert_a, cont, a);
