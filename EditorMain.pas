@@ -302,7 +302,7 @@ begin
   ScrapFile := GetScrapFile;
   if ScrapFile = '' then
   begin
-    Close;
+    Application.Terminate; // Close;
     exit;
   end;
   SynEdit1.Lines.LoadFromFile(ScrapFile);
