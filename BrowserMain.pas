@@ -34,7 +34,8 @@ uses
 // (All these ToDos: Also fix in the Editor)
 // TODO: kann man eventuell auch php dateien aus einer DLL rausziehen? das wäre TOLL!!!!
 // TODO: headers... cookies...
-// TODO: WebBrowser1BeforeNavigate2 mit einem DLL-callback, sodass entwickler ihre eigenen fastphp:// links machen können!
+// TODO: WebBrowser1BeforeNavigate2 mit einem DLL-callback, sodass entwickler ihre eigenen fastphp:// links machen können, z.B. um DLL-Funktionen aufzurufen! (auch in JavaScript ansteuerbar?)
+// TODO: let the website decide if the window is maximized etc, as well as it's caption, size and icon
 
 procedure TForm2.Timer1Timer(Sender: TObject);
 var
@@ -113,7 +114,9 @@ begin
     ArgHeader := StringReplace(ArgHeader, #13, '|CR|', [rfReplaceAll]);
     ArgHeader := StringReplace(ArgHeader, #10, '|LF|', [rfReplaceAll]);
 
-    if FileExists(myURL) and (EndsText('.php', myURL) or EndsText('.php3', myURL) or EndsText('.php4', myURL) or EndsText('.php5', myURL) or EndsText('.phps', myURL)) then
+    // *.xphp is ViaThinkSoft's extension associated to FastPHPBrowser
+    // This allows the "executable PHP scripts" to be executed via double click.--
+    if FileExists(myURL) and (EndsText('.xphp', myURL) or EndsText('.php', myURL) or EndsText('.php3', myURL) or EndsText('.php4', myURL) or EndsText('.php5', myURL) or EndsText('.phps', myURL)) then
     begin
       if background then
       begin
