@@ -15,6 +15,8 @@ type
     procedure WebBrowser1BeforeNavigate2(ASender: TObject;
       const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
       Headers: OleVariant; var Cancel: WordBool);
+  strict private
+    function EmbeddedWBQueryService(const rsid, iid: TGUID; out Obj{: IInterface}): HRESULT;
   end;
 
 var
@@ -37,12 +39,94 @@ uses
 // TODO: WebBrowser1BeforeNavigate2 mit einem DLL-callback, sodass entwickler ihre eigenen fastphp:// links machen können, z.B. um DLL-Funktionen aufzurufen! (auch in JavaScript ansteuerbar?)
 // TODO: let the website decide if the window is maximized etc, as well as it's caption, size and icon
 
+type
+  TEmbeddedSecurityManager = class(TInterfacedObject, IInternetSecurityManager)
+  public
+    function GetSecuritySite(out ppSite: IInternetSecurityMgrSite): HResult; stdcall;
+    function MapUrlToZone(pwszUrl: LPCWSTR; out dwZone: DWORD; dwFlags: DWORD): HResult; stdcall;
+    function GetSecurityId(pwszUrl: LPCWSTR; pbSecurityId: Pointer; var cbSecurityId: DWORD; dwReserved: DWORD): HResult; stdcall;
+    function ProcessUrlAction(pwszUrl: LPCWSTR; dwAction: DWORD; pPolicy: Pointer; cbPolicy: DWORD; pContext: Pointer; cbContext: DWORD; dwFlags, dwReserved: DWORD): HResult; stdcall;
+    function QueryCustomPolicy(pwszUrl: LPCWSTR; const guidKey: TGUID; out pPolicy: Pointer; out cbPolicy: DWORD; pContext: Pointer; cbContext: DWORD; dwReserved: DWORD): HResult; stdcall;
+    function SetZoneMapping(dwZone: DWORD; lpszPattern: PWideChar; dwFlags: DWORD): HResult; stdcall;
+    function GetZoneMappings(dwZone: DWORD;out ppenumString: IEnumString; dwFlags: DWORD): HResult; stdcall;
+    function SetSecuritySite(pSite: IInternetSecurityMgrSite): HResult; stdcall;
+  end;
+
+function TEmbeddedSecurityManager.SetSecuritySite(pSite: IInternetSecurityMgrSite): HResult; stdcall;
+begin
+  Result := INET_E_DEFAULT_ACTION;
+end;
+function TEmbeddedSecurityManager.GetSecuritySite(
+  out ppSite: IInternetSecurityMgrSite): HResult; stdcall;
+begin
+  Result := INET_E_DEFAULT_ACTION;
+end;
+function TEmbeddedSecurityManager.GetSecurityId(pwszUrl: LPCWSTR; pbSecurityId: Pointer;
+  var cbSecurityId: DWORD; dwReserved: DWORD): HResult; stdcall;
+begin
+  Result := INET_E_DEFAULT_ACTION;
+end;
+function TEmbeddedSecurityManager.ProcessUrlAction(pwszUrl: LPCWSTR; dwAction: DWORD;
+  pPolicy: Pointer; cbPolicy: DWORD; pContext: Pointer; cbContext: DWORD;
+  dwFlags, dwReserved: DWORD): HResult; stdcall;
+begin
+  // Result := INET_E_DEFAULT_ACTION;
+
+  // TODO: Doesn't work... Cross-Domain is still not allowed.
+  PDWORD(pPolicy)^ := URLPOLICY_ALLOW;
+  Result := S_OK;
+end;
+function TEmbeddedSecurityManager.QueryCustomPolicy(pwszUrl: LPCWSTR; const guidKey: TGUID;
+  out pPolicy: Pointer; out cbPolicy: DWORD; pContext: Pointer; cbContext: DWORD;
+  dwReserved: DWORD): HResult; stdcall;
+begin
+  // Result := INET_E_DEFAULT_ACTION;
+
+  // TODO: Doesn't work... Cross-Domain is still not allowed.
+  PDWORD(pPolicy)^ := URLPOLICY_ALLOW;
+  Result := S_OK;
+end;
+function TEmbeddedSecurityManager.SetZoneMapping(dwZone: DWORD; lpszPattern: PWideChar;
+  dwFlags: DWORD): HResult; stdcall;
+begin
+  Result := INET_E_DEFAULT_ACTION;
+end;
+function TEmbeddedSecurityManager.GetZoneMappings(dwZone: DWORD;out ppenumString: IEnumString;
+  dwFlags: DWORD): HResult; stdcall;
+begin
+  Result := INET_E_DEFAULT_ACTION;
+end;
+function TEmbeddedSecurityManager.MapUrlToZone(pwszUrl: LPCWSTR; out dwZone: DWORD; dwFlags: DWORD): HResult;
+begin
+     dwZone := URLZONE_INTERNET;
+     Result := S_OK;
+    end;
+
+function TForm2.EmbeddedWBQueryService(const rsid, iid: TGUID; out Obj{: IInterface}): HRESULT;
+var
+    sam: IInternetSecurityManager;
+begin
+    Result := E_NOINTERFACE;
+
+    //rsid ==> Service Identifier
+    //iid ==> Interface identifier
+    if IsEqualGUID(rsid, IInternetSecurityManager) and IsEqualGUID(iid, IInternetSecurityManager) then
+    begin
+        sam := TEmbeddedSecurityManager.Create;
+        IInterface(Obj) := sam;
+        Result := S_OK;
+    end;
+end;
+
 procedure TForm2.Timer1Timer(Sender: TObject);
 var
   phpScript: string;
 begin
   Timer1.Enabled := false;
   phpScript := ParamStr(1);
+
+  // Remove Security
+  WebBrowser1.ServiceQuery := EmbeddedWBQueryService;
 
   WebBrowser1.LoadHTML('<h1>FastPHP</h1>Running script... please wait...');
 
