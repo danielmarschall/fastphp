@@ -11,8 +11,8 @@ const
 function FastPHPConfig: TMemIniFile;
 function GetPHPExe: string;
 function RunPHPScript(APHPFileName: string): string;
-function ParseCHM(chmFile: string): boolean;
-function IsValidPHPExe(const exeFile: string): boolean;
+function ParseCHM(const chmFile: TFileName): boolean;
+function IsValidPHPExe(const exeFile: TFileName): boolean;
 
 implementation
 
@@ -74,7 +74,7 @@ begin
   result := GetDosOutput('"'+phpExe+'" "'+APHPFileName+'"', ExtractFileDir(ParamStr(0)));
 end;
 
-function ParseCHM(chmFile: string): boolean;
+function ParseCHM(const chmFile: TFileName): boolean;
 var
   test, candidate, candidate2: string;
   p, p2, q: integer;
@@ -186,7 +186,7 @@ begin
   end;
 end;
 
-function IsValidPHPExe(const exeFile: string): boolean;
+function IsValidPHPExe(const exeFile: TFileName): boolean;
 var
   cont: string;
 begin

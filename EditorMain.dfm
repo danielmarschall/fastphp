@@ -83,7 +83,7 @@ object Form1: TForm1
     Top = 36
     Width = 1120
     Height = 349
-    ActivePage = HelpTabsheet
+    ActivePage = TabSheet3
     Align = alClient
     TabOrder = 1
     OnChanging = PageControl2Changing
@@ -95,13 +95,15 @@ object Form1: TForm1
         Width = 1112
         Height = 321
         Align = alClient
-        ActiveLineColor = clInfoBk
+        ActiveLineColor = 16777145
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -13
         Font.Name = 'Courier New'
         Font.Style = []
         TabOrder = 0
+        OnMouseWheelDown = SynEdit1MouseWheelDown
+        OnMouseWheelUp = SynEdit1MouseWheelUp
         Gutter.Font.Charset = DEFAULT_CHARSET
         Gutter.Font.Color = clWindowText
         Gutter.Font.Height = -11
@@ -158,27 +160,56 @@ object Form1: TForm1
       Top = 0
       Width = 75
       Height = 35
-      Caption = 'Run'
+      Action = ActionRun
       TabOrder = 0
-      OnClick = Button1Click
     end
     object Button2: TButton
-      Left = 85
+      Left = 165
       Top = 0
       Width = 75
       Height = 35
-      Caption = 'Help'
-      TabOrder = 1
-      OnClick = Button2Click
+      Action = ActionHelp
+      TabOrder = 2
     end
     object Button3: TButton
-      Left = 166
+      Left = 246
       Top = 0
       Width = 75
       Height = 35
-      Caption = 'Goto'
-      TabOrder = 2
-      OnClick = Button3Click
+      Action = ActionGoto
+      TabOrder = 3
+    end
+    object Button4: TButton
+      Left = 327
+      Top = 0
+      Width = 75
+      Height = 35
+      Action = ActionFind
+      TabOrder = 4
+    end
+    object Button5: TButton
+      Left = 408
+      Top = 0
+      Width = 75
+      Height = 35
+      Action = ActionReplace
+      TabOrder = 5
+    end
+    object Button6: TButton
+      Left = 489
+      Top = 0
+      Width = 75
+      Height = 35
+      Action = ActionFindNext
+      TabOrder = 6
+    end
+    object Button7: TButton
+      Left = 84
+      Top = 1
+      Width = 75
+      Height = 35
+      Action = ActionSave
+      TabOrder = 1
     end
   end
   object OpenDialog1: TOpenDialog
@@ -200,6 +231,9 @@ object Form1: TForm1
     Top = 248
   end
   object SynPHPSyn1: TSynPHPSyn
+    DefaultFilter = 
+      'PHP Files (*.php;*.xphp;*.php3;*.phtml;*.inc)|*.php;*.xphp;*.php' +
+      '3;*.phtml;*.inc'
     Options.AutoDetectEnabled = False
     Options.AutoDetectLineLimit = 0
     Options.Visible = False
@@ -219,5 +253,49 @@ object Form1: TForm1
     OnTimer = SynEditFocusTimerTimer
     Left = 668
     Top = 249
+  end
+  object ActionList: TActionList
+    Left = 252
+    Top = 276
+    object ActionFind: TAction
+      Caption = 'Find'
+      ShortCut = 16454
+      OnExecute = ActionFindExecute
+    end
+    object ActionReplace: TAction
+      Caption = 'Replace'
+      ShortCut = 16456
+      OnExecute = ActionReplaceExecute
+    end
+    object ActionFindNext: TAction
+      Caption = 'Find next'
+      ShortCut = 114
+      OnExecute = ActionFindNextExecute
+    end
+    object ActionGoto: TAction
+      Caption = 'Goto line'
+      ShortCut = 16455
+      OnExecute = ActionGotoExecute
+    end
+    object ActionSave: TAction
+      Caption = 'Save'
+      ShortCut = 16467
+      OnExecute = ActionSaveExecute
+    end
+    object ActionHelp: TAction
+      Caption = 'Help'
+      ShortCut = 112
+      OnExecute = ActionHelpExecute
+    end
+    object ActionRun: TAction
+      Caption = 'Run'
+      ShortCut = 120
+      OnExecute = ActionRunExecute
+    end
+    object ActionESC: TAction
+      Caption = 'Esc'
+      ShortCut = 27
+      OnExecute = ActionESCExecute
+    end
   end
 end

@@ -10,32 +10,27 @@ unit EditorMain;
 *)
 
 // TODO: localize
-
 // TODO: wieso geht copy paste im twebbrowser nicht???
 // Wieso dauert webbrowser1 erste kompilierung so lange???
 // TODO: wieso kommt syntax fehler zweimal? einmal stderr einmal stdout?
 // TODO: Browser titlebar (link preview)
 
-// TODO: strg+f / h
-// TODO: font bigger
-// TODO: code in bildschirmmitte?
-// TODO: regelm‰ﬂig scrap zwischenspeichern, oder bei strg+s
-
 // Future ideas
 // - ToDo list
-// - Open/Save real files
-// - multiple scraps?
 // - verschiedene php versionen?
 // - webbrowser1 nur laden, wenn man den tab anw‰hlt?
 // - doppelklick auf tab soll diesen schlieﬂen
 // - Onlinehelp (www) aufrufen
+// - Let all colors be adjustable
+// - code in bildschirmmitte?
 
 interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, OleCtrls, ComCtrls, ExtCtrls, ToolWin, IniFiles,
-  SynEditHighlighter, SynHighlighterPHP, SynEdit, SHDocVw_TLB;
+  SynEditHighlighter, SynHighlighterPHP, SynEdit, SHDocVw_TLB, FindReplace,
+  System.Actions, Vcl.ActnList;
 
 type
   TForm1 = class(TForm)
@@ -59,6 +54,19 @@ type
     Button1: TButton;
     Button2: TButton;
     Button3: TButton;
+    Button4: TButton;
+    Button5: TButton;
+    Button6: TButton;
+    ActionList: TActionList;
+    ActionFind: TAction;
+    ActionReplace: TAction;
+    ActionFindNext: TAction;
+    ActionGoto: TAction;
+    ActionSave: TAction;
+    ActionHelp: TAction;
+    ActionRun: TAction;
+    ActionESC: TAction;
+    Button7: TButton;
     procedure Run(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -70,14 +78,23 @@ type
       const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
       Headers: OleVariant; var Cancel: WordBool);
     procedure SynEditFocusTimerTimer(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
+    procedure ActionFindExecute(Sender: TObject);
+    procedure ActionReplaceExecute(Sender: TObject);
+    procedure ActionFindNextExecute(Sender: TObject);
+    procedure ActionGotoExecute(Sender: TObject);
+    procedure ActionSaveExecute(Sender: TObject);
+    procedure ActionHelpExecute(Sender: TObject);
+    procedure ActionRunExecute(Sender: TObject);
+    procedure ActionESCExecute(Sender: TObject);
+    procedure SynEdit1MouseWheelDown(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
+    procedure SynEdit1MouseWheelUp(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
   private
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
+    SrcRep: TFindReplace;
     procedure Help;
-    procedure ApplicationOnMessage(var Msg: tagMSG; var Handled: Boolean);
     function MarkUpLineReference(cont: string): string;
   protected
     ChmIndex: TMemIniFile;
@@ -93,84 +110,73 @@ implementation
 {$R *.dfm}
 
 uses
-  Functions, StrUtils, WebBrowserUtils, FastPHPUtils;
+  Functions, StrUtils, WebBrowserUtils, FastPHPUtils, Math;
 
-procedure TForm1.ApplicationOnMessage(var Msg: tagMSG; var Handled: Boolean);
+// TODO: FindPrev ?
+procedure TForm1.ActionFindNextExecute(Sender: TObject);
+begin
+  SrcRep.FindNext;
+end;
+
+procedure TForm1.ActionGotoExecute(Sender: TObject);
 var
   val: string;
   lineno: integer;
 begin
-  case Msg.message of
-    WM_KEYUP:
-    begin
-      case Msg.wParam of
-        {$REGION 'Esc'}
-        VK_ESCAPE:
-        begin
-          Handled := true;
-          // It is necessary to use Application.OnMessage, because Form1.KeyPreview does not work when TWebBrowser has the focus
-          if (HlpPrevPageIndex <> -1) and (PageControl2.ActivePage = HelpTabSheet) and
-             (HelpTabsheet.TabVisible) then
-          begin
-            PageControl2.ActivePageIndex := HlpPrevPageIndex;
-            HelpTabsheet.TabVisible := false;
-          end;
-        end;
-        {$ENDREGION}
+  // TODO: VK_LMENU does not work! only works with AltGr but not Alt
+  // http://stackoverflow.com/questions/16828250/delphi-xe2-how-to-prevent-the-alt-key-stealing-focus ?
 
-        {$REGION 'Ctrl+G (Go to line)'}
-        ord('G'):
-        begin
-          // TODO: VK_LMENU does not work! only works with AltGr but not Alt
-          // http://stackoverflow.com/questions/16828250/delphi-xe2-how-to-prevent-the-alt-key-stealing-focus ?
-          if (GetKeyState(VK_CONTROL) < 0) then
-          begin
-            Handled := true;
-            InputQuery('Go to', 'Line number:', val);
-            if not TryStrToInt(val, lineno) then exit;
-            GotoLineNo(lineno);
-          end;
-        end;
-        {$ENDREGION}
-
-        {$REGION 'Ctrl+S (Save)'}
-        ord('S'):
-        begin
-          if (GetKeyState(VK_CONTROL) < 0) and (SynEdit1.Focused) then
-          begin
-            Handled := true;
-            SynEdit1.Lines.SaveToFile(GetScrapFile);
-          end;
-        end;
-        {$ENDREGION}
-
-        {$REGION 'F1 (Help)'}
-        VK_F1:
-        begin
-          if SynEdit1.Focused then
-          begin
-            Handled := true;
-            Help;
-          end;
-        end;
-        {$ENDREGION}
-
-        {$REGION 'F5 (Run)'}
-        VK_F5:
-        begin
-          Run(Self);
-        end;
-        {$ENDREGION}
-
-        {$REGION 'F9 (Run)'}
-        VK_F9:
-        begin
-          Run(Self);
-        end;
-        {$ENDREGION}
-      end;
-    end;
+  InputQuery('Go to', 'Line number:', val);
+  if not TryStrToInt(val, lineno) then
+  begin
+    if SynEdit1.CanFocus then SynEdit1.SetFocus;
+    exit;
   end;
+  GotoLineNo(lineno);
+end;
+
+procedure TForm1.ActionHelpExecute(Sender: TObject);
+begin
+  Help;
+  if PageControl2.ActivePage = HelpTabsheet then
+    WebBrowser2.SetFocus
+  else if PageControl2.ActivePage = TabSheet3{Scrap} then
+    SynEdit1.SetFocus;
+end;
+
+procedure TForm1.ActionReplaceExecute(Sender: TObject);
+begin
+  SrcRep.ReplaceExecute;
+end;
+
+procedure TForm1.ActionRunExecute(Sender: TObject);
+begin
+  Run(Sender);
+  SynEdit1.SetFocus;
+end;
+
+procedure TForm1.ActionSaveExecute(Sender: TObject);
+begin
+  SynEdit1.Lines.SaveToFile(GetScrapFile);
+end;
+
+procedure TForm1.ActionESCExecute(Sender: TObject);
+begin
+  if (HlpPrevPageIndex <> -1) and (PageControl2.ActivePage = HelpTabSheet) and
+     (HelpTabsheet.TabVisible) then
+  begin
+    PageControl2.ActivePageIndex := HlpPrevPageIndex;
+    HelpTabsheet.TabVisible := false;
+  end;
+
+  // Dirty hack...
+  SrcRep._FindDialog.CloseDialog;
+  SrcRep._ReplaceDialog.CloseDialog;
+end;
+
+procedure TForm1.ActionFindExecute(Sender: TObject);
+begin
+  SrcRep.FindExecute;
 end;
 
 procedure TForm1.Run(Sender: TObject);
@@ -193,6 +199,24 @@ begin
       PageControl1.ActivePage := PlaintextTabSheet;
   finally
     Screen.Cursor := crDefault;
+  end;
+end;
+
+procedure TForm1.SynEdit1MouseWheelDown(Sender: TObject; Shift: TShiftState;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  if ssCtrl in Shift then
+  begin
+    SynEdit1.Font.Size := Max(SynEdit1.Font.Size - 1, 5);
+  end;
+end;
+
+procedure TForm1.SynEdit1MouseWheelUp(Sender: TObject; Shift: TShiftState;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  if ssCtrl in Shift then
+  begin
+    SynEdit1.Font.Size := SynEdit1.Font.Size + 1;
   end;
 end;
 
@@ -246,45 +270,19 @@ begin
   {$ENDREGION}
 end;
 
-procedure TForm1.Button1Click(Sender: TObject);
-begin
-  Run(Sender);
-  SynEdit1.SetFocus;
-end;
-
-procedure TForm1.Button2Click(Sender: TObject);
-begin
-  Help;
-  if PageControl2.ActivePage = HelpTabsheet then
-    WebBrowser2.SetFocus
-  else if PageControl2.ActivePage = TabSheet3{Scrap} then
-    SynEdit1.SetFocus;
-end;
-
-procedure TForm1.Button3Click(Sender: TObject);
-var
-  val: string;
-  lineno: integer;
-begin
-  InputQuery('Go to', 'Line number:', val);
-  if not TryStrToInt(val, lineno) then
-  begin
-    if SynEdit1.CanFocus then SynEdit1.SetFocus;
-    exit;
-  end;
-  GotoLineNo(lineno);
-end;
-
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   SynEdit1.Lines.SaveToFile(GetScrapFile);
+  FastPHPConfig.WriteInteger('User', 'FontSize', SynEdit1.Font.Size);
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   HlpPrevPageIndex := -1;
   CurSearchTerm := '';
-  Application.OnMessage := ApplicationOnMessage;
+  Caption := Caption + ' - ' + GetScrapFile;
+  SrcRep := TFindReplace.Create(self);
+  SrcRep.Editor := SynEdit1;
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
@@ -293,6 +291,7 @@ begin
   begin
     FreeAndNil(ChmIndex);
   end;
+  FreeAndNil(SrcRep);
 end;
 
 procedure TForm1.FormShow(Sender: TObject);
@@ -312,12 +311,16 @@ begin
   PageControl2.ActivePageIndex := 0; // Scraps
   HelpTabsheet.TabVisible := false;
 
+  SynEdit1.Font.Size := FastPHPConfig.ReadInteger('User', 'FontSize', SynEdit1.Font.Size);
   SynEdit1.SetFocus;
 end;
 
 function TForm1.GetScrapFile: string;
 begin
-  result := FastPHPConfig.ReadString('Paths', 'ScrapFile', '');
+  if FileExists(ParamStr(1)) then
+    result := ParamStr(1)
+  else
+    result := FastPHPConfig.ReadString('Paths', 'ScrapFile', '');
   if not FileExists(result) then
   begin
     if not OpenDialog3.Execute then

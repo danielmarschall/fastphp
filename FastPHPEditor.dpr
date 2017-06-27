@@ -5,7 +5,8 @@ uses
   EditorMain in 'EditorMain.pas' {Form1},
   Functions in 'Functions.pas',
   WebBrowserUtils in 'WebBrowserUtils.pas',
-  FastPHPUtils in 'FastPHPUtils.pas';
+  FastPHPUtils in 'FastPHPUtils.pas',
+  FindReplace in 'FindReplace.pas';
 
 {$R *.res}
 
