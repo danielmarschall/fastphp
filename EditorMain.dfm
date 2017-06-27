@@ -13,6 +13,7 @@ object Form1: TForm1
   OldCreateOrder = False
   WindowState = wsMaximized
   OnClose = FormClose
+  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
@@ -164,51 +165,59 @@ object Form1: TForm1
       TabOrder = 0
     end
     object Button2: TButton
-      Left = 165
+      Left = 247
       Top = 0
       Width = 75
       Height = 35
       Action = ActionHelp
-      TabOrder = 2
+      TabOrder = 3
     end
     object Button3: TButton
-      Left = 246
+      Left = 328
       Top = 0
       Width = 75
       Height = 35
       Action = ActionGoto
-      TabOrder = 3
+      TabOrder = 4
     end
     object Button4: TButton
-      Left = 327
+      Left = 409
       Top = 0
       Width = 75
       Height = 35
       Action = ActionFind
-      TabOrder = 4
+      TabOrder = 5
     end
     object Button5: TButton
-      Left = 408
+      Left = 490
       Top = 0
       Width = 75
       Height = 35
       Action = ActionReplace
-      TabOrder = 5
+      TabOrder = 6
     end
     object Button6: TButton
-      Left = 489
+      Left = 571
       Top = 0
       Width = 75
       Height = 35
       Action = ActionFindNext
-      TabOrder = 6
+      TabOrder = 7
     end
     object Button7: TButton
-      Left = 84
-      Top = 1
+      Left = 166
+      Top = -1
       Width = 75
       Height = 35
       Action = ActionSave
+      TabOrder = 2
+    end
+    object Button8: TButton
+      Left = 85
+      Top = -1
+      Width = 75
+      Height = 35
+      Action = ActionOpen
       TabOrder = 1
     end
   end
@@ -224,7 +233,7 @@ object Form1: TForm1
   object OpenDialog3: TOpenDialog
     DefaultExt = '.php'
     FileName = 'scap.php'
-    Filter = 'PHP file (*.php)|*.php|All files (*.*)|*.*'
+    Filter = 'PHP file (*.php;*.xphp)|*.php;*.xphp|All files (*.*)|*.*'
     Options = [ofHideReadOnly, ofPathMustExist, ofEnableSizing]
     Title = 'Where should the scrap file be saved?'
     Left = 608
@@ -296,6 +305,11 @@ object Form1: TForm1
       Caption = 'Esc'
       ShortCut = 27
       OnExecute = ActionESCExecute
+    end
+    object ActionOpen: TAction
+      Caption = 'Open'
+      ShortCut = 16463
+      OnExecute = ActionOpenExecute
     end
   end
 end

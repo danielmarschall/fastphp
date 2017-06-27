@@ -14,7 +14,6 @@ unit EditorMain;
 // Wieso dauert webbrowser1 erste kompilierung so lange???
 // TODO: wieso kommt syntax fehler zweimal? einmal stderr einmal stdout?
 // TODO: Browser titlebar (link preview)
-// TODO: when working with a scrap file: auto save when close. with other files: ask if changes should be saved!
 
 // Future ideas
 // - ToDo list
@@ -68,6 +67,8 @@ type
     ActionRun: TAction;
     ActionESC: TAction;
     Button7: TButton;
+    ActionOpen: TAction;
+    Button8: TButton;
     procedure Run(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -91,6 +92,8 @@ type
       MousePos: TPoint; var Handled: Boolean);
     procedure SynEdit1MouseWheelUp(Sender: TObject; Shift: TShiftState;
       MousePos: TPoint; var Handled: Boolean);
+    procedure ActionOpenExecute(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
@@ -111,7 +114,7 @@ implementation
 {$R *.dfm}
 
 uses
-  Functions, StrUtils, WebBrowserUtils, FastPHPUtils, Math;
+  Functions, StrUtils, WebBrowserUtils, FastPHPUtils, Math, ShellAPI;
 
 // TODO: FindPrev ?
 procedure TForm1.ActionFindNextExecute(Sender: TObject);
@@ -143,6 +146,14 @@ begin
     WebBrowser2.SetFocus
   else if PageControl2.ActivePage = TabSheet3{Scrap} then
     SynEdit1.SetFocus;
+end;
+
+procedure TForm1.ActionOpenExecute(Sender: TObject);
+begin
+  If OpenDialog3.Execute then
+  begin
+    ShellExecute(0, 'open', PChar(ParamStr(0)), PChar(OpenDialog3.FileName), '', SW_NORMAL);
+  end;
 end;
 
 procedure TForm1.ActionReplaceExecute(Sender: TObject);
@@ -273,8 +284,35 @@ end;
 
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  SynEdit1.Lines.SaveToFile(GetScrapFile);
   FastPHPConfig.WriteInteger('User', 'FontSize', SynEdit1.Font.Size);
+end;
+
+procedure TForm1.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+var
+  r: integer;
+begin
+  if SynEdit1.Modified then
+  begin
+    if ParamStr(1) <> '' then
+    begin
+      r := MessageDlg('Do you want to save?', mtConfirmation, mbYesNoCancel, 0);
+      if r = mrCancel then
+      begin
+        CanClose := false;
+        Exit;
+      end
+      else if r = mrYes then
+      begin
+        SynEdit1.Lines.SaveToFile(GetScrapFile);
+        CanClose := true;
+      end;
+    end
+    else
+    begin
+      SynEdit1.Lines.SaveToFile(GetScrapFile);
+      CanClose := true;
+    end;
+  end;
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -305,7 +343,10 @@ begin
     Application.Terminate; // Close;
     exit;
   end;
-  SynEdit1.Lines.LoadFromFile(ScrapFile);
+  if FileExists(ScrapFile) then
+    SynEdit1.Lines.LoadFromFile(ScrapFile)
+  else
+    SynEdit1.Lines.Clear;
 
   PageControl1.ActivePage := PlaintextTabSheet;
 
@@ -318,7 +359,7 @@ end;
 
 function TForm1.GetScrapFile: string;
 begin
-  if FileExists(ParamStr(1)) then
+  if ParamStr(1) <> '' then
     result := ParamStr(1)
   else
     result := FastPHPConfig.ReadString('Paths', 'ScrapFile', '');
@@ -328,9 +369,9 @@ begin
     begin
       result := '';
       exit;
-    end;
-
-    result := OpenDialog3.FileName;
+    end
+    else
+      result := OpenDialog3.FileName;
 
     if not DirectoryExists(ExtractFilePath(result)) then
     begin
