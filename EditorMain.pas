@@ -14,6 +14,7 @@ unit EditorMain;
 // Wieso dauert webbrowser1 erste kompilierung so lange???
 // TODO: wieso kommt syntax fehler zweimal? einmal stderr einmal stdout?
 // TODO: Browser titlebar (link preview)
+// TODO: when working with a scrap file: auto save when close. with other files: ask if changes should be saved!
 
 // Future ideas
 // - ToDo list
