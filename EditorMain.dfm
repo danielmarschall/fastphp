@@ -34,7 +34,7 @@ object Form1: TForm1
     Top = 388
     Width = 1120
     Height = 273
-    ActivePage = HtmlTabSheet
+    ActivePage = PlaintextTabSheet
     Align = alBottom
     TabOrder = 0
     object PlaintextTabSheet: TTabSheet
@@ -96,7 +96,7 @@ object Form1: TForm1
         Width = 1112
         Height = 321
         Align = alClient
-        ActiveLineColor = 16777145
+        ActiveLineColor = 14680010
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -13
@@ -247,10 +247,10 @@ object Form1: TForm1
     Options.AutoDetectLineLimit = 0
     Options.Visible = False
     CommentAttri.Foreground = 33023
-    IdentifierAttri.Foreground = clOlive
+    IdentifierAttri.Foreground = 4194304
     KeyAttri.Foreground = 4227072
     NumberAttri.Foreground = 213
-    StringAttri.Foreground = 16744576
+    StringAttri.Foreground = 13762560
     SymbolAttri.Foreground = 4227072
     VariableAttri.Foreground = 213
     Left = 72

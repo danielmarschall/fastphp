@@ -98,9 +98,9 @@ begin
 end;
 function TEmbeddedSecurityManager.MapUrlToZone(pwszUrl: LPCWSTR; out dwZone: DWORD; dwFlags: DWORD): HResult;
 begin
-     dwZone := URLZONE_INTERNET;
-     Result := S_OK;
-    end;
+  dwZone := URLZONE_TRUSTED;
+  Result := S_OK;
+end;
 
 function TForm2.EmbeddedWBQueryService(const rsid, iid: TGUID; out Obj{: IInterface}): HRESULT;
 var
@@ -150,7 +150,7 @@ procedure TForm2.WebBrowser1BeforeNavigate2(ASender: TObject;
   const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
   Headers: OleVariant; var Cancel: WordBool);
 var
-  myURL, getData: string;
+  myURL, myUrl2, getData: string;
   p: integer;
   background: boolean;
   ArgGet, ArgPost, ArgHeader: string;
@@ -185,6 +185,8 @@ begin
       getData := '';
     end;
 
+    myURL := StringReplace(myURL, 'http://wa.viathinksoft.de', '', []);
+
     myURL := StringReplace(myURL, 'file:///', '', []);
     myURL := StringReplace(myURL, '/', '\', [rfReplaceAll]);
 
@@ -213,7 +215,17 @@ begin
         // TODO: is there a maximal length for the command line?
         ArgGet := MyVarToStr(getData);
         ArgPost := MyVarToStr(PostData);
-        WebBrowser1.LoadHTML(GetDosOutput('"'+GetPHPExe+'" "'+myURL+'" "'+ArgGet+'" "'+ArgPost+'" "'+ArgHeader+'"', ExtractFileDir(Application.ExeName)), myUrl);
+
+        myUrl2 := myUrl;
+        myUrl2 := StringReplace(myUrl2, '\', '/', [rfReplaceAll]);
+        // TODO: real myURL urlencode
+        myUrl2 := StringReplace(myUrl2, '%', '%%', []);
+        //myUrl2 := StringReplace(myUrl2, ' ', '%20', []);
+        myUrl2 := StringReplace(myUrl2, ' ', '+', []);
+        myUrl2 := 'http://wa.viathinksoft.de/' + myUrl2;
+
+        showmessage(myUrl2);
+        WebBrowser1.LoadHTML(GetDosOutput('"'+GetPHPExe+'" "'+myURL+'" "'+ArgGet+'" "'+ArgPost+'" "'+ArgHeader+'"', ExtractFileDir(Application.ExeName)), myUrl2);
       end;
       Cancel := true;
     end;

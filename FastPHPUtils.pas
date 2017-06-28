@@ -26,8 +26,7 @@ function FastPHPConfig: TMemIniFile;
 begin
   if not Assigned(__FastPHPConfig) then
   begin
-    // __FastPHPConfig := TMemIniFile.Create(ChangeFileExt(ParamStr(0), '.ini'));
-    __FastPHPConfig := TMemIniFile.Create('FastPHP.ini');
+    __FastPHPConfig := TMemIniFile.Create(IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))) + 'FastPHP.ini');
   end;
   result := __FastPHPConfig;
 end;

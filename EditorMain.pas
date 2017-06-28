@@ -170,6 +170,7 @@ end;
 procedure TForm1.ActionSaveExecute(Sender: TObject);
 begin
   SynEdit1.Lines.SaveToFile(GetScrapFile);
+  SynEdit1.Modified := false;
 end;
 
 procedure TForm1.ActionESCExecute(Sender: TObject);
@@ -191,10 +192,28 @@ begin
   SrcRep.FindExecute;
 end;
 
+var
+  firstTimeBrowserLoad: boolean = true;
 procedure TForm1.Run(Sender: TObject);
+var
+  bakTS: TTabSheet;
 begin
   memo2.Lines.Text := '';
-  Webbrowser1.Clear;
+
+  if firstTimeBrowserLoad then
+  begin
+    bakTS := PageControl1.ActivePage;
+    try
+      PageControl1.ActivePage := HtmlTabSheet; // Required for the first time, otherwise, WebBrowser1.Clear will hang
+      Webbrowser1.Clear;
+    finally
+      PageControl1.ActivePage := bakTS;
+    end;
+    firstTimeBrowserLoad := false;
+  end
+  else
+    Webbrowser1.Clear;
+
   Screen.Cursor := crHourGlass;
   Application.ProcessMessages;
 
@@ -514,15 +533,28 @@ end;
 
 procedure TForm1.Memo2DblClick(Sender: TObject);
 var
-  line: string;
+  pfx, line: string;
   p, lineno: integer;
 begin
   line := memo2.Lines.Strings[Memo2.CaretPos.Y];
-  p := Pos(' on line ', line);
-  if p = 0 then exit;
-  line := copy(line, p+length(' on line '), 99);
-  if not TryStrToInt(line, lineno) then exit;
-  GotoLineNo(lineno);
+
+  pfx := ExtractFileName(GetScrapFile)+':';
+  p := Pos(pfx, line);
+  if p <> 0 then
+  begin
+    line := copy(line, p+length(pfx), 99);
+    if not TryStrToInt(line, lineno) then exit;
+    GotoLineNo(lineno);
+  end;
+
+  pfx := ' on line ';
+  p := Pos(pfx, line);
+  if p <> 0 then
+  begin
+    line := copy(line, p+length(pfx), 99);
+    if not TryStrToInt(line, lineno) then exit;
+    GotoLineNo(lineno);
+  end;
 end;
 
 function TForm1.MarkUpLineReference(cont: string): string;
