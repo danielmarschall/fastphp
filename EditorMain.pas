@@ -94,6 +94,7 @@ type
       MousePos: TPoint; var Handled: Boolean);
     procedure ActionOpenExecute(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure Memo2KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
@@ -555,6 +556,12 @@ begin
     if not TryStrToInt(line, lineno) then exit;
     GotoLineNo(lineno);
   end;
+end;
+
+procedure TForm1.Memo2KeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((ssCtrl in Shift) and (Key = 65)) then TMemo(Sender).SelectAll;
 end;
 
 function TForm1.MarkUpLineReference(cont: string): string;
