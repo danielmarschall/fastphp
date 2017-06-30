@@ -135,7 +135,7 @@ begin
   score := _Tag('html') + _Tag('body') + _Tag('p') + _Tag('a') + _Tag('b') +
            _Tag('i') + _Tag('u') + _Tag('li') + _Tag('ol') + _Tag('ul') +
            _Tag('img') + _Tag('div') + _Tag('hr') + _Tag('code') +
-           _Tag('pre') + _Tag('blockquote') + _Tag('span');
+           _Tag('pre') + _Tag('blockquote') + _Tag('span') + _Tag('br');
   result := score >= 2;
 end;
 

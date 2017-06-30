@@ -539,6 +539,7 @@ var
 begin
   line := memo2.Lines.Strings[Memo2.CaretPos.Y];
 
+  {$REGION 'Possibility 1: filename.php:lineno'}
   pfx := ExtractFileName(GetScrapFile)+':';
   p := Pos(pfx, line);
   if p <> 0 then
@@ -547,7 +548,9 @@ begin
     if not TryStrToInt(line, lineno) then exit;
     GotoLineNo(lineno);
   end;
+  {$ENDREGION}
 
+  {$REGION 'Possibility 2: on line xx'}
   pfx := ' on line ';
   p := Pos(pfx, line);
   if p <> 0 then
@@ -556,6 +559,7 @@ begin
     if not TryStrToInt(line, lineno) then exit;
     GotoLineNo(lineno);
   end;
+  {$ENDREGION}
 end;
 
 procedure TForm1.Memo2KeyDown(Sender: TObject; var Key: Word;
@@ -569,30 +573,41 @@ var
   p, a, b: integer;
   num: integer;
   insert_a, insert_b: string;
-begin
-  // TODO: make it more specific to PHP error messages. "on line" is too broad.
-  p := Pos(' on line ', cont);
-  while p >= 1 do
+
+  procedure _process(toFind: string);
   begin
-    a := p+1;
-    b := p+length(' on line ');
-    num := 0;
-    while CharInSet(cont[b], ['0'..'9']) do
+    p := Pos(toFind, cont);
+    while p >= 1 do
     begin
-      num := num*10 + StrToInt(cont[b]);
-      inc(b);
+      a := p+1;
+      b := p+length(toFind);
+      num := 0;
+      while CharInSet(cont[b], ['0'..'9']) do
+      begin
+        num := num*10 + StrToInt(cont[b]);
+        inc(b);
+      end;
+
+      insert_b := '</a>';
+      insert_a := '<a href="'+FASTPHP_GOTO_URI_PREFIX+IntToStr(num)+'">';
+
+      insert(insert_b, cont, b);
+      insert(insert_a, cont, a);
+
+      p := b + Length(insert_a) + Length(insert_b);
+
+      p := PosEx(toFind, cont, p+1);
     end;
-
-    insert_b := '</a>';
-    insert_a := '<a href="'+FASTPHP_GOTO_URI_PREFIX+IntToStr(num)+'">';
-
-    insert(insert_b, cont, b);
-    insert(insert_a, cont, a);
-
-    p := b + Length(insert_a) + Length(insert_b);
-
-    p := PosEx(' on line ', cont, p+1);
   end;
+begin
+  {$REGION 'Possibility 1: filename.php:lineno'}
+  _process(ExtractFileName(GetScrapFile)+':');
+  {$ENDREGION}
+
+  {$REGION 'Possibility 2: on line xx'}
+  // TODO: make it more specific to PHP error messages. "on line" is too broad.
+  _process(' on line ');
+  {$ENDREGION}
 
   result := cont;
 end;
