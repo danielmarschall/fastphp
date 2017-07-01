@@ -14,15 +14,18 @@ unit EditorMain;
 // Wieso dauert webbrowser1 erste kompilierung so lange???
 // TODO: wieso kommt syntax fehler zweimal? einmal stderr einmal stdout?
 // TODO: Browser titlebar (link preview)
+// TODO: search prev
+// TODO: wenn man schrift größer/kleiner macht, soll die bildschirmseite zentriert bleiben
+// TODO: todo liste
 
 // Future ideas
-// - ToDo list
+// - code explorer / code insight
 // - verschiedene php versionen?
 // - webbrowser1 nur laden, wenn man den tab anwählt?
 // - doppelklick auf tab soll diesen schließen
 // - Onlinehelp (www) aufrufen
 // - Let all colors be adjustable
-// - code in bildschirmmitte?
+// - code in bildschirmmitte (horizontal)?
 
 interface
 
