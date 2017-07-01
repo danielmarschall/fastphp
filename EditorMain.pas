@@ -103,6 +103,7 @@ type
     function MarkUpLineReference(cont: string): string;
   protected
     ChmIndex: TMemIniFile;
+    FScrapFile: string;
     procedure GotoLineNo(LineNo:integer);
     function GetScrapFile: string;
   end;
@@ -379,37 +380,42 @@ end;
 
 function TForm1.GetScrapFile: string;
 begin
+  if FScrapFile <> '' then exit(FScrapFile);
+
   if ParamStr(1) <> '' then
     result := ParamStr(1)
   else
     result := FastPHPConfig.ReadString('Paths', 'ScrapFile', '');
   if not FileExists(result) then
   begin
-    if not OpenDialog3.Execute then
-    begin
-      result := '';
-      exit;
-    end
-    else
-      result := OpenDialog3.FileName;
+    repeat
+      if not OpenDialog3.Execute then
+      begin
+        Application.Terminate;
+        exit('');
+      end;
 
-    if not DirectoryExists(ExtractFilePath(result)) then
-    begin
-      ShowMessage('Path does not exist!');
-      result := '';
-      exit;
-    end;
+      if not DirectoryExists(ExtractFilePath(OpenDialog3.FileName)) then
+      begin
+        ShowMessage('Path does not exist! Please try again.');
+      end
+      else
+      begin
+        result := OpenDialog3.FileName;
+      end;
+    until result <> '';
 
     SynEdit1.Lines.Clear;
     SynEdit1.Lines.SaveToFile(result);
 
     FastPHPConfig.WriteString('Paths', 'ScrapFile', result);
+    FScrapFile := result;
   end;
 end;
 
 procedure TForm1.Help;
 var
-  IndexFile, chmFile, w, url: string;
+  IndexFile, chmFile, w, OriginalWord, url: string;
   internalHtmlFile: string;
 begin
   if not Assigned(ChmIndex) then
@@ -477,7 +483,9 @@ begin
   w := GetWordUnderCaret(SynEdit1);
   if w = '' then exit;
   if CharInSet(w[1], ['0'..'9']) then exit;
-  w := StringReplace(w, '_', '-', [rfReplaceAll]);
+
+  Originalword := w;
+//  w := StringReplace(w, '_', '-', [rfReplaceAll]);
   w := LowerCase(w);
   CurSearchTerm := w;
 
@@ -486,7 +494,7 @@ begin
   begin
     HelpTabsheet.TabVisible := false;
     HlpPrevPageIndex := -1;
-    ShowMessage('No help for "'+CurSearchTerm+'" available');
+    ShowMessageFmt('No help for "%s" available', [Originalword]);
     Exit;
   end;
 

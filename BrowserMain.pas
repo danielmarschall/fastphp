@@ -38,6 +38,7 @@ uses
 // TODO: headers... cookies...
 // TODO: WebBrowser1BeforeNavigate2 mit einem DLL-callback, sodass entwickler ihre eigenen fastphp:// links machen können, z.B. um DLL-Funktionen aufzurufen! (auch in JavaScript ansteuerbar?)
 // TODO: let the website decide if the window is maximized etc, as well as it's caption, size and icon
+// TODO: Pass parameters (argv) to PHP
 
 type
   TEmbeddedSecurityManager = class(TInterfacedObject, IInternetSecurityManager)
