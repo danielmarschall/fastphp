@@ -13,6 +13,7 @@ function LastPos(const SubStr, S: string): integer;
 function IsTextHTML(s: string): boolean;
 function GetWordUnderCaret(AMemo: TSynEdit): string;
 function MyVarToStr(v: Variant): string;
+function FileSystemCaseSensitive: boolean;
 
 implementation
 
@@ -129,14 +130,31 @@ function IsTextHTML(s: string): boolean;
     if (StrIPos('<'+tag+' ', s) > 0) then Inc(result);
   end;
 
-var
-  score: integer;
+  procedure _Check(const tag: string; pair: boolean);
+  begin
+    if (pair and (_Tag(tag) >= 2)) or (not pair and (_Tag(tag) >= 1)) then result := true;
+  end;
+
 begin
-  score := _Tag('html') + _Tag('body') + _Tag('p') + _Tag('a') + _Tag('b') +
-           _Tag('i') + _Tag('u') + _Tag('li') + _Tag('ol') + _Tag('ul') +
-           _Tag('img') + _Tag('div') + _Tag('hr') + _Tag('code') +
-           _Tag('pre') + _Tag('blockquote') + _Tag('span') + _Tag('br');
-  result := score >= 2;
+  result := false;
+  _Check('html', true);
+  _Check('body', true);
+  _Check('p', false{end tag optional});
+  _Check('a', true);
+  _Check('b', true);
+  _Check('i', true);
+  _Check('u', true);
+  _Check('li', false{end tag optional});
+  _Check('ol', true);
+  _Check('ul', true);
+  _Check('img', false);
+  _Check('div', false);
+  _Check('hr', false);
+  _Check('code', true);
+  _Check('pre', true);
+  _Check('blockquote', true);
+  _Check('span', true);
+  _Check('br', false);
 end;
 
 // Template: http://stackoverflow.com/questions/6339446/delphi-get-the-whole-word-where-the-caret-is-in-a-memo
@@ -215,6 +233,17 @@ begin
     // At least try it...
     result := VarToStr(v);
   end;
+end;
+
+function FileSystemCaseSensitive: boolean;
+begin
+  // TODO: This code is not very reliable. At MAC OSX, the file system HFS can be switched
+  //       between case sensitivity and insensitivity.
+  {$IFDEF LINUX}
+  exit(true);
+  {$ELSE}
+  exit(false);
+  {$ENDIF}
 end;
 
 end.

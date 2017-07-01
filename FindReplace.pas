@@ -1,7 +1,9 @@
 unit FindReplace;
 
+// FindReplace.pas
 // Source: http://www.tek-tips.com/viewthread.cfm?qid=160357
-// Some changed by Daniel Marschall, especially to make it compatible with TSynEdit
+//         18 Nov 2001 "bearsite4"
+// Changes by Daniel Marschall, especially to make it compatible with TSynEdit
 
 interface
 
@@ -18,14 +20,13 @@ type
    the word can't be found but instead to set the state to frcEndReached to
    let the replace function know it's reached the end of the text}
 
+  TReplaceFunc = function ( const S1, S2: string ): Integer;
+
   TFindReplace = class(TComponent)
   private
     fEditor: TSynEdit;  {the richedit or memo component to hook it up to}
     fReplaceDialog: TReplaceDialog;  {the replace dialog}
     fFindDialog: TFindDialog;  {the find dialog}
-
-    FindTextLength: integer;  {the length of the text we want to find}
-    TextToFind: string;  {the text to find}
 
     FindActionOnEnd: FindReplaceCommunication;  {the action the find function
      should take when it reaches the end of the text while searching for the
@@ -37,14 +38,12 @@ type
      test multiple words in a single string as well.}
 
   protected
-    StringComparison: function ( const S1, S2: string ): Integer;
-    {the function to use to compare 2 strings.  Should be assigned
-     different values according to the search criteria}
-    procedure ProcessCriteria( Sender: TFindDialog );
-    {set some internals given the search criteria such as match case}
+    type
+      TFindDirection = (sdDefault, sdForwards, sdBackwards);
+
     procedure FindForwards( Sender: TFindDialog; start, finish: integer );
     {search through the editor in a forwards direction}
-    procedure FindBackwards( start, finish: integer );
+    procedure FindBackwards( Sender: TFindDialog; start, finish: integer );
     {search through the editor in a backwards direction}
 
     {defined event handlers}
@@ -53,36 +52,38 @@ type
 
     {the centralised find/replace functions}
     function TryAndMatch( Sender: TFindDialog; index, finish: integer ): boolean; virtual;
-    function TryAndReplace: boolean; virtual;
+    function TryAndReplace(dialog: TReplaceDialog): boolean; virtual;
 
-    procedure DoReplace; virtual;
+    procedure DoReplace(dialog: TReplaceDialog); virtual;
     {the replace function that coordinates all the work}
-    procedure DoReplaceAll; virtual;
+    procedure DoReplaceAll(dialog: TReplaceDialog); virtual;
     {the replace all function that coordinates all the work}
+
+    procedure DoFind(dialog: TFindDialog; direction: TFindDirection);
 
   public
     constructor Create( AOwner: TComponent); override;
 
-    property _FindDialog: TFindDialog read fFindDialog;
-    property _ReplaceDialog: TReplaceDialog read fReplaceDialog;
+    property FindDialog: TFindDialog read fFindDialog;
+    property ReplaceDialog: TReplaceDialog read fReplaceDialog;
+
+    procedure CloseDialogs;
 
     procedure FindExecute;
     {opens the find dialog}
     procedure ReplaceExecute;
     {opens the replace dialog}
-    procedure FindNext; overload;
-    {finds the next occurence of the character}
-    procedure FindNext( errorMessage: string ); overload;
-    {same as above except allows you to specify the message to display
-     if the user hasn't picked a search word}
+
+    procedure FindContinue;
+    procedure FindNext;
+    procedure FindPrev;
 
     procedure GoToLine( LineNumber: integer );
     procedure GetLineNumber( Position: Integer; var LineNumber, ColumnNumber: Integer );
     {returns the line and column number the cursor is on in the editor}
 
   published
-    property Editor: TSynEdit
-      read fEditor write fEditor;
+    property Editor: TSynEdit read fEditor write fEditor;
   end;
 
 (*
@@ -116,28 +117,11 @@ begin
   FindActionOnEnd := frcAlertUser;
 end;
 
-procedure TFindReplace.ProcessCriteria( Sender: TFindDialog );
-begin
-
-  {assign a case sensitive or case insensitive string
-   comparison function to StringComparison depending
-   on the whether or not the user chose to match case.
-   The functions assigned are normal VCL functions.}
-  if frMatchCase in Sender.Options then
-    StringComparison := CompareStr
-  else StringComparison := CompareText;
-
-end;
-
 procedure TFindReplace.FindForwards( Sender: TFindDialog; start, finish: integer );
 var
   i: integer;
 
 begin
-
-  {because we'll be using the length of the text to search for
-   often, we should calculate it here to save time}
-  FindTextLength := Length( TextToFind );
 
   {to find the word we go through the text on a character by character
    basis}
@@ -148,10 +132,10 @@ begin
 
 end;
 
-procedure TFindReplace.FindBackwards( start, finish: Integer );
+procedure TFindReplace.FindBackwards( Sender: TFindDialog; start, finish: Integer );
 {since only find has a (search) up option and replace doesn't
  we don't have to worry about sender since only the onFind will
- be calling thi function}
+ be calling this function}
 
 var
   i: integer;
@@ -159,12 +143,10 @@ var
 begin
   {See comments for findforward}
 
-  FindTextLength := Length( TextToFind );
-
   {to find the word we go through the text on a character by character
    basis but working backwards}
   for i := finish downto start do
-    if TryAndMatch( fFindDialog, i, start ) then
+    if TryAndMatch( Sender, i, start ) then
       Exit;
 
 end;
@@ -174,11 +156,30 @@ function TFindReplace.TryAndMatch( Sender: TFindDialog; index, finish: integer )
 var
   StringToTest: string;
 
+  StringComparison: TReplaceFunc;
+  {the function to use to compare 2 strings.  Should be assigned
+   different values according to the search criteria}
+
+   FindTextLength: integer;
+
+resourcestring
+  S_CANT_BE_FOUND = '%s could not be found';
 begin
+  FindTextLength := Length( Sender.FindText );
+
   {create a new string to test against}
   StringToTest := copy( fEditor.Text, index+1, FindTextLength );
 
-  if (StringComparison( StringToTest, TextToFind ) = 0) and
+  {assign a case sensitive or case insensitive string
+   comparison function to StringComparison depending
+   on the whether or not the user chose to match case.
+   The functions assigned are normal VCL functions.}
+  if frMatchCase in Sender.Options then
+    StringComparison := CompareStr
+  else
+    StringComparison := CompareText;
+
+  if (StringComparison( StringToTest, Sender.FindText ) = 0) and
      TestWholeWord( Sender, copy( fEditor.Text, index, FindTextLength+2 ) ) then
   {with TestWholeWord we pass the value index not index+1 so that it will also
    get the previous character.  We pass the value FindTextLenght+2 so it
@@ -196,7 +197,7 @@ begin
   {if we've tried the last character and we can't find it then
    display a message saying so.}
   else if (index = finish) and (FindActionOnEnd = frcAlertUser) then
-    ShowMessage( TextToFind + ' could not be found' )
+    ShowMessageFmt(S_CANT_BE_FOUND, [Sender.FindText])
   {otherwise if the replace function requested us to keep quiet
    about it then don't display the message to the user}
   else if (index = finish) and (FindActionOnEnd = frcAlertReplace) then
@@ -205,14 +206,19 @@ begin
   Result := false;  {didn't find it}
 end;
 
-procedure TFindReplace.OnFind( Sender: TObject );
+procedure TFindReplace.DoFind(dialog: TFindDialog; direction: TFindDirection);
 var
 //  highlightedText: pChar;
   highlightedText: string;
 
 begin
-  {handle all the user options}
-  ProcessCriteria( Sender as TFindDialog );
+  if direction = sdDefault then
+  begin
+    if frDown in dialog.Options then
+      direction := sdForwards
+    else
+      direction := sdBackwards;
+  end;
 
   {check if there is already some highlighted text.  If there is and
    this text is the text to search for then it's probably been highlighted
@@ -229,11 +235,12 @@ begin
     highlightedText := fEditor.SelText;
 
     {compare the two strings}
-    if StrIComp( PChar(highlightedText), pChar( fFindDialog.FindText ) ) = 0 then
+    if StrIComp( PChar(highlightedText), pChar( dialog.FindText ) ) = 0 then
     begin
-      if frDown in (Sender as TFindDialog).Options then
+      if direction = sdForwards then
         fEditor.selStart := fEditor.SelStart + fEditor.SelLength
-      else fEditor.selStart := fEditor.SelStart - 1;
+      else
+        fEditor.selStart := fEditor.SelStart - 1;
     end;
 
     (*
@@ -241,102 +248,108 @@ begin
     *)
   end;
 
-  {set the text to find to the findtext field of the find dialog}
-  TextToFind := (Sender as TFindDialog).FindText;
-
   {begin the search}
-  if frDown in (Sender as TFindDialog).Options then  {the user choose to search down}
+  if direction = sdForwards then  {the user choose to search down}
   begin
     {if the user has highlighted a block of text only search
      within that block}
     if fEditor.SelLength > 0 then
-      FindForwards( (Sender as TFindDialog), fEditor.selStart, fEditor.selStart + fEditor.selLength )
+      FindForwards( dialog, fEditor.selStart, fEditor.selStart + fEditor.selLength )
     {otherwise search the whole of the text}
-    else FindForwards( (Sender as TFindDialog), fEditor.selStart, fEditor.GetTextLen );
+    else
+      FindForwards( dialog, fEditor.selStart, fEditor.GetTextLen );
   end
   else  {the user chose to search up}
   begin
     {if the user has highlighted a block of text only search
      within that block}
     if fEditor.SelLength > 0 then
-      FindBackwards( fEditor.selStart, fEditor.selStart + fEditor.selLength )
+      FindBackwards( dialog, fEditor.selStart, fEditor.selStart + fEditor.selLength )
     {otherwise search the whole of the text}
-    else FindBackwards( 0, fEditor.selStart );
+    else
+      FindBackwards( dialog, 0, fEditor.selStart );
   end;
-
 end;
 
-procedure TFindReplace.OnReplace( Sender: TOBject );
+procedure TFindReplace.OnFind(Sender: TObject);
+var
+  FindDialog: TFindDialog;
 begin
-  ProcessCriteria( fReplaceDialog );
+  FindDialog := Sender as TFindDialog;
+  DoFind(FindDialog, sdDefault);
+end;
+
+procedure TFindReplace.OnReplace( Sender: TObject );
+var
+  ReplaceDialog: TReplaceDialog;
+begin
+  ReplaceDialog := Sender as TReplaceDialog;
 
   {set the action on end to alert the function not the user}
   FindActionOnEnd := frcAlertReplace;
 
-  {set the text to find to the findtext field of the replace dialog}
-  TextToFind := fReplaceDialog.FindText;
-
   {now replace the word}
-  if frReplace in fReplaceDialog.Options then
-    DoReplace
-  else DoReplaceAll;
+  if frReplace in ReplaceDialog.Options then
+    DoReplace(ReplaceDialog)
+  else
+    DoReplaceAll(ReplaceDialog);
 
   {reset the action on end to alert the user}
   FindActionOnEnd := frcAlertUser;
 end;
 
-procedure TFindReplace.DoReplace;
+procedure TFindReplace.DoReplace(dialog: TReplaceDialog);
 begin
 
   {if the user has highlighted a block of text only replace
    within that block}
   if fEditor.SelLength > 0 then
   begin
-    FindForwards( fReplaceDialog, fEditor.selStart, fEditor.selStart + fEditor.selLength );
-    TryAndReplace;
+    FindForwards( dialog, fEditor.selStart, fEditor.selStart + fEditor.selLength );
+    TryAndReplace(dialog);
   end
   {otherwise replace within the whole of the text}
   else
   begin
-    FindForwards( fReplaceDialog, fEditor.selStart, fEditor.GetTextLen );
-    TryAndReplace;
+    FindForwards( dialog, fEditor.selStart, fEditor.GetTextLen );
+    TryAndReplace(dialog);
   end;
 
 end;
 
-procedure TFindReplace.DoReplaceAll;
+procedure TFindReplace.DoReplaceAll(dialog: TReplaceDialog);
 begin
   {see comments for DoReplace}
 
   if fEditor.SelLength > 0 then
   begin
-    FindForwards( fReplaceDialog, fEditor.selStart, fEditor.selStart + fEditor.selLength );
+    FindForwards( dialog, fEditor.selStart, fEditor.selStart + fEditor.selLength );
     {keep replacing until we reach the end of the text}
     while FindActionOnEnd <> frcEndReached do
     begin
       {we enclose the TryAndReplace in a loop because there might be more
        than one occurence of the word in the line}
-      while TryAndReplace do
-        FindForwards( fReplaceDialog, fEditor.selStart, fEditor.selStart + fEditor.selLength );
+      while TryAndReplace(dialog) do
+        FindForwards( dialog, fEditor.selStart, fEditor.selStart + fEditor.selLength );
 
-      FindForwards( fReplaceDialog, fEditor.selStart, fEditor.selStart + fEditor.selLength );
+      FindForwards( dialog, fEditor.selStart, fEditor.selStart + fEditor.selLength );
     end;
   end
   else
   begin
-    FindForwards( fReplaceDialog, fEditor.selStart, fEditor.GetTextLen );
+    FindForwards( dialog, fEditor.selStart, fEditor.GetTextLen );
     while FindActionOnEnd <> frcEndReached do
     begin
-      while TryAndReplace do
-        FindForwards( fReplaceDialog, fEditor.selStart, fEditor.GetTextLen );
+      while TryAndReplace(dialog) do
+        FindForwards( dialog, fEditor.selStart, fEditor.GetTextLen );
 
-      FindForwards( fReplaceDialog, fEditor.selStart, fEditor.GetTextLen );
+      FindForwards( dialog, fEditor.selStart, fEditor.GetTextLen );
     end;
   end;
 
 end;
 
-function TFindReplace.TryAndReplace: boolean;
+function TFindReplace.TryAndReplace(dialog: TReplaceDialog): boolean;
 {returns true if a replacement was made and false otherwise.  This is
  so a function can keep calling TryAndReplace until it returns false
  since there might be more than one occurence of the word to replace
@@ -346,7 +359,7 @@ var
   LineNumber, ColumnNumber: integer;
   ReplacementString: string;  {string used to replace the text}
 
-  OldSelStart: integer;  {the position of the cursore prior to the text
+  OldSelStart: integer;  {the position of the cursor prior to the text
    being replaced}
 
 
@@ -378,7 +391,7 @@ begin
     {truncate the newline (#$A#$D) at the end of tempstring}
     SetLength( ReplacementString, Length( ReplacementString )-2 );
     {add the replacement text into tempstring}
-    Insert( fReplaceDialog.ReplaceText, ReplacementString, ColumnNumber+1 );
+    Insert( dialog.ReplaceText, ReplacementString, ColumnNumber+1 );
     {remove the old string and add the new string into the editor}
     fEditor.Lines.Delete( LineNumber );
     fEditor.Lines.Insert( LineNumber, ReplacementString );
@@ -389,7 +402,7 @@ begin
     {reposition the cursor to the character after the last chracter in
      the newly replacing text.  This is mainly so we can locate multiple
      occurences of the to-be-replaced text in the same line}
-    fEditor.SelStart := oldSelStart + length( fReplaceDialog.ReplaceText );
+    fEditor.SelStart := oldSelStart + length( dialog.ReplaceText );
   end
 end;
 
@@ -404,9 +417,13 @@ begin
 end;
 
 function TFindReplace.TestWholeWord( Sender: TFindDialog; TestString: string ): boolean;
+var
+  FindTextLength: integer;
 begin
   {assume it's not a whole word}
   Result := false;
+
+  FindTextLength := Length( Sender.FindText );
 
   {if the user didn't choose whole words only then basically
    we don't care about it so return true}
@@ -436,22 +453,37 @@ begin
 
 end;
 
-procedure TFindReplace.FindNext;
+procedure TFindReplace.FindContinue;
 begin
-  FindNext( 'Please chose a search word' );
-end;
-
-procedure TFindReplace.FindNext( errorMessage: string );
-begin
-
   if fFindDialog.FindText = '' then
   begin
-    ShowMessage( errorMessage );
-    Exit;
-  end;
+    fFindDialog.Options := fFindDialog.Options + [frDown]; // Default direction: down
+    FindExecute;
+  end
+  else
+    DoFind(fFindDialog, sdDefault);
+end;
 
-  {I'm not sure if I should pass fFindDialog as sender}
-  OnFind( fFindDialog );
+procedure TFindReplace.FindNext;
+begin
+  if fFindDialog.FindText = '' then
+  begin
+    fFindDialog.Options := fFindDialog.Options + [frDown];
+    FindExecute;
+  end
+  else
+    DoFind(fFindDialog, sdForwards);
+end;
+
+procedure TFindReplace.FindPrev;
+begin
+  if fFindDialog.FindText = '' then
+  begin
+    fFindDialog.Options := fFindDialog.Options - [frDown];
+    FindExecute;
+  end
+  else
+    DoFind(fFindDialog, sdBackwards);
 end;
 
 procedure TFindReplace.GetLineNumber( Position: Integer; var LineNumber, ColumnNumber: integer );
@@ -499,6 +531,12 @@ begin
       inc( currentLine );
   end;
 
+end;
+
+procedure TFindReplace.CloseDialogs;
+begin
+  fFindDialog.CloseDialog;
+  fReplaceDialog.CloseDialog;
 end;
 
 (*

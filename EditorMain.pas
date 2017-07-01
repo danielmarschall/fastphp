@@ -72,6 +72,8 @@ type
     Button7: TButton;
     ActionOpen: TAction;
     Button8: TButton;
+    Button9: TButton;
+    ActionFindPrev: TAction;
     procedure Run(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -98,6 +100,7 @@ type
     procedure ActionOpenExecute(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure Memo2KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure ActionFindPrevExecute(Sender: TObject);
   private
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
@@ -125,6 +128,11 @@ uses
 procedure TForm1.ActionFindNextExecute(Sender: TObject);
 begin
   SrcRep.FindNext;
+end;
+
+procedure TForm1.ActionFindPrevExecute(Sender: TObject);
+begin
+  SrcRep.FindPrev;
 end;
 
 procedure TForm1.ActionGotoExecute(Sender: TObject);
@@ -188,8 +196,7 @@ begin
   end;
 
   // Dirty hack...
-  SrcRep._FindDialog.CloseDialog;
-  SrcRep._ReplaceDialog.CloseDialog;
+  SrcRep.CloseDialogs;
 end;
 
 procedure TForm1.ActionFindExecute(Sender: TObject);
@@ -545,31 +552,33 @@ end;
 
 procedure TForm1.Memo2DblClick(Sender: TObject);
 var
-  pfx, line: string;
-  p, lineno: integer;
+  line: string;
+
+  procedure _process(toFind: string);
+  var
+    p, lineno: integer;
+  begin
+    if FileSystemCaseSensitive then
+      p := Pos(toFind, line)
+    else
+      p := Pos(toFind.ToLower, line.ToLower);
+    if p <> 0 then
+    begin
+      line := copy(line, p+length(toFind), 99);
+      if not TryStrToInt(line, lineno) then exit;
+      GotoLineNo(lineno);
+    end;
+  end;
+
 begin
   line := memo2.Lines.Strings[Memo2.CaretPos.Y];
 
   {$REGION 'Possibility 1: filename.php:lineno'}
-  pfx := ExtractFileName(GetScrapFile)+':';
-  p := Pos(pfx, line);
-  if p <> 0 then
-  begin
-    line := copy(line, p+length(pfx), 99);
-    if not TryStrToInt(line, lineno) then exit;
-    GotoLineNo(lineno);
-  end;
+  _process(ExtractFileName(GetScrapFile) + ':');
   {$ENDREGION}
 
   {$REGION 'Possibility 2: on line xx'}
-  pfx := ' on line ';
-  p := Pos(pfx, line);
-  if p <> 0 then
-  begin
-    line := copy(line, p+length(pfx), 99);
-    if not TryStrToInt(line, lineno) then exit;
-    GotoLineNo(lineno);
-  end;
+  _process(ExtractFileName(GetScrapFile) + ' on line ');
   {$ENDREGION}
 end;
 
@@ -580,18 +589,21 @@ begin
 end;
 
 function TForm1.MarkUpLineReference(cont: string): string;
-var
-  p, a, b: integer;
-  num: integer;
-  insert_a, insert_b: string;
 
   procedure _process(toFind: string);
+  var
+    p, a, b: integer;
+    num: integer;
+    insert_a, insert_b: string;
   begin
-    p := Pos(toFind, cont);
+    if FileSystemCaseSensitive then
+      p := Pos(toFind, cont)
+    else
+      p := Pos(toFind.ToLower, cont.ToLower);
     while p >= 1 do
     begin
-      a := p+1;
-      b := p+length(toFind);
+      a := p;
+      b := p + length(toFind);
       num := 0;
       while CharInSet(cont[b], ['0'..'9']) do
       begin
@@ -600,7 +612,7 @@ var
       end;
 
       insert_b := '</a>';
-      insert_a := '<a href="'+FASTPHP_GOTO_URI_PREFIX+IntToStr(num)+'">';
+      insert_a := '<a href="' + FASTPHP_GOTO_URI_PREFIX + IntToStr(num) + '">';
 
       insert(insert_b, cont, b);
       insert(insert_a, cont, a);
@@ -610,14 +622,14 @@ var
       p := PosEx(toFind, cont, p+1);
     end;
   end;
+
 begin
   {$REGION 'Possibility 1: filename.php:lineno'}
-  _process(ExtractFileName(GetScrapFile)+':');
+  _process(ExtractFileName(GetScrapFile) + ':');
   {$ENDREGION}
 
   {$REGION 'Possibility 2: on line xx'}
-  // TODO: make it more specific to PHP error messages. "on line" is too broad.
-  _process(' on line ');
+  _process(ExtractFileName(GetScrapFile) + ' on line ');
   {$ENDREGION}
 
   result := cont;

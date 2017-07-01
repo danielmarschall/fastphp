@@ -85,12 +85,12 @@ object Form1: TForm1
     Top = 36
     Width = 1120
     Height = 349
-    ActivePage = TabSheet3
+    ActivePage = CodeTabsheet
     Align = alClient
     TabOrder = 1
     OnChanging = PageControl2Changing
-    object TabSheet3: TTabSheet
-      Caption = 'Scrap'
+    object CodeTabsheet: TTabSheet
+      Caption = 'Code'
       object SynEdit1: TSynEdit
         Left = 0
         Top = 0
@@ -221,6 +221,14 @@ object Form1: TForm1
       Action = ActionOpen
       TabOrder = 1
     end
+    object Button9: TButton
+      Left = 652
+      Top = 0
+      Width = 75
+      Height = 35
+      Action = ActionFindPrev
+      TabOrder = 8
+    end
   end
   object OpenDialog1: TOpenDialog
     DefaultExt = '.chm'
@@ -281,6 +289,11 @@ object Form1: TForm1
       Caption = 'Find next'
       ShortCut = 114
       OnExecute = ActionFindNextExecute
+    end
+    object ActionFindPrev: TAction
+      Caption = 'Find prev'
+      ShortCut = 8306
+      OnExecute = ActionFindPrevExecute
     end
     object ActionGoto: TAction
       Caption = 'Goto line'
