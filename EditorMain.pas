@@ -30,7 +30,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, OleCtrls, ComCtrls, ExtCtrls, ToolWin, IniFiles,
   SynEditHighlighter, SynHighlighterPHP, SynEdit, SHDocVw_TLB, FindReplace,
-  System.Actions, Vcl.ActnList;
+  System.Actions, Vcl.ActnList, System.UITypes;
 
 type
   TForm1 = class(TForm)
@@ -41,7 +41,7 @@ type
     WebBrowser1: TWebBrowser;
     Splitter1: TSplitter;
     PageControl2: TPageControl;
-    TabSheet3: TTabSheet;
+    CodeTabsheet: TTabSheet;
     HelpTabsheet: TTabSheet;
     WebBrowser2: TWebBrowser;
     OpenDialog1: TOpenDialog;
@@ -146,7 +146,7 @@ begin
   Help;
   if PageControl2.ActivePage = HelpTabsheet then
     WebBrowser2.SetFocus
-  else if PageControl2.ActivePage = TabSheet3{Scrap} then
+  else if PageControl2.ActivePage = CodeTabsheet then
     SynEdit1.SetFocus;
 end;
 
@@ -371,7 +371,7 @@ begin
 
   PageControl1.ActivePage := PlaintextTabSheet;
 
-  PageControl2.ActivePageIndex := 0; // Scraps
+  PageControl2.ActivePage := CodeTabsheet;
   HelpTabsheet.TabVisible := false;
 
   SynEdit1.Font.Size := FastPHPConfig.ReadInteger('User', 'FontSize', SynEdit1.Font.Size);
@@ -525,7 +525,7 @@ begin
     end;
   end;
 
-  PageControl2.ActivePage := TabSheet3{Scrap};
+  PageControl2.ActivePage := CodeTabsheet;
   if SynEdit1.CanFocus then SynEdit1.SetFocus;
 end;
 
