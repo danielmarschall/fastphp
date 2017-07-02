@@ -117,6 +117,7 @@ object Form1: TForm1
           'SynEdit1')
         Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceHomeKey, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollByOneLess, eoShowScrollHint, eoTabIndent, eoTrimTrailingSpaces]
         WantTabs = True
+        OnMouseCursor = SynEdit1MouseCursor
         FontSmoothing = fsmNone
       end
     end
@@ -229,6 +230,14 @@ object Form1: TForm1
       Action = ActionFindPrev
       TabOrder = 8
     end
+    object Button11: TButton
+      Left = 733
+      Top = -1
+      Width = 75
+      Height = 35
+      Action = ActionSpaceToTab
+      TabOrder = 9
+    end
   end
   object OpenDialog1: TOpenDialog
     DefaultExt = '.chm'
@@ -325,5 +334,16 @@ object Form1: TForm1
       ShortCut = 16463
       OnExecute = ActionOpenExecute
     end
+    object ActionSpaceToTab: TAction
+      Caption = 'SpaceToTab'
+      Hint = 'Converts leading spaces to tabs'
+      OnExecute = ActionSpaceToTabExecute
+    end
+  end
+  object Timer1: TTimer
+    Enabled = False
+    OnTimer = Timer1Timer
+    Left = 776
+    Top = 8
   end
 end

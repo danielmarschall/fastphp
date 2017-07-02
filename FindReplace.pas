@@ -79,8 +79,6 @@ type
     procedure FindPrev;
 
     procedure GoToLine( LineNumber: integer );
-    procedure GetLineNumber( Position: Integer; var LineNumber, ColumnNumber: Integer );
-    {returns the line and column number the cursor is on in the editor}
 
   published
     property Editor: TSynEdit read fEditor write fEditor;
@@ -110,6 +108,7 @@ begin
   {set up the event handlers}
   fReplaceDialog.OnReplace := OnReplace;
   fReplaceDialog.OnFind := OnFind;
+  fReplaceDialog.Options := fReplaceDialog.Options + [frHideWholeWord]; // TODO: currently not supported (see below)
 
   {set find's default action on end of text to alert the user.
    If a replace function changes this it is it's responsibility
@@ -288,6 +287,8 @@ begin
   {set the action on end to alert the function not the user}
   FindActionOnEnd := frcAlertReplace;
 
+  // TODO: UnDo does not work
+
   {now replace the word}
   if frReplace in ReplaceDialog.Options then
     DoReplace(ReplaceDialog)
@@ -300,53 +301,50 @@ end;
 
 procedure TFindReplace.DoReplace(dialog: TReplaceDialog);
 begin
-
-  {if the user has highlighted a block of text only replace
-   within that block}
-  if fEditor.SelLength > 0 then
-  begin
-    FindForwards( dialog, fEditor.selStart, fEditor.selStart + fEditor.selLength );
-    TryAndReplace(dialog);
-  end
-  {otherwise replace within the whole of the text}
-  else
-  begin
-    FindForwards( dialog, fEditor.selStart, fEditor.GetTextLen );
-    TryAndReplace(dialog);
-  end;
-
+  FindForwards( dialog, fEditor.selStart, fEditor.GetTextLen );
+  TryAndReplace(dialog);
+  FindForwards( dialog, fEditor.selStart, fEditor.GetTextLen ); // Jump to the next occurrence
 end;
 
 procedure TFindReplace.DoReplaceAll(dialog: TReplaceDialog);
 begin
   {see comments for DoReplace}
 
-  if fEditor.SelLength > 0 then
-  begin
-    FindForwards( dialog, fEditor.selStart, fEditor.selStart + fEditor.selLength );
-    {keep replacing until we reach the end of the text}
-    while FindActionOnEnd <> frcEndReached do
+  fEditor.BeginUpdate;
+  fEditor.BeginUndoBlock;
+  try
+    {if the user has highlighted a block of text only replace
+     within that block}
+    if fEditor.SelLength > 0 then
     begin
-      {we enclose the TryAndReplace in a loop because there might be more
-       than one occurence of the word in the line}
-      while TryAndReplace(dialog) do
-        FindForwards( dialog, fEditor.selStart, fEditor.selStart + fEditor.selLength );
-
+      // TODO: test this functionality
       FindForwards( dialog, fEditor.selStart, fEditor.selStart + fEditor.selLength );
-    end;
-  end
-  else
-  begin
-    FindForwards( dialog, fEditor.selStart, fEditor.GetTextLen );
-    while FindActionOnEnd <> frcEndReached do
+      {keep replacing until we reach the end of the text}
+      while FindActionOnEnd <> frcEndReached do
+      begin
+        {we enclose the TryAndReplace in a loop because there might be more
+         than one occurence of the word in the line}
+        while TryAndReplace(dialog) do
+          FindForwards( dialog, fEditor.selStart, fEditor.selStart + fEditor.selLength );
+
+        FindForwards( dialog, fEditor.selStart, fEditor.selStart + fEditor.selLength );
+      end;
+    end
+    else {otherwise replace within the whole of the text}
     begin
-      while TryAndReplace(dialog) do
-        FindForwards( dialog, fEditor.selStart, fEditor.GetTextLen );
-
       FindForwards( dialog, fEditor.selStart, fEditor.GetTextLen );
-    end;
-  end;
+      while FindActionOnEnd <> frcEndReached do
+      begin
+        while TryAndReplace(dialog) do
+          FindForwards( dialog, fEditor.selStart, fEditor.GetTextLen );
 
+        FindForwards( dialog, fEditor.selStart, fEditor.GetTextLen );
+      end;
+    end;
+  finally
+    fEditor.EndUpdate;
+    fEditor.EndUndoBlock;
+  end;
 end;
 
 function TFindReplace.TryAndReplace(dialog: TReplaceDialog): boolean;
@@ -357,10 +355,8 @@ function TFindReplace.TryAndReplace(dialog: TReplaceDialog): boolean;
 
 var
   LineNumber, ColumnNumber: integer;
-  ReplacementString: string;  {string used to replace the text}
 
-  OldSelStart: integer;  {the position of the cursor prior to the text
-   being replaced}
+  OldSelStart: integer;  {the position of the cursor prior to the text being replaced}
 
 
 begin
@@ -375,26 +371,23 @@ begin
     {get the line number and column number of the cursor which
      is needed for string manipulations later.  We should do this
      before the call to clear selection}
-    GetLineNumber( fEditor.SelStart, LineNumber, ColumnNumber );
+
+    // TODO: only replace beginning at the selected section / caret, not from beginning of the line!!
+    LineNumber := fEditor.CaretY-1;
+    ColumnNumber := fEditor.CaretX-1;
+
     {get the position of the cursor prior to the replace operation
      so we cab restore it later}
     OldSelStart := fEditor.SelStart;
 
-    {delete the unwanted word}
-    fEditor.ClearSelection;
+    // Note: "fEditor.ClearSelection" can be used to delete the selected text
 
-    {Add the replacement text}
-    {Since we can't directly manipulate the Lines field of the
-     TCustomMemo component we'll extract the line, manipulate it
-     then put it back}
-    ReplacementString := fEditor.Lines[ LineNumber ];
-    {truncate the newline (#$A#$D) at the end of tempstring}
-    SetLength( ReplacementString, Length( ReplacementString )-2 );
-    {add the replacement text into tempstring}
-    Insert( dialog.ReplaceText, ReplacementString, ColumnNumber+1 );
-    {remove the old string and add the new string into the editor}
-    fEditor.Lines.Delete( LineNumber );
-    fEditor.Lines.Insert( LineNumber, ReplacementString );
+    // TODO: only replace beginning at the selected section / caret, not from beginning of the line
+    // TODO: support "whole word" ?
+    if frMatchCase in dialog.Options then
+      fEditor.Lines[LineNumber] := StringReplace(fEditor.Lines[LineNumber], dialog.FindText, dialog.ReplaceText, [])
+    else
+      fEditor.Lines[LineNumber] := StringReplace(fEditor.Lines[LineNumber], dialog.FindText, dialog.ReplaceText, [rfIgnoreCase]);
 
     {set the result to true since we have made a replacement}
     Result := true;
@@ -484,27 +477,6 @@ begin
   end
   else
     DoFind(fFindDialog, sdBackwards);
-end;
-
-procedure TFindReplace.GetLineNumber( Position: Integer; var LineNumber, ColumnNumber: integer );
-var
-  i: integer;
-
-begin
-  {initialise line number to 0}
-  LineNumber := 0;
-
-  {increment line number each time we encounter a newline (#$D) in the text}
-  for i := 1 to Position do
-    if fEditor.Text = #$D then
-      inc( LineNumber );
-
-  {set the column number to position first}
-  ColumnNumber := Position;
-  {get the columnNumber by subtracting the length of each previous line}
-  for i := 0 to (LineNumber-1) do
-    dec( ColumnNumber, (*Length( fEditor.Lines )*) fEditor.Lines.Strings[i].Length );
-
 end;
 
 procedure TFindReplace.GoToLine( LineNumber: integer );

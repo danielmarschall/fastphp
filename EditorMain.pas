@@ -14,8 +14,6 @@ unit EditorMain;
 // Wieso dauert webbrowser1 erste kompilierung so lange???
 // TODO: wieso kommt syntax fehler zweimal? einmal stderr einmal stdout?
 // TODO: Browser titlebar (link preview)
-// TODO: search prev
-// TODO: wenn man schrift größer/kleiner macht, soll die bildschirmseite zentriert bleiben
 // TODO: todo liste
 
 // Future ideas
@@ -34,6 +32,8 @@ uses
   Dialogs, StdCtrls, OleCtrls, ComCtrls, ExtCtrls, ToolWin, IniFiles,
   SynEditHighlighter, SynHighlighterPHP, SynEdit, SHDocVw_TLB, FindReplace,
   System.Actions, Vcl.ActnList, System.UITypes;
+
+{.$DEFINE OnlineHelp}
 
 type
   TForm1 = class(TForm)
@@ -74,6 +74,9 @@ type
     Button8: TButton;
     Button9: TButton;
     ActionFindPrev: TAction;
+    Timer1: TTimer;
+    ActionSpaceToTab: TAction;
+    Button11: TButton;
     procedure Run(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -101,10 +104,17 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure Memo2KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure ActionFindPrevExecute(Sender: TObject);
+    procedure SynEdit1MouseCursor(Sender: TObject;
+      const aLineCharPos: TBufferCoord; var aCursor: TCursor);
+    procedure Timer1Timer(Sender: TObject);
+    procedure ActionSpaceToTabExecute(Sender: TObject);
   private
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
     SrcRep: TFindReplace;
+    {$IFDEF OnlineHelp}
+    gOnlineHelpWord: string;
+    {$ENDIF}
     procedure Help;
     function MarkUpLineReference(cont: string): string;
   protected
@@ -122,7 +132,7 @@ implementation
 {$R *.dfm}
 
 uses
-  Functions, StrUtils, WebBrowserUtils, FastPHPUtils, Math, ShellAPI;
+  Functions, StrUtils, WebBrowserUtils, FastPHPUtils, Math, ShellAPI, RichEdit;
 
 // TODO: FindPrev ?
 procedure TForm1.ActionFindNextExecute(Sender: TObject);
@@ -186,6 +196,91 @@ begin
   SynEdit1.Modified := false;
 end;
 
+procedure TForm1.ActionSpaceToTabExecute(Sender: TObject);
+
+    function SpacesAtBeginning(line: string): integer;
+    begin
+      if line.Trim = '' then exit(0);
+      result := 0;
+      while line[result+1] = ' ' do
+      begin
+        inc(result);
+      end;
+    end;
+
+    function GuessIndent(lines: TStrings): integer;
+      function _Check(indent: integer): boolean;
+      var
+        i: integer;
+      begin
+        result := true;
+        for i := 0 to lines.Count-1 do
+          if SpacesAtBeginning(lines.Strings[i]) mod indent <> 0 then
+          begin
+            // ShowMessageFmt('Zeile "%s" nicht durch %d teilbar!', [lines.strings[i], indent]);
+            exit(false);
+          end;
+      end;
+    var
+      i: integer;
+    begin
+      for i := 8 downto 2 do
+      begin
+        if _Check(i) then exit(i);
+      end;
+      result := -1;
+    end;
+
+    procedure SpaceToTab(lines: TStrings; indent: integer);
+    var
+      i, spaces: integer;
+    begin
+      for i := 0 to lines.Count-1 do
+      begin
+        spaces := SpacesAtBeginning(lines.Strings[i]);
+        lines.Strings[i] := StringOfChar(#9, spaces div indent) + StringOfChar(' ', spaces mod indent) + Copy(lines.Strings[i], spaces+1, Length(lines.Strings[i])-spaces);
+      end;
+    end;
+
+    function SpacesAvailable(lines: TStrings): boolean;
+    var
+      i, spaces: integer;
+    begin
+      for i := 0 to lines.Count-1 do
+      begin
+        spaces := SpacesAtBeginning(lines.Strings[i]);
+        if spaces > 0 then exit(true);
+      end;
+      exit(false);
+    end;
+
+var
+  val: string;
+  ind: integer;
+resourcestring
+  SNoLinesAvailable = 'No lines with spaces at the beginning available';
+begin
+  // TODO: if something is selected, only process the selected part
+
+  if not SpacesAvailable(SynEdit1.Lines) then
+  begin
+    ShowMessage(SNoLinesAvailable);
+    exit;
+  end;
+
+  ind := GuessIndent(SynEdit1.Lines);
+  if ind <> -1 then val := IntToStr(ind);
+
+  InputQuery('Spaces to tabs', 'Indent:', val); // TODO: handle CANCEL correctly...
+  if TryStrToInt(val.Trim, ind) then
+  begin
+    if ind = 0 then exit;
+    SpaceToTab(SynEdit1.Lines, ind);
+  end;
+
+  if SynEdit1.CanFocus then SynEdit1.SetFocus;
+end;
+
 procedure TForm1.ActionESCExecute(Sender: TObject);
 begin
   if (HlpPrevPageIndex <> -1) and (PageControl2.ActivePage = HelpTabSheet) and
@@ -245,13 +340,36 @@ begin
   end;
 end;
 
+procedure TForm1.SynEdit1MouseCursor(Sender: TObject; const aLineCharPos: TBufferCoord; var aCursor: TCursor);
+{$IFDEF OnlineHelp}
+var
+  Line: Integer;
+  Column: Integer;
+  word: string;
+begin
+  Line  := aLineCharPos.Line-1;
+  Column := aLineCharPos.Char-1;
+  word := GetWordUnderPos(TSynEdit(Sender), Line, Column);
+  if word <> gOnlineHelpWord then
+  begin
+    gOnlineHelpWord := word;
+    Timer1.Enabled := false;
+    Timer1.Enabled := true;
+  end;
+{$ELSE}
+begin
+{$ENDIF}
+end;
+
 procedure TForm1.SynEdit1MouseWheelDown(Sender: TObject; Shift: TShiftState;
   MousePos: TPoint; var Handled: Boolean);
 begin
   if ssCtrl in Shift then
   begin
     SynEdit1.Font.Size := Max(SynEdit1.Font.Size - 1, 5);
-  end;
+    Handled := true;
+  end
+  else Handled := false;
 end;
 
 procedure TForm1.SynEdit1MouseWheelUp(Sender: TObject; Shift: TShiftState;
@@ -260,7 +378,9 @@ begin
   if ssCtrl in Shift then
   begin
     SynEdit1.Font.Size := SynEdit1.Font.Size + 1;
-  end;
+    Handled := true;
+  end
+  else Handled := false;
 end;
 
 procedure TForm1.SynEditFocusTimerTimer(Sender: TObject);
@@ -268,6 +388,16 @@ begin
   SynEditFocusTimer.Enabled := false;
   Button1.SetFocus; // Workaround for weird bug... This (and the timer) is necessary to get the focus to SynEdit1
   SynEdit1.SetFocus;
+end;
+
+procedure TForm1.Timer1Timer(Sender: TObject);
+begin
+  {$IFDEF OnlineHelp}
+  Timer1.Enabled := false;
+
+  // TODO: Insert a small online help hint
+  //Caption := gOnlineHelpWord;
+  {$ENDIF}
 end;
 
 procedure TForm1.WebBrowser1BeforeNavigate2(ASender: TObject;

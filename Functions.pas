@@ -11,6 +11,7 @@ function StrIPos(const SubStr, S: string): Integer;
 function LoadFileToStr(const FileName: TFileName): AnsiString;
 function LastPos(const SubStr, S: string): integer;
 function IsTextHTML(s: string): boolean;
+function GetWordUnderPos(AMemo: TSynEdit; Line, Column: integer): string;
 function GetWordUnderCaret(AMemo: TSynEdit): string;
 function MyVarToStr(v: Variant): string;
 function FileSystemCaseSensitive: boolean;
@@ -158,7 +159,7 @@ begin
 end;
 
 // Template: http://stackoverflow.com/questions/6339446/delphi-get-the-whole-word-where-the-caret-is-in-a-memo
-function GetWordUnderCaret(AMemo: TSynEdit): string;
+function GetWordUnderPos(AMemo: TSynEdit; Line, Column: integer): string;
 
   function ValidChar(c: char): boolean;
   begin
@@ -166,28 +167,10 @@ function GetWordUnderCaret(AMemo: TSynEdit): string;
   end;
 
 var
-   Line    : Integer;
-   Column  : Integer;
    LineText: string;
    InitPos : Integer;
    EndPos  : Integer;
 begin
-   //Get the caret position
-   (*
-   if AMemo is TMemo then
-   begin
-     Line   := AMemo.Perform(EM_LINEFROMCHAR,AMemo.SelStart, 0);
-     Column := AMemo.SelStart - AMemo.Perform(EM_LINEINDEX, Line, 0);
-   end;
-   if AMemo is TSynEdit then
-   begin
-   *)
-     Line := AMemo.CaretY-1;
-     Column := AMemo.CaretX-1;
-   (*
-   end;
-   *)
-
    //Validate the line number
    if AMemo.Lines.Count-1 < Line then Exit;
 
@@ -207,6 +190,30 @@ begin
 
    //Get the text
    Result := Copy(LineText, InitPos, EndPos - InitPos + 1);
+end;
+
+function GetWordUnderCaret(AMemo: TSynEdit): string;
+var
+   Line    : Integer;
+   Column  : Integer;
+begin
+   //Get the caret position
+   (*
+   if AMemo is TMemo then
+   begin
+     Line   := AMemo.Perform(EM_LINEFROMCHAR,AMemo.SelStart, 0);
+     Column := AMemo.SelStart - AMemo.Perform(EM_LINEINDEX, Line, 0);
+   end;
+   if AMemo is TSynEdit then
+   begin
+   *)
+     Line := AMemo.CaretY-1;
+     Column := AMemo.CaretX-1;
+   (*
+   end;
+   *)
+
+   result := GetWordUnderPos(AMemo, Line, Column);
 end;
 
 function MyVarToStr(v: Variant): string;
