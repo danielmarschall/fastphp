@@ -31,7 +31,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, OleCtrls, ComCtrls, ExtCtrls, ToolWin, IniFiles,
   SynEditHighlighter, SynHighlighterPHP, SynEdit, SHDocVw_TLB, FindReplace,
-  System.Actions, Vcl.ActnList, System.UITypes;
+  System.Actions, Vcl.ActnList, System.UITypes, SynEditMiscClasses,
+  SynEditSearch;
 
 {.$DEFINE OnlineHelp}
 
@@ -77,6 +78,7 @@ type
     Timer1: TTimer;
     ActionSpaceToTab: TAction;
     Button11: TButton;
+    SynEditSearch1: TSynEditSearch;
     procedure Run(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -111,7 +113,7 @@ type
   private
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
-    SrcRep: TFindReplace;
+    SrcRep: TSynEditFindReplace;
     {$IFDEF OnlineHelp}
     gOnlineHelpWord: string;
     {$ENDIF}
@@ -481,7 +483,7 @@ begin
   HlpPrevPageIndex := -1;
   CurSearchTerm := '';
   Caption := Caption + ' - ' + GetScrapFile;
-  SrcRep := TFindReplace.Create(self);
+  SrcRep := TSynEditFindReplace.Create(self);
   SrcRep.Editor := SynEdit1;
 end;
 

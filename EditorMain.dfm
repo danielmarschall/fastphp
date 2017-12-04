@@ -116,6 +116,7 @@ object Form1: TForm1
         Lines.Strings = (
           'SynEdit1')
         Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceHomeKey, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollByOneLess, eoShowScrollHint, eoTabIndent, eoTrimTrailingSpaces]
+        SearchEngine = SynEditSearch1
         WantTabs = True
         OnMouseCursor = SynEdit1MouseCursor
         FontSmoothing = fsmNone
@@ -345,5 +346,9 @@ object Form1: TForm1
     OnTimer = Timer1Timer
     Left = 776
     Top = 8
+  end
+  object SynEditSearch1: TSynEditSearch
+    Left = 780
+    Top = 236
   end
 end
