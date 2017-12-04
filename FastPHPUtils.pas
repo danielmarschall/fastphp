@@ -3,7 +3,7 @@ unit FastPHPUtils;
 interface
 
 uses
-  SysUtils, StrUtils, Dialogs, IniFiles, Classes, Forms;
+  Windows, SysUtils, StrUtils, Dialogs, IniFiles, Classes, Forms;
 
 const
   FASTPHP_GOTO_URI_PREFIX = 'fastphp://editor/gotoline/';
@@ -127,7 +127,11 @@ begin
           good := false;
           break;
         end;
+        {$IFDEF UNICODE}
         if not CharInSet(test[i], ['a'..'z', 'A'..'Z', '.', '-', '_', '0'..'9']) then
+        {$ELSE}
+        if not (test[i] in ['a'..'z', 'A'..'Z', '.', '-', '_', '0'..'9']) then
+        {$ENDIF}
         begin
           ini.WriteInteger('_Errors_', 'Contains unexpected character! ' + candidate, ini.ReadInteger('_Errors_', 'Contains unexpected character! ' + candidate, 0)+1);
           good := false;

@@ -1,7 +1,7 @@
 program FastPHPBrowser;
 
 uses
-  Vcl.Forms,
+  Forms,
   BrowserMain in 'BrowserMain.pas' {Form2};
 
 {$R *.res}

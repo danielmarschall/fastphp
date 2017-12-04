@@ -43,6 +43,7 @@ type
     fEditor: TSynEdit;
     fReplaceDialog: TReplaceDialog;
     fFindDialog: TFindDialog;
+    fAutofocus: boolean;
   protected
     type
       TFindDirection = (sdDefault, sdForwards, sdBackwards);
@@ -74,6 +75,7 @@ type
 
   published
     property Editor: TSynEdit read fEditor write fEditor;
+    property Autofocus: boolean read fAutofocus write fAutofocus;
   end;
 
 implementation
@@ -142,6 +144,8 @@ begin
     else
       ShowMessage('Begin of document reached.');
   end;
+
+  if fAutofocus and fEditor.CanFocus then fEditor.SetFocus;
 end;
 
 procedure TSynEditFindReplace.DoReplace(dialog: TReplaceDialog; direction: TFindDirection);
@@ -170,7 +174,9 @@ begin
     fEditor.EndUpdate;
   end;
 
-  // TODO: numReplacements anzeigen
+  ShowMessageFmt('%d replaced.', [numReplacements]);
+
+  if fAutofocus and fEditor.CanFocus then fEditor.SetFocus;
 end;
 
 procedure TSynEditFindReplace.OnFind(Sender: TObject);

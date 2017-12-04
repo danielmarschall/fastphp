@@ -1,10 +1,11 @@
 unit WebBrowserUtils;
 
+{$Include 'FastPHP.inc'}
+
 interface
 
 uses
-  // In case ShDocVw_TLB can't be found, use ShDocVw
-  Windows, ShDocVw_TLB, SysUtils, Forms;
+  Windows, ShDocVw{$IFDEF USE_SHDOCVW_TLB}_TLB{$ENDIF}, SysUtils, Forms;
 
 procedure WaitForBrowser(AWebBrowser: TWebbrowser);
 
@@ -133,17 +134,26 @@ begin
   end;
 
   pPM := AWebBrowser.Document as IPersistMoniker;
-  if (pPM = nil) then Exit(false);
+  if (pPM = nil) then
+  begin
+    result := false;
+    exit;
+  end;
 
   bindctx := nil;
   CreateBindCtx(0, bindctx);
-  if (bindctx = nil) then Exit(false);
+  if (bindctx = nil) then
+  begin
+    result := false;
+    exit;
+  end;
 
   try
     loader := TLoadHTMLMoniker.Create;
     loader.InitLoader(AHTML, url);
   except
-    Exit(false);
+    result := false;
+    exit;
   end;
 
   result := pPM.Load(true, loader, bindctx, STGM_READ) = S_OK;

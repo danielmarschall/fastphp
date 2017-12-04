@@ -113,8 +113,6 @@ object Form1: TForm1
         Gutter.Font.Style = []
         Gutter.ShowLineNumbers = True
         Highlighter = SynPHPSyn1
-        Lines.Strings = (
-          'SynEdit1')
         Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceHomeKey, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollByOneLess, eoShowScrollHint, eoTabIndent, eoTrimTrailingSpaces]
         SearchEngine = SynEditSearch1
         WantTabs = True
@@ -233,7 +231,7 @@ object Form1: TForm1
     end
     object Button11: TButton
       Left = 733
-      Top = -1
+      Top = 0
       Width = 75
       Height = 35
       Action = ActionSpaceToTab

@@ -1,5 +1,7 @@
 unit EditorMain;
 
+{$Include 'FastPHP.inc'}
+
 (*
   This program requires
   - Microsoft Internet Controls (TWebBrowser)
@@ -30,9 +32,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, OleCtrls, ComCtrls, ExtCtrls, ToolWin, IniFiles,
-  SynEditHighlighter, SynHighlighterPHP, SynEdit, SHDocVw_TLB, FindReplace,
-  System.Actions, Vcl.ActnList, System.UITypes, SynEditMiscClasses,
-  SynEditSearch;
+  SynEditHighlighter, SynHighlighterPHP, SynEdit, FindReplace,
+  ActnList, SynEditMiscClasses, SynEditSearch, SHDocVw{$IFDEF USE_SHDOCVW_TLB}_TLB{$ENDIF};
 
 {.$DEFINE OnlineHelp}
 
@@ -87,7 +88,7 @@ type
     procedure PageControl2Changing(Sender: TObject; var AllowChange: Boolean);
     procedure Memo2DblClick(Sender: TObject);
     procedure WebBrowser1BeforeNavigate2(ASender: TObject;
-      const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
+      const pDisp: IDispatch; {$IFDEF USE_SHDOCVW_TLB}const{$ELSE}var{$ENDIF} URL, Flags, TargetFrameName, PostData,
       Headers: OleVariant; var Cancel: WordBool);
     procedure SynEditFocusTimerTimer(Sender: TObject);
     procedure ActionFindExecute(Sender: TObject);
@@ -119,6 +120,7 @@ type
     {$ENDIF}
     procedure Help;
     function MarkUpLineReference(cont: string): string;
+    procedure SaveToFile(filename: string);
   protected
     ChmIndex: TMemIniFile;
     FScrapFile: string;
@@ -134,7 +136,8 @@ implementation
 {$R *.dfm}
 
 uses
-  Functions, StrUtils, WebBrowserUtils, FastPHPUtils, Math, ShellAPI, RichEdit;
+  Functions, StrUtils, WebBrowserUtils, FastPHPUtils, Math, ShellAPI, RichEdit,
+  SynUnicode;
 
 // TODO: FindPrev ?
 procedure TForm1.ActionFindNextExecute(Sender: TObject);
@@ -194,7 +197,7 @@ end;
 
 procedure TForm1.ActionSaveExecute(Sender: TObject);
 begin
-  SynEdit1.Lines.SaveToFile(GetScrapFile);
+  SaveToFile(GetScrapFile);
   SynEdit1.Modified := false;
 end;
 
@@ -202,15 +205,15 @@ procedure TForm1.ActionSpaceToTabExecute(Sender: TObject);
 
     function SpacesAtBeginning(line: string): integer;
     begin
-      if line.Trim = '' then exit(0);
       result := 0;
+      if Trim(line) = '' then exit;
       while line[result+1] = ' ' do
       begin
         inc(result);
       end;
     end;
 
-    function GuessIndent(lines: TStrings): integer;
+    function GuessIndent(lines: {$IFDEF UNICODE}TStrings{$ELSE}TUnicodeStrings{$ENDIF}): integer;
       function _Check(indent: integer): boolean;
       var
         i: integer;
@@ -220,7 +223,8 @@ procedure TForm1.ActionSpaceToTabExecute(Sender: TObject);
           if SpacesAtBeginning(lines.Strings[i]) mod indent <> 0 then
           begin
             // ShowMessageFmt('Zeile "%s" nicht durch %d teilbar!', [lines.strings[i], indent]);
-            exit(false);
+            result := false;
+            exit;
           end;
       end;
     var
@@ -228,12 +232,16 @@ procedure TForm1.ActionSpaceToTabExecute(Sender: TObject);
     begin
       for i := 8 downto 2 do
       begin
-        if _Check(i) then exit(i);
+        if _Check(i) then
+        begin
+          result := i;
+          exit;
+        end;
       end;
       result := -1;
     end;
 
-    procedure SpaceToTab(lines: TStrings; indent: integer);
+    procedure SpaceToTab(lines: {$IFDEF UNICODE}TStrings{$ELSE}TUnicodeStrings{$ENDIF}; indent: integer);
     var
       i, spaces: integer;
     begin
@@ -244,16 +252,21 @@ procedure TForm1.ActionSpaceToTabExecute(Sender: TObject);
       end;
     end;
 
-    function SpacesAvailable(lines: TStrings): boolean;
+    function SpacesAvailable(lines: {$IFDEF UNICODE}TStrings{$ELSE}TUnicodeStrings{$ENDIF}): boolean;
     var
       i, spaces: integer;
     begin
       for i := 0 to lines.Count-1 do
       begin
         spaces := SpacesAtBeginning(lines.Strings[i]);
-        if spaces > 0 then exit(true);
+        if spaces > 0 then
+        begin
+          result := true;
+          exit;
+        end;
       end;
-      exit(false);
+      result := false;
+      exit;
     end;
 
 var
@@ -274,7 +287,7 @@ begin
   if ind <> -1 then val := IntToStr(ind);
 
   InputQuery('Spaces to tabs', 'Indent:', val); // TODO: handle CANCEL correctly...
-  if TryStrToInt(val.Trim, ind) then
+  if TryStrToInt(Trim(val), ind) then
   begin
     if ind = 0 then exit;
     SpaceToTab(SynEdit1.Lines, ind);
@@ -327,7 +340,7 @@ begin
   Application.ProcessMessages;
 
   try
-    SynEdit1.Lines.SaveToFile(GetScrapFile);
+    SaveToFile(GetScrapFile);
 
     memo2.Lines.Text := RunPHPScript(GetScrapFile);
 
@@ -340,6 +353,25 @@ begin
   finally
     Screen.Cursor := crDefault;
   end;
+end;
+
+procedure TForm1.SaveToFile(filename: string);
+{$IFNDEF UNICODE}
+var
+  sl: TStringList;
+{$ENDIF}
+begin
+  {$IFDEF UNICODE}
+  SynEdit1.Lines.SaveToFile(filename);
+  {$ELSE}
+  sl := TStringList.Create;
+  try
+    sl.Text := UTF8String(SynEdit1.Lines.Text);
+    sl.SaveToFile(GetScrapFile);
+  finally
+    FreeAndNil(sl);
+  end;
+  {$ENDIF}
 end;
 
 procedure TForm1.SynEdit1MouseCursor(Sender: TObject; const aLineCharPos: TBufferCoord; var aCursor: TCursor);
@@ -403,7 +435,7 @@ begin
 end;
 
 procedure TForm1.WebBrowser1BeforeNavigate2(ASender: TObject;
-  const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
+  const pDisp: IDispatch; {$IFDEF USE_SHDOCVW_TLB}const{$ELSE}var{$ENDIF} URL, Flags, TargetFrameName, PostData,
   Headers: OleVariant; var Cancel: WordBool);
 var
   s, myURL: string;
@@ -466,13 +498,13 @@ begin
       end
       else if r = mrYes then
       begin
-        SynEdit1.Lines.SaveToFile(GetScrapFile);
+        SaveToFile(GetScrapFile);
         CanClose := true;
       end;
     end
     else
     begin
-      SynEdit1.Lines.SaveToFile(GetScrapFile);
+      SaveToFile(GetScrapFile);
       CanClose := true;
     end;
   end;
@@ -522,7 +554,11 @@ end;
 
 function TForm1.GetScrapFile: string;
 begin
-  if FScrapFile <> '' then exit(FScrapFile);
+  if FScrapFile <> '' then
+  begin
+    result := FScrapFile;
+    exit;
+  end;
 
   if ParamStr(1) <> '' then
     result := ParamStr(1)
@@ -534,7 +570,8 @@ begin
       if not OpenDialog3.Execute then
       begin
         Application.Terminate;
-        exit('');
+        result := '';
+        exit;
       end;
 
       if not DirectoryExists(ExtractFilePath(OpenDialog3.FileName)) then
@@ -548,7 +585,7 @@ begin
     until result <> '';
 
     SynEdit1.Lines.Clear;
-    SynEdit1.Lines.SaveToFile(result);
+    SaveToFile(result);
 
     FastPHPConfig.WriteString('Paths', 'ScrapFile', result);
     FScrapFile := result;
@@ -693,7 +730,7 @@ var
     if FileSystemCaseSensitive then
       p := Pos(toFind, line)
     else
-      p := Pos(toFind.ToLower, line.ToLower);
+      p := Pos(LowerCase(toFind), LowerCase(line));
     if p <> 0 then
     begin
       line := copy(line, p+length(toFind), 99);
@@ -731,7 +768,7 @@ function TForm1.MarkUpLineReference(cont: string): string;
     if FileSystemCaseSensitive then
       p := Pos(toFind, cont)
     else
-      p := Pos(toFind.ToLower, cont.ToLower);
+      p := Pos(LowerCase(toFind), LowerCase(cont));
     while p >= 1 do
     begin
       a := p;

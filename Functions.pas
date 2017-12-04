@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, StrUtils, IniFiles, Classes, Forms, Variants, MsHTML,
-  SHDocVw_TLB, StdCtrls, SynEdit, ActiveX;
+  StdCtrls, SynEdit, ActiveX;
 
 function GetDosOutput(CommandLine: string; Work: string = ''): string;
 function StrIPos(const SubStr, S: string): Integer;
@@ -163,7 +163,11 @@ function GetWordUnderPos(AMemo: TSynEdit; Line, Column: integer): string;
 
   function ValidChar(c: char): boolean;
   begin
+    {$IFDEF UNICODE}
     result := CharInSet(c, ['a'..'z', 'A'..'Z', '0'..'9', '_']);
+    {$ELSE}
+    result := c in ['a'..'z', 'A'..'Z', '0'..'9', '_'];
+    {$ENDIF}
   end;
 
 var
@@ -177,7 +181,11 @@ begin
    //Get the text of the line
    LineText := AMemo.Lines[Line];
 
-   if LineText = '' then exit('');
+   if LineText = '' then
+   begin
+     result := '';
+     exit;
+   end;
 
    // Column zeigt auf das Zeichen LINKS vom Cursor!
 
@@ -249,7 +257,8 @@ begin
   {$IFDEF LINUX}
   exit(true);
   {$ELSE}
-  exit(false);
+  result := false;
+  exit;
   {$ENDIF}
 end;
 

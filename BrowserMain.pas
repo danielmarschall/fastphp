@@ -1,11 +1,13 @@
 unit BrowserMain;
 
+{$Include 'FastPHP.inc'}
+
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.OleCtrls, SHDocVw_TLB, Vcl.ExtCtrls, StrUtils,
-  Vcl.StdCtrls, activex, UrlMon;
+  Windows, Messages, SysUtils, Variants, Classes, Graphics,
+  Controls, Forms, Dialogs, OleCtrls, SHDocVw{$IFDEF USE_SHDOCVW_TLB}_TLB{$ENDIF}, ExtCtrls, StrUtils,
+  StdCtrls, activex, UrlMon;
 
 type
   TForm2 = class(TForm)
@@ -13,7 +15,7 @@ type
     Timer1: TTimer;
     procedure Timer1Timer(Sender: TObject);
     procedure WebBrowser1BeforeNavigate2(ASender: TObject;
-      const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
+      const pDisp: IDispatch; {$IFDEF USE_SHDOCVW_TLB}const{$ELSE}var{$ENDIF} URL, Flags, TargetFrameName, PostData,
       Headers: OleVariant; var Cancel: WordBool);
   strict private
     function EmbeddedWBQueryService(const rsid, iid: TGUID; out Obj{: IInterface}): HRESULT;
@@ -148,7 +150,7 @@ begin
 end;
 
 procedure TForm2.WebBrowser1BeforeNavigate2(ASender: TObject;
-  const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
+  const pDisp: IDispatch; {$IFDEF USE_SHDOCVW_TLB}const{$ELSE}var{$ENDIF} URL, Flags, TargetFrameName, PostData,
   Headers: OleVariant; var Cancel: WordBool);
 var
   myURL, myUrl2, getData: string;
