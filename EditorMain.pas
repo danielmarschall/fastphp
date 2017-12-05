@@ -80,6 +80,8 @@ type
     ActionSpaceToTab: TAction;
     Button11: TButton;
     SynEditSearch1: TSynEditSearch;
+    ListBox1: TListBox;
+    Splitter2: TSplitter;
     procedure Run(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -111,6 +113,8 @@ type
       const aLineCharPos: TBufferCoord; var aCursor: TCursor);
     procedure Timer1Timer(Sender: TObject);
     procedure ActionSpaceToTabExecute(Sender: TObject);
+    procedure SynEdit1StatusChange(Sender: TObject; Changes: TSynStatusChanges);
+    procedure ListBox1Click(Sender: TObject);
   private
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
@@ -417,6 +421,26 @@ begin
   else Handled := false;
 end;
 
+procedure TForm1.SynEdit1StatusChange(Sender: TObject; Changes: TSynStatusChanges);
+var
+  i, curLineIdx, linecount: integer;
+  line: string;
+begin
+  if scCaretY in Changes then // TODO: auch beim schreiben
+  begin
+    ListBox1.Items.Clear;
+    curLineIdx := SynEdit1.BlockBegin.Line;
+    linecount := synedit1.lines.count;
+    if curLineIdx >= synedit1.lines.count then curLineIdx := linecount-1;
+    for i := 0 to linecount - 1 do
+    begin
+      line := SynEdit1.Lines.Strings[i];
+      if Pos('todo', LowerCase(line)) >= 1 then ListBox1.Items.Add(Trim(line));
+      if i = curLineIdx then ListBox1.Items.Add('<-- THIS LINE -->');
+    end;
+  end;
+end;
+
 procedure TForm1.SynEditFocusTimerTimer(Sender: TObject);
 begin
   SynEditFocusTimer.Enabled := false;
@@ -684,6 +708,11 @@ begin
   PageControl2.ActivePage := HelpTabsheet;
   WebBrowser2.Navigate(url);
   WebBrowser2.Wait;
+end;
+
+procedure TForm1.ListBox1Click(Sender: TObject);
+begin
+  // TODO: jump to line
 end;
 
 procedure TForm1.GotoLineNo(LineNo:integer);
