@@ -116,6 +116,8 @@ type
     procedure Timer1Timer(Sender: TObject);
     procedure ActionSpaceToTabExecute(Sender: TObject);
     procedure TreeView1DblClick(Sender: TObject);
+    procedure SynEdit1GutterClick(Sender: TObject; Button: TMouseButton; X, Y,
+      Line: Integer; Mark: TSynEditMark);
   private
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
@@ -143,9 +145,14 @@ implementation
 
 {$R *.dfm}
 
+{$R Cursors.res}
+
 uses
   Functions, StrUtils, WebBrowserUtils, FastPHPUtils, Math, ShellAPI, RichEdit,
   FastPHPTreeView;
+
+const
+  crMouseGutter = 1;
 
 // TODO: FindPrev ?
 procedure TForm1.ActionFindNextExecute(Sender: TObject);
@@ -353,6 +360,16 @@ begin
   end;
 end;
 
+procedure TForm1.SynEdit1GutterClick(Sender: TObject; Button: TMouseButton; X,
+  Y, Line: Integer; Mark: TSynEditMark);
+begin
+  (*
+  TSynEdit(Sender).CaretX := 1;
+  TSynEdit(Sender).CaretY := Line;
+  TSynEdit(Sender).SelLength := Length(TSynEdit(Sender).LineText);
+  *)
+end;
+
 procedure TForm1.SynEdit1MouseCursor(Sender: TObject; const aLineCharPos: TBufferCoord; var aCursor: TCursor);
 {$IFDEF OnlineHelp}
 var
@@ -506,6 +523,9 @@ begin
   SrcRep := TSynEditFindReplace.Create(self);
   SrcRep.Editor := SynEdit1;
   SynEdit1.Gutter.Gradient := HighColorWindows;
+
+  Screen.Cursors[crMouseGutter] := LoadCursor(hInstance, 'MOUSEGUTTER');
+  SynEdit1.Gutter.Cursor := crMouseGutter;
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);

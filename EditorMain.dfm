@@ -127,6 +127,7 @@ object Form1: TForm1
         Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceHomeKey, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollByOneLess, eoShowScrollHint, eoTabIndent, eoTrimTrailingSpaces]
         SearchEngine = SynEditSearch1
         WantTabs = True
+        OnGutterClick = SynEdit1GutterClick
         OnMouseCursor = SynEdit1MouseCursor
         FontSmoothing = fsmNone
       end
