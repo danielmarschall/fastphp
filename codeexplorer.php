@@ -1,5 +1,7 @@
 <?php
 
+// TODO: Parsing der Datei codeexplorer.php bricht einfach so ab?
+
 define('ICON_ATTR_PUBLIC',           1);
 define('ICON_ATTR_PRIVATE',          2);
 define('ICON_ATTR_PROTECTED',        4);
@@ -34,7 +36,7 @@ while (true) {
 	// file_put_contents('debug.tmp', $code);
 	
 	if (!$x) {
-		// TODO: when this happen, do not update the output in the editor...
+		// TODO: when this happens, do not update the output in the editor...
 		echo _outputLeafNode(2048, 1, 'SYNTAX ERROR');
 	}
 	
@@ -42,50 +44,65 @@ while (true) {
 	$wait_function = false;
 	$wait_class = false;
 	$class = array();
-	$qualifiers = array();
+	$icon_add_flags = 0;
 	$dep = 0;
 
 	foreach ($x as $n => $data) {
 		if ($data == '{') $dep++;
 		if ($data == '}') {
 			$dep--;
-			if ((count($class) > 0) && (array_peek($class)[1] == $dep)) array_pop($class);
+			if ((count($class) > 0) && (array_peek($class)[1] == $dep)) {
+				array_pop($class);
+				echo _outputDecreaseLevel();
+			}
 		}
 
-		$token = $data[0];
-		$value = $data[1];
-		$line = $data[2];
+		$token = (!is_array($data)) ? null : $data[0];
+		$value = (!is_array($data)) ? null : $data[1];
+		$line = (!is_array($data)) ? null : $data[2];
 
 		if ($wait_function && ($token == T_STRING)) {
-			$desc = "$line: Method ";
+			$desc = "function ";
+			/*
 			foreach ($class as $cdata) {
 				$desc .= $cdata[0].'->';
 			}
-			$desc .= "$value() ";
-			$desc .= implode(' ', $qualifiers);
-			$qualifiers = array();
+			*/
+			$desc .= "$value()";
+			$icon_add_flags = 0;
 			$wait_function = false;
-			
-			echo _outputLeafNode(0/*TODO*/, $line, $desc);
+
+			if ($value == '__construct') { // TODO: auch eine methode mit dem namen der klasse soll eine konstruktor sein
+				echo _outputLeafNode(ICON_ATTR_CONSTRUCTOR | $icon_add_flags, $line, $desc);
+			} else if ($value == '__destruct') {
+				echo _outputLeafNode(ICON_ATTR_DESTRUCTOR  | $icon_add_flags, $line, $desc);
+			} else if (substr($value, 0, 2) == '__') {
+				echo _outputLeafNode(ICON_ATTR_MAGICMETHOD | $icon_add_flags, $line, $desc);
+			} else {
+				echo _outputLeafNode(ICON_ATTR_FUNCTION    | $icon_add_flags, $line, $desc);
+			}
 		}
 
 		if ($wait_class && ($token == T_STRING)) {
-			$desc = "$line: Class ";
+			$desc = "Class ";
+			/*
 			foreach ($class as $cdata) {
 				$desc .= $cdata[0].'->';
 			}
-			$desc .= "$value\n";		
+			*/
+			$desc .= "$value\n";
 			$class[] = array($value, $dep);
 			$wait_class = false;
 
-			echo _outputLeafNode(0/*TODO*/, $line, $desc);
+			echo _outputLeafNode(ICON_ATTR_CLASS | $icon_add_flags, $line, $desc);
+                        echo _outputIncreaseLevel();
 		}
 
-		if ($token == T_PUBLIC) $qualifiers[] = '(Pub)';
-		if ($token == T_PRIVATE) $qualifiers[] = '(Priv)';
-		if ($token == T_PROTECTED) $qualifiers[] = '(Prot)';
-		if ($token == T_STATIC) $qualifiers[] = '(S)';
-		if (($data == ';') || ($data == '{') || ($data == '}')) $qualifiers = array();
+		if ($token == T_PUBLIC)    $icon_add_flags |= ICON_ATTR_PUBLIC;
+		if ($token == T_PRIVATE)   $icon_add_flags |= ICON_ATTR_PRIVATE;
+		if ($token == T_PROTECTED) $icon_add_flags |= ICON_ATTR_PROTECTED;
+		if ($token == T_STATIC)    $icon_add_flags |= ICON_ATTR_STATIC;
+		if (($data == ';') || ($data == '{') || ($data == '}')) $icon_add_flags = 0;
 
 		if ($token == T_FUNCTION) {
 			$wait_function = true;
@@ -103,6 +120,7 @@ while (true) {
 	}
 	
 	echo _outputExit();
+
 	echo chr(1).chr(2).chr(3).chr(4).chr(5).chr(6).chr(7).chr(8);
 
 	sleep(1);
@@ -134,6 +152,11 @@ function array_peek($array) {
 }
 
 function strip_comment($x) {
+	if (substr($x, 0, 1) == '#') return trim(substr($x, 1));
 	if (substr($x, 0, 2) == '//') return trim(substr($x, 2));
 	if (substr($x, 0, 2) == '/*') return trim(substr($x, 2, strlen($x)-4));
 }
+
+
+// TODO: hallo
+# TODO: xxx

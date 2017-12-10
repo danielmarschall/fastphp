@@ -15,6 +15,7 @@ function GetWordUnderPos(AMemo: TSynEdit; Line, Column: integer): string;
 function GetWordUnderCaret(AMemo: TSynEdit): string;
 function MyVarToStr(v: Variant): string;
 function FileSystemCaseSensitive: boolean;
+function HighColorWindows: boolean;
 
 implementation
 
@@ -260,6 +261,25 @@ begin
   result := false;
   exit;
   {$ENDIF}
+end;
+
+function HighColorWindows: boolean;
+var
+  ver: Cardinal;
+  dwMajorVersion, dwMinorVersion: integer;
+begin
+  ver := GetVersion();
+  dwMajorVersion := Lo(ver);
+  dwMinorVersion := Hi(ver);
+
+  // Gradient fitting in:
+  // 5.1 = XP
+  // 5.2 = Windows Server 2003
+  // 6.0 = Vista
+  // 6.1 = Win7
+
+  result := ((dwMajorVersion = 5) and (dwMinorVersion >= 1)) or
+            ((dwMajorVersion = 6) and (dwMinorVersion <= 1));
 end;
 
 end.

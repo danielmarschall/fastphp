@@ -505,6 +505,7 @@ begin
   Caption := Caption + ' - ' + GetScrapFile;
   SrcRep := TSynEditFindReplace.Create(self);
   SrcRep.Editor := SynEdit1;
+  SynEdit1.Gutter.Gradient := HighColorWindows;
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);

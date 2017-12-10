@@ -114,12 +114,15 @@ object Form1: TForm1
         TabOrder = 0
         OnMouseWheelDown = SynEdit1MouseWheelDown
         OnMouseWheelUp = SynEdit1MouseWheelUp
+        Gutter.AutoSize = True
         Gutter.Font.Charset = DEFAULT_CHARSET
         Gutter.Font.Color = clWindowText
         Gutter.Font.Height = -11
         Gutter.Font.Name = 'Courier New'
         Gutter.Font.Style = []
         Gutter.ShowLineNumbers = True
+        Gutter.Gradient = True
+        Gutter.GradientStartColor = cl3DLight
         Highlighter = SynPHPSyn1
         Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceHomeKey, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollByOneLess, eoShowScrollHint, eoTabIndent, eoTrimTrailingSpaces]
         SearchEngine = SynEditSearch1
