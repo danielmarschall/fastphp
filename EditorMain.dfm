@@ -92,18 +92,17 @@ object Form1: TForm1
     object CodeTabsheet: TTabSheet
       Caption = 'Code'
       object Splitter2: TSplitter
-        Left = 893
+        Left = 273
         Top = 0
         Height = 321
-        Align = alRight
-        ExplicitLeft = 816
-        ExplicitTop = 104
+        ExplicitLeft = 328
+        ExplicitTop = 32
         ExplicitHeight = 100
       end
       object SynEdit1: TSynEdit
-        Left = 0
+        Left = 276
         Top = 0
-        Width = 893
+        Width = 836
         Height = 321
         Align = alClient
         ActiveLineColor = 14680010
@@ -126,19 +125,17 @@ object Form1: TForm1
         SearchEngine = SynEditSearch1
         WantTabs = True
         OnMouseCursor = SynEdit1MouseCursor
-        OnStatusChange = SynEdit1StatusChange
         FontSmoothing = fsmNone
-        ExplicitWidth = 1112
       end
-      object ListBox1: TListBox
-        Left = 896
+      object TreeView1: TTreeView
+        Left = 0
         Top = 0
-        Width = 216
+        Width = 273
         Height = 321
-        Align = alRight
-        ItemHeight = 13
+        Align = alLeft
+        Indent = 19
         TabOrder = 1
-        OnClick = ListBox1Click
+        OnDblClick = TreeView1DblClick
       end
     end
     object HelpTabsheet: TTabSheet

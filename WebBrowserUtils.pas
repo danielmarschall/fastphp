@@ -5,7 +5,7 @@ unit WebBrowserUtils;
 interface
 
 uses
-  Windows, ShDocVw{$IFDEF USE_SHDOCVW_TLB}_TLB{$ENDIF}, SysUtils, Forms;
+  Windows, {$IFDEF USE_SHDOCVW_TLB}ShDocVw_TLB{$ELSE}ShDocVw{$ENDIF}, SysUtils, Forms;
 
 procedure WaitForBrowser(AWebBrowser: TWebbrowser);
 

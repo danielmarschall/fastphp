@@ -5,8 +5,9 @@ unit BrowserMain;
 interface
 
 uses
+  // TODO: "{$IFDEF USE_SHDOCVW_TLB}_TLB{$ENDIF}" does not work with Delphi 10.2
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, Dialogs, OleCtrls, SHDocVw{$IFDEF USE_SHDOCVW_TLB}_TLB{$ENDIF}, ExtCtrls, StrUtils,
+  Controls, Forms, Dialogs, OleCtrls, SHDocVw_TLB, ExtCtrls, StrUtils,
   StdCtrls, activex, UrlMon;
 
 type
