@@ -108,9 +108,9 @@ while (true) {
 	sleep(1);
 }
 
-function _outputLeafNode($symbol, $line, $description) {
+function _outputLeafNode($icon, $line, $description) {
 	return 'N'.
-	     sprintf('%08s', $symbol).
+	     sprintf('%08s', $icon).
 	     sprintf('%08s', $line).
 	     sprintf('%04s', strlen($description)).
 	     $description;

@@ -13,7 +13,7 @@ Version 1.00:
 <FastPHPData100> ::= "FAST100!" (<Nodes> <Exit> | <Exit>) .
 <Nodes>          ::= <Node> | <Nodes> <Node> .
 <Node>           ::= <LeafNode> | <LeafNode> <IncreaseLevel> <Nodes> <DecreaseLevel> .
-<LeafNode>       ::= "N" <Symbol(8)> <LineNo(8)> <DescLen(4)> <Desc> .
+<LeafNode>       ::= "N" <Icon(8)> <LineNo(8)> <DescLen(4)> <Desc> .
 <IncreaseLevel>  ::= "I" .
 <DecreaseLevel>  ::= "D" .
 <Exit>           ::= "X" .
@@ -41,7 +41,7 @@ uses
 
 const
   LEN_MAGIC   = 8;
-  LEN_SYMBOL  = 8;
+  LEN_ICON    = 8;
   LEN_LINENO  = 8;
   LEN_DESCLEN = 4;
 
@@ -122,7 +122,7 @@ end;
 
 procedure TTreeViewFastPHP.Rec100(tn: TTreeNode; var ptr: PChar);
 var
-  typ, symbol, lineno, len, caption: string;
+  typ, icon, lineno, len, caption: string;
   lastTn: TTreeNode;
 begin
   try
@@ -134,9 +134,9 @@ begin
       until Trim(typ) <> '';
       if typ = 'N' then // new node
       begin
-        symbol := Read(ptr, LEN_SYMBOL);
+        icon   := Read(ptr, LEN_ICON);
         lineno := Read(ptr, LEN_LINENO);
-        len := Read(ptr, LEN_DESCLEN);
+        len    := Read(ptr, LEN_DESCLEN);
         caption := Read(ptr, StrToInt(len));
         if tn = nil then
           lastTn := Self.Items.Add(nil, caption)
