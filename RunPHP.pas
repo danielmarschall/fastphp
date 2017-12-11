@@ -6,14 +6,14 @@ uses
   SysUtils, Forms, Classes, Windows;
 
 type
-  TInputRequestCallback = function: string of object;
-  TOutputNotifyCallback = procedure(const output: string) of object;
+  TInputRequestCallback = function: AnsiString of object;
+  TOutputNotifyCallback = procedure(const output: AnsiString) of object;
   TRunCodeExplorer = class(TThread)
   private
     FInputRequestCallback: TInputRequestCallback;
     FOutputNotifyCallback: TOutputNotifyCallback;
-    FInputWaiting: string;
-    FOutputWaiting: string;
+    FInputWaiting: AnsiString;
+    FOutputWaiting: AnsiString;
   protected
     procedure CallInputRequestCallback;
     procedure CallOutputNotifyCallback;

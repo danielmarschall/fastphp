@@ -19,7 +19,7 @@ unit EditorMain;
 // TODO: todo liste
 
 // Future ideas
-// - code explorer / code insight
+// - code insight
 // - verschiedene php versionen?
 // - webbrowser1 nur laden, wenn man den tab anw‰hlt?
 // - doppelklick auf tab soll diesen schlieﬂen
@@ -118,6 +118,8 @@ type
     procedure TreeView1DblClick(Sender: TObject);
     procedure SynEdit1GutterClick(Sender: TObject; Button: TMouseButton; X, Y,
       Line: Integer; Mark: TSynEditMark);
+    procedure SynEdit1PaintTransient(Sender: TObject; Canvas: TCanvas;
+      TransientType: TTransientType);
   private
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
@@ -127,8 +129,8 @@ type
     {$ENDIF}
     procedure Help;
     function MarkUpLineReference(cont: string): string;
-    function InputRequestCallback: string;
-    procedure OutputNotifyCallback(const data: string);
+    function InputRequestCallback: AnsiString;
+    procedure OutputNotifyCallback(const data: AnsiString);
   protected
     ChmIndex: TMemIniFile;
     FScrapFile: string;
@@ -411,6 +413,150 @@ begin
     Handled := true;
   end
   else Handled := false;
+end;
+
+procedure TForm1.SynEdit1PaintTransient(Sender: TObject; Canvas: TCanvas; TransientType: TTransientType);
+var
+  Editor: TSynEdit;
+  OpenChars: array of WideChar;//[0..2] of WideChar=();
+  CloseChars: array of WideChar;//[0..2] of WideChar=();
+
+  function IsCharBracket(AChar: WideChar): Boolean;
+  begin
+    case AChar of
+      '{','[','(','<','}',']',')','>':
+        Result := True;
+      else
+        Result := False;
+    end;
+  end;
+
+  function CharToPixels(P: TBufferCoord): TPoint;
+  begin
+    Result := Editor.RowColumnToPixels(Editor.BufferToDisplayPos(P));
+  end;
+
+const
+  COLOR_FG = clRed;
+  COLOR_BG = clInfoBk;
+var
+  P: TBufferCoord;
+  Pix: TPoint;
+  D: TDisplayCoord;
+  S: UnicodeString;
+  I: Integer;
+  Attri: TSynHighlighterAttributes;
+  ArrayLength: Integer;
+  start: Integer;
+  TmpCharA, TmpCharB: WideChar;
+begin
+  // Source: https://github.com/SynEdit/SynEdit/blob/master/Demos/OnPaintTransientDemo/Unit1.pas
+
+  if TSynEdit(Sender).SelAvail then exit;
+  Editor := TSynEdit(Sender);
+  ArrayLength:= 3;
+
+  (*
+  if (Editor.Highlighter = shHTML) or (Editor.Highlighter = shXML) then
+    inc(ArrayLength);
+  *)
+
+  SetLength(OpenChars, ArrayLength);
+  SetLength(CloseChars, ArrayLength);
+  for i := 0 to ArrayLength - 1 do
+  begin
+    case i of
+      0: begin OpenChars[i] := '('; CloseChars[i] := ')'; end;
+      1: begin OpenChars[i] := '{'; CloseChars[i] := '}'; end;
+      2: begin OpenChars[i] := '['; CloseChars[i] := ']'; end;
+      3: begin OpenChars[i] := '<'; CloseChars[i] := '>'; end;
+    end;
+  end;
+
+  P := Editor.CaretXY;
+  D := Editor.DisplayXY;
+
+  Start := Editor.SelStart;
+
+  if (Start > 0) and (Start <= length(Editor.Text)) then
+    TmpCharA := Editor.Text[Start]
+  else
+    TmpCharA := #0;
+
+  if (Start < length(Editor.Text)) then
+    TmpCharB := Editor.Text[Start + 1]
+  else
+    TmpCharB := #0;
+
+  if not IsCharBracket(TmpCharA) and not IsCharBracket(TmpCharB) then exit;
+  S := TmpCharB;
+  if not IsCharBracket(TmpCharB) then
+  begin
+    P.Char := P.Char - 1;
+    S := TmpCharA;
+  end;
+  Editor.GetHighlighterAttriAtRowCol(P, S, Attri);
+
+  if (Editor.Highlighter.SymbolAttribute = Attri) then
+  begin
+    for i := low(OpenChars) to High(OpenChars) do
+    begin
+      if (S = OpenChars[i]) or (S = CloseChars[i]) then
+      begin
+        Pix := CharToPixels(P);
+
+        Editor.Canvas.Brush.Style := bsSolid;//Clear;
+        Editor.Canvas.Font.Assign(Editor.Font);
+        Editor.Canvas.Font.Style := Attri.Style;
+
+        if (TransientType = ttAfter) then
+        begin
+          Editor.Canvas.Font.Color := COLOR_FG;
+          Editor.Canvas.Brush.Color := COLOR_BG;
+        end
+        else
+        begin
+          Editor.Canvas.Font.Color := Attri.Foreground;
+          Editor.Canvas.Brush.Color := Attri.Background;
+        end;
+        if Editor.Canvas.Font.Color = clNone then
+          Editor.Canvas.Font.Color := Editor.Font.Color;
+        if Editor.Canvas.Brush.Color = clNone then
+          Editor.Canvas.Brush.Color := Editor.Color;
+
+        Editor.Canvas.TextOut(Pix.X, Pix.Y, S);
+        P := Editor.GetMatchingBracketEx(P);
+
+        if (P.Char > 0) and (P.Line > 0) then
+        begin
+          Pix := CharToPixels(P);
+          if Pix.X > Editor.Gutter.Width then
+          begin
+            {$REGION 'Added by ViaThinkSoft'}
+            if (TransientType = ttAfter) then
+            begin
+              Editor.Canvas.Font.Color := COLOR_FG;
+              Editor.Canvas.Brush.Color := COLOR_BG;
+            end
+            else
+            begin
+              Editor.Canvas.Font.Color := Attri.Foreground;
+              Editor.Canvas.Brush.Color := Attri.Background;
+            end;
+            if Editor.Canvas.Font.Color = clNone then
+              Editor.Canvas.Font.Color := Editor.Font.Color;
+            if Editor.Canvas.Brush.Color = clNone then
+              Editor.Canvas.Brush.Color := Editor.Color;
+            {$ENDREGION}
+            if S = OpenChars[i] then
+              Editor.Canvas.TextOut(Pix.X, Pix.Y, CloseChars[i])
+            else Editor.Canvas.TextOut(Pix.X, Pix.Y, OpenChars[i]);
+          end;
+        end;
+      end;
+    end;
+    Editor.Canvas.Brush.Style := bsSolid;
+  end;
 end;
 
 procedure TForm1.SynEditFocusTimerTimer(Sender: TObject);
@@ -829,12 +975,12 @@ begin
   result := cont;
 end;
 
-function TForm1.InputRequestCallback: string;
+function TForm1.InputRequestCallback: AnsiString;
 begin
-  result := SynEdit1.Text;
+  result := UTF8Encode(SynEdit1.Text);
 end;
 
-procedure TForm1.OutputNotifyCallback(const data: string);
+procedure TForm1.OutputNotifyCallback(const data: AnsiString);
 begin
   TreeView1.FillWithFastPHPData(data);
 end;

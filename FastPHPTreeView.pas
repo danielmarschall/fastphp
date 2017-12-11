@@ -13,7 +13,7 @@ Version 1.00:
 <FastPHPData100> ::= "FAST100!" (<Nodes> <Exit> | <Exit>) .
 <Nodes>          ::= <Node> | <Nodes> <Node> .
 <Node>           ::= <LeafNode> | <LeafNode> <IncreaseLevel> <Nodes> <DecreaseLevel> .
-<LeafNode>       ::= "N" <Icon(8)> <LineNo(8)> <DescLen(4)> <Desc> .
+<LeafNode>       ::= "N" <Icon(8)> <LineNo(8)> <DescLen(4)> <Desc(Utf8)> .
 <IncreaseLevel>  ::= "I" .
 <DecreaseLevel>  ::= "D" .
 <Exit>           ::= "X" .
@@ -137,7 +137,7 @@ begin
         icon   := Read(ptr, LEN_ICON);
         lineno := Read(ptr, LEN_LINENO);
         len    := Read(ptr, LEN_DESCLEN);
-        caption := Read(ptr, StrToInt(len));
+        caption := Utf8Decode(Read(ptr, StrToInt(len)));
         if tn = nil then
           lastTn := Self.Items.Add(nil, caption)
         else

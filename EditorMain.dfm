@@ -129,6 +129,7 @@ object Form1: TForm1
         WantTabs = True
         OnGutterClick = SynEdit1GutterClick
         OnMouseCursor = SynEdit1MouseCursor
+        OnPaintTransient = SynEdit1PaintTransient
         FontSmoothing = fsmNone
       end
       object TreeView1: TTreeView
@@ -229,7 +230,7 @@ object Form1: TForm1
     end
     object Button7: TButton
       Left = 166
-      Top = -1
+      Top = 0
       Width = 75
       Height = 35
       Action = ActionSave
@@ -237,7 +238,7 @@ object Form1: TForm1
     end
     object Button8: TButton
       Left = 85
-      Top = -1
+      Top = 0
       Width = 75
       Height = 35
       Action = ActionOpen

@@ -1,7 +1,5 @@
 <?php
 
-// TODO: Parsing der Datei codeexplorer.php bricht einfach so ab?
-
 define('ICON_ATTR_PUBLIC',           1);
 define('ICON_ATTR_PRIVATE',          2);
 define('ICON_ATTR_PROTECTED',        4);
@@ -29,8 +27,6 @@ while (true) {
 
 	echo "FAST100!\n";
 	
-	$code = str_replace(chr(0), '', $code); // TODO: attention: delphi outputs unicode here!!!! find solution.
-
 	$x = token_get_all($code);
 	
 	// file_put_contents('debug.tmp', $code);
@@ -130,20 +126,20 @@ function _outputLeafNode($icon, $line, $description) {
 	return 'N'.
 	     sprintf('%08s', $icon).
 	     sprintf('%08s', $line).
-	     sprintf('%04s', strlen($description)).
-	     $description;
+	     sprintf('%04s', strlen(trim($description))).
+	     trim($description)."\n";
 }
 
 function _outputIncreaseLevel() {
-	return 'I';
+	return 'I'."\n";
 }
 
 function _outputDecreaseLevel() {
-	return 'D';
+	return 'D'."\n";
 }
 
 function _outputExit() {
-	return 'X';
+	return 'X'."\n";
 }
 
 function array_peek($array) {
