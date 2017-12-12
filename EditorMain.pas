@@ -579,10 +579,12 @@ end;
 procedure TForm1.TreeView1DblClick(Sender: TObject);
 var
   tn: TTreeNode;
+  lineNo: integer;
 begin
   tn := TTreeView(Sender).Selected;
   if tn = nil then exit;
-  GotoLineNo(Integer(tn.Data));
+  lineNo := Integer(tn.Data);
+  if lineNo > 0 then GotoLineNo(lineNo);
 end;
 
 procedure TForm1.WebBrowser1BeforeNavigate2(ASender: TObject;

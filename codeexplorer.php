@@ -14,6 +14,7 @@ define('ICON_ATTR_MAGICMETHOD',   1024);
 define('ICON_ATTR_CLASS',         2048);
 define('ICON_ATTR_TRAIT',         4096);
 define('ICON_ATTR_INTERFACE',     8192);
+define('ICON_TODO',           99999999);
 
 error_reporting(0);
 
@@ -110,7 +111,7 @@ while (true) {
 
 		if ($token == T_COMMENT) {
 			if (stripos($value, 'TODO') !== false) {
-				echo _outputLeafNode(0/*TODO*/, $line, $value);
+				echo _outputLeafNode(ICON_TODO, $line, $value);
 			}
 		}
 	}
