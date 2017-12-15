@@ -260,6 +260,14 @@ object Form1: TForm1
       Action = ActionSpaceToTab
       TabOrder = 9
     end
+    object btnLint: TButton
+      Left = 814
+      Top = 0
+      Width = 75
+      Height = 35
+      Action = ActionLint
+      TabOrder = 10
+    end
   end
   object OpenDialog1: TOpenDialog
     DefaultExt = '.chm'
@@ -360,6 +368,10 @@ object Form1: TForm1
       Caption = 'SpaceToTab'
       Hint = 'Converts leading spaces to tabs'
       OnExecute = ActionSpaceToTabExecute
+    end
+    object ActionLint: TAction
+      Caption = 'Lint'
+      OnExecute = ActionLintExecute
     end
   end
   object Timer1: TTimer

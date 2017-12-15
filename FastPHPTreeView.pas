@@ -18,6 +18,8 @@ Version 1.00:
 <DecreaseLevel>  ::= "D" .
 <Exit>           ::= "X" .
 
+<Icon(8)>        ::= <Type(4)> <Attr(4)> .
+
 *)
 
 type
@@ -142,6 +144,7 @@ begin
           lastTn := Self.Items.Add(nil, caption)
         else
           lastTn := Self.Items.AddChild(tn, caption);
+        // lastTn.ImageIndex := // TODO
         lastTn.Data := Pointer(StrToInt(lineno)); // TODO: is this good?
       end
       else if typ = 'I' then // increase level
@@ -155,7 +158,10 @@ begin
     end;
   except
     on E: EAbort do
-      exit
+      if tn = nil then
+        exit
+      else
+        raise;
     else
       raise;
   end;

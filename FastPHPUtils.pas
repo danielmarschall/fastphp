@@ -10,7 +10,7 @@ const
 
 function FastPHPConfig: TMemIniFile;
 function GetPHPExe: string;
-function RunPHPScript(APHPFileName: string): string;
+function RunPHPScript(APHPFileName: string; lint: boolean=false): string;
 function ParseCHM(const chmFile: TFileName): boolean;
 function IsValidPHPExe(const exeFile: TFileName): boolean;
 
@@ -64,13 +64,16 @@ begin
   end;
 end;
 
-function RunPHPScript(APHPFileName: string): string;
+function RunPHPScript(APHPFileName: string; lint: boolean=false): string;
 var
   phpExe: string;
 begin
   phpExe := GetPHPExe;
   if phpExe = '' then Abort;
-  result := GetDosOutput('"'+phpExe+'" "'+APHPFileName+'"', ExtractFileDir(ParamStr(0)));
+  if lint then
+    result := GetDosOutput('"'+phpExe+'" -l "'+APHPFileName+'"', ExtractFileDir(ParamStr(0)))
+  else
+    result := GetDosOutput('"'+phpExe+'" "'+APHPFileName+'"', ExtractFileDir(ParamStr(0)));
 end;
 
 function ParseCHM(const chmFile: TFileName): boolean;

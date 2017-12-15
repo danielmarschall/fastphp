@@ -84,6 +84,8 @@ type
     SynEditSearch1: TSynEditSearch;
     TreeView1: TTreeView;
     Splitter2: TSplitter;
+    btnLint: TButton;
+    ActionLint: TAction;
     procedure Run(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -120,6 +122,7 @@ type
       Line: Integer; Mark: TSynEditMark);
     procedure SynEdit1PaintTransient(Sender: TObject; Canvas: TCanvas;
       TransientType: TTransientType);
+    procedure ActionLintExecute(Sender: TObject);
   private
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
@@ -191,6 +194,12 @@ begin
     WebBrowser2.SetFocus
   else if PageControl2.ActivePage = CodeTabsheet then
     SynEdit1.SetFocus;
+end;
+
+procedure TForm1.ActionLintExecute(Sender: TObject);
+begin
+  Run(Sender);
+  SynEdit1.SetFocus;
 end;
 
 procedure TForm1.ActionOpenExecute(Sender: TObject);
@@ -349,7 +358,7 @@ begin
   try
     SynEdit1.Lines.SaveToFile(GetScrapFile);
 
-    memo2.Lines.Text := RunPHPScript(GetScrapFile);
+    memo2.Lines.Text := RunPHPScript(GetScrapFile, Sender=ActionLint);
 
     Webbrowser1.LoadHTML(MarkUpLineReference(memo2.Lines.Text), GetScrapFile);
 
@@ -437,8 +446,8 @@ var
   end;
 
 const
-  COLOR_FG = clRed;
-  COLOR_BG = clInfoBk;
+  COLOR_FG = clGreen;
+  COLOR_BG = clLime;
 var
   P: TBufferCoord;
   Pix: TPoint;
