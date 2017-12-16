@@ -1,27 +1,20 @@
 <?php
 
+// TODO: show full signature of each element?
+
 error_reporting(0);
 
-define('ICON_ATTR_PRIVATE',             1);
-define('ICON_ATTR_PROTECTED',           2);
-define('ICON_ATTR_PUBLIC',              4);
-define('ICON_ATTR_ABSTRACT',            8);
-define('ICON_ATTR_STATIC',             16);
-
-define('ICON_TYPE_FUNCTION',       'FUNC');
-define('ICON_TYPE_CONSTRUCTOR',    'CSTR');
-define('ICON_TYPE_DESTRUCTOR',     'DSTR');
-define('ICON_TYPE_MAGICMETHOD',    'MGIC');
-define('ICON_TYPE_CLASS',          'CLAS');
-define('ICON_TYPE_TRAIT',          'TRAI');
-define('ICON_TYPE_INTERFACE',      'INTF');
-define('ICON_TYPE_TODO',           'TODO');
-define('ICON_TYPE_ERROR',          'ERR!');
-define('ICON_TYPE_VAR',            'VAR_');
-define('ICON_TYPE_CONST',          'CONS');
-
-define('ICON_TYPE_FOLDER',         'FOLD'); // unused (TODO: use for TODO)
-define('ICON_TYPE_FILE',           'FILE'); // unused
+define('ICON_TYPE_FUNCTION',       'FUN');
+define('ICON_TYPE_CONSTRUCTOR',    'CST');
+define('ICON_TYPE_DESTRUCTOR',     'DST');
+define('ICON_TYPE_MAGICMETHOD',    'MAG');
+define('ICON_TYPE_CLASS',          'CLS');
+define('ICON_TYPE_TRAIT',          'TRA');
+define('ICON_TYPE_INTERFACE',      'INT');
+define('ICON_TYPE_VAR',            'VAR');
+define('ICON_TYPE_CONST',          'CON');
+define('ICON_TYPE_TODO',           'TDO');
+define('ICON_TYPE_ERROR',          'ERR');
 
 while (true) {
 	$lines = array();
@@ -36,7 +29,7 @@ while (true) {
 	$x = token_get_all($code);
 	
 	if (!$x) {
-		echo _outputLeafNode(ICON_TYPE_ERROR, 0, 1, 'SYNTAX ERROR');
+		echo _outputLeafNode(ICON_TYPE_ERROR.implode('', $icon_add_flags), 1, 'SYNTAX ERROR');
 	}
 	
 	$wait_function = false;
@@ -45,7 +38,7 @@ while (true) {
 	$wait_interface = false;
 	$wait_abstract_func_list_end = false;
 	$levelAry = array();
-	$icon_add_flags = 0;
+	$icon_add_flags = array('_', '_', '_');
 	$dep = 0;
 	$insideFuncAry = array();
 
@@ -68,80 +61,89 @@ while (true) {
 
 		if ($wait_function && ($token == T_STRING)) {
 			$wait_function = false;
-                        if (($icon_add_flags & ICON_ATTR_ABSTRACT) == ICON_ATTR_ABSTRACT) {
+			if ($icon_add_flags[1] == 'A') {
 				$desc = "abstract function $value()";
-                                $wait_abstract_func_list_end = true;
+				$wait_abstract_func_list_end = true;
 			} else {
 				$desc = "function $value()";
-                        	$insideFuncAry[] = $dep;
+				$insideFuncAry[] = $dep;
 			}
-			$icon_add_flags = 0;
 
 			if ($value == '__construct') { // TODO: auch eine methode mit dem namen der klasse soll eine konstruktor sein
-				echo _outputLeafNode(ICON_TYPE_CONSTRUCTOR, $icon_add_flags, $line, $desc);
+				echo _outputLeafNode(ICON_TYPE_CONSTRUCTOR.implode('', $icon_add_flags), $line, $desc);
 			} else if ($value == '__destruct') {
-				echo _outputLeafNode(ICON_TYPE_DESTRUCTOR,  $icon_add_flags, $line, $desc);
+				echo _outputLeafNode(ICON_TYPE_DESTRUCTOR.implode('', $icon_add_flags), $line, $desc);
 			} else if (substr($value, 0, 2) == '__') {
-				echo _outputLeafNode(ICON_TYPE_MAGICMETHOD, $icon_add_flags, $line, $desc);
+				echo _outputLeafNode(ICON_TYPE_MAGICMETHOD.implode('', $icon_add_flags), $line, $desc);
 			} else {
-				echo _outputLeafNode(ICON_TYPE_FUNCTION,    $icon_add_flags, $line, $desc);
+				echo _outputLeafNode(ICON_TYPE_FUNCTION.implode('', $icon_add_flags), $line, $desc);
 			}
+
+			$icon_add_flags = array('_', '_', '_');
 		}
 
 		if ($wait_class && ($token == T_STRING)) {
-			$desc = "Class $value\n";
-			$icon_add_flags = 0;
+                        if ($icon_add_flags[1] == 'A') {
+				$desc = "abstract class $value\n";
+			} else {
+				$desc = "class $value\n";
+			}
 			$wait_class = false;
 			$levelAry[] = $dep;
 
-			echo _outputLeafNode(ICON_TYPE_CLASS, $icon_add_flags, $line, $desc);
-                        echo _outputIncreaseLevel();
+			echo _outputLeafNode(ICON_TYPE_CLASS.implode('', $icon_add_flags), $line, $desc);
+			$icon_add_flags = array('_', '_', '_');
+
+			echo _outputIncreaseLevel();
 		}
 
 		if ($wait_trait && ($token == T_STRING)) {
 			$desc = "Trait $value\n";
-			$icon_add_flags = 0;
 			$wait_trait = false;
 			$levelAry[] = $dep;
 
-			echo _outputLeafNode(ICON_TYPE_TRAIT, $icon_add_flags, $line, $desc);
-                        echo _outputIncreaseLevel();
+			echo _outputLeafNode(ICON_TYPE_TRAIT.implode('', $icon_add_flags), $line, $desc);
+			$icon_add_flags = array('_', '_', '_');
+
+			echo _outputIncreaseLevel();
 		}
 
 		if ($wait_interface && ($token == T_STRING)) {
 			$desc = "Interface $value\n";
-			$icon_add_flags = 0;
 			$wait_interface = false;
 			$levelAry[] = $dep;
 
-			echo _outputLeafNode(ICON_TYPE_INTERFACE, $icon_add_flags, $line, $desc);
-                        echo _outputIncreaseLevel();
+			echo _outputLeafNode(ICON_TYPE_INTERFACE.implode('', $icon_add_flags), $line, $desc);
+			$icon_add_flags = array('_', '_', '_');
+
+			echo _outputIncreaseLevel();
 		}
 
 		if ($wait_const && ($token == T_STRING)) {
 			$desc = "const $value\n";
-			$icon_add_flags = 0;
 			$wait_const = false;
 
-			echo _outputLeafNode(ICON_TYPE_CONST, $icon_add_flags, $line, $desc);
+			echo _outputLeafNode(ICON_TYPE_CONST.implode('', $icon_add_flags), $line, $desc);
+			$icon_add_flags = array('_', '_', '_');
 		}
 
 		if ((!$wait_abstract_func_list_end) && (count($levelAry) > 0) && (count($insideFuncAry) == 0) && ($token == T_VARIABLE)) {
 			$desc = "$value\n";
-			$icon_add_flags = 0;
 
-			echo _outputLeafNode(ICON_TYPE_VAR, $icon_add_flags, $line, $desc);
+			echo _outputLeafNode(ICON_TYPE_VAR.implode('', $icon_add_flags), $line, $desc);
+			$icon_add_flags = array('_', '_', '_');
 		}
 
-		if ($token == T_PRIVATE)   $icon_add_flags |= ICON_ATTR_PRIVATE;
-		if ($token == T_PROTECTED) $icon_add_flags |= ICON_ATTR_PROTECTED;
-		if ($token == T_PUBLIC)    $icon_add_flags |= ICON_ATTR_PUBLIC;
-		if ($token == T_ABSTRACT)  $icon_add_flags |= ICON_ATTR_ABSTRACT;
-		if ($token == T_STATIC)    $icon_add_flags |= ICON_ATTR_STATIC;
+		if ($token == T_PRIVATE)   $icon_add_flags[0] = '1';
+		if ($token == T_PROTECTED) $icon_add_flags[0] = '2';
+		if ($token == T_PUBLIC)    $icon_add_flags[0] = '3';
+		if ($token == T_ABSTRACT)  $icon_add_flags[1] = 'A';
+		if ($token == T_FINAL)     $icon_add_flags[1] = 'F';
+		if ($token == T_STATIC)    $icon_add_flags[2] = 'S';
 
 		if (($data == ';') || ($data == '{') || ($data == '}')) {
 			$wait_abstract_func_list_end = false;
-			$icon_add_flags = 0;
+			$icon_add_flags = array('_', '_', '_');
 		}
 
 		if ($token == T_FUNCTION) {
@@ -149,6 +151,10 @@ while (true) {
 		}
 		if ($token == T_CLASS) {
 			$wait_class = true;
+			$dep = 0;
+		}
+		if ($token == T_INTERFACE) {
+			$wait_interface = true;
 			$dep = 0;
 		}
 		if ($token == T_TRAIT) {
@@ -165,7 +171,7 @@ while (true) {
 			    (stripos($value, 'BUGBUG') !== false) ||
 			    (stripos($value, 'FIXME')  !== false) ||
 			    (stripos($value, 'XXX')    !== false)) {
-				echo _outputLeafNode(ICON_TYPE_TODO, 0, $line, strip_comment($value));
+				echo _outputLeafNode(ICON_TYPE_TODO.implode('', $icon_add_flags), $line, strip_comment($value));
 			}
 		}
 	}
@@ -177,9 +183,40 @@ while (true) {
 	sleep(1);
 }
 
-function _outputLeafNode($iconType, $iconAttr, $line, $description) {
-	return 'N'.str_pad($iconType, 4).
-	           sprintf('%04s', $iconAttr).
+function _iconCodeToIndex($icon) {
+	$typ = substr($icon, 0, 3);
+
+	if ($icon[3] == '_') $icon[3] = '3'; // public is default visibility
+
+	if (($typ == 'MAG') || ($typ == 'CST') || ($typ == 'DST')) {
+		$typ = 'FUN';
+	} else if ($typ == 'INT') {
+		$typ = 'CLS';
+		$icon[4] = 'A';
+	}
+
+	     if (($typ == 'CLS')                      && ($icon[4] != 'A')) return  0;
+	else if (($typ == 'CLS')                      && ($icon[4] == 'A')) return  1;
+	else if (($typ == 'TRA')                                          ) return  2;
+	else if (($typ == 'CON') && ($icon[3] == '1')                     ) return  3;
+	else if (($typ == 'VAR') && ($icon[3] == '1')                     ) return  4;
+	else if (($typ == 'FUN') && ($icon[3] == '1') && ($icon[4] != 'A')) return  5;
+	else if (($typ == 'FUN') && ($icon[3] == '1') && ($icon[4] == 'A')) return  6;
+	else if (($typ == 'CON') && ($icon[3] == '2')                     ) return  7;
+	else if (($typ == 'VAR') && ($icon[3] == '2')                     ) return  8;
+	else if (($typ == 'FUN') && ($icon[3] == '2') && ($icon[4] != 'A')) return  9;
+	else if (($typ == 'FUN') && ($icon[3] == '2') && ($icon[4] == 'A')) return 10;
+	else if (($typ == 'CON') && ($icon[3] == '3')                     ) return 11;
+	else if (($typ == 'VAR') && ($icon[3] == '3')                     ) return 12;
+	else if (($typ == 'FUN') && ($icon[3] == '3') && ($icon[4] != 'A')) return 13;
+	else if (($typ == 'FUN') && ($icon[3] == '3') && ($icon[4] == 'A')) return 14;
+	else if (($typ == 'TDO')                                          ) return 15;
+	else                                                                return -1;
+}
+
+function _outputLeafNode($icon, $line, $description) {
+	$imageindex = _iconCodeToIndex($icon);
+	return 'N'.($imageindex == -1 ? '____' : sprintf('%04s', $imageindex)).
 	           sprintf('%08s', $line).
 	           sprintf('%04s', strlen(trim($description))).
 	           trim($description).

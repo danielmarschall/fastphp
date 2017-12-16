@@ -9,23 +9,36 @@ uses
 
 <FastPHPData>    ::= <FastPHPData100> .
 
-Version 1.00:
-<FastPHPData100> ::= "FAST100!" (<Nodes> <Exit> | <Exit>) .
-<Nodes>          ::= <Node> | <Nodes> <Node> .
-<Node>           ::= <LeafNode> | <LeafNode> <IncreaseLevel> <Nodes> <DecreaseLevel> .
-<LeafNode>       ::= "N" <Icon(8)> <LineNo(8)> <DescLen(4)> <Desc(Utf8)> .
+Version 1.00 (signature "FAST100!"):
+
+<FastPHPData100> ::= <Signature100> ( <Nodes> <Exit> | <Exit> ) .
+<Signature100>   ::= "F" "A" "S" "T" "1" "0" "0" "!" .
+<Nodes>          ::= <Node> | ( <Nodes> <Node> ) .
+<Node>           ::= <LeafNode> | ( <LeafNode> <IncreaseLevel> <Nodes> <DecreaseLevel> ) .
+
+<LeafNode>       ::= "N" <Icon> <LineNo> <DescLen> <Desc> .
 <IncreaseLevel>  ::= "I" .
 <DecreaseLevel>  ::= "D" .
 <Exit>           ::= "X" .
 
-<Icon(8)>        ::= <Type(4)> <Attr(4)> .
+<LineNo>         ::= <Int8> .
+<DescLen>        ::= <Int4> .
+<Desc>           ::= (Utf8-String) .
+<Icon>           ::= <NoIcon> | <ImageIndex> .
+
+<NoIcon>         ::= "_" "_" "_" "_" .
+<ImageIndex>     ::= <Int4> .
+
+<Int1>           ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" .
+<Int2>           ::= <Int1> <Int1> .
+<Int4>           ::= <Int2> <Int2> .
+<Int8>           ::= <Int4> <Int4> .
 
 *)
 
 type
   TTreeViewFastPHP = class helper for TTreeView
   private
-    //FPrevFastPHPData: string;
     class function Read(var ptr: PChar; len: integer): string; inline;
     procedure Rec100(tn: TTreeNode; var ptr: PChar);
   protected
@@ -43,12 +56,17 @@ uses
 
 const
   LEN_MAGIC   = 8;
-  LEN_ICON    = 8;
+  LEN_ICON    = 4;
   LEN_LINENO  = 8;
   LEN_DESCLEN = 4;
 
 {$EXTERNALSYM LockWindowUpdate}
 function LockWindowUpdate(hWndLock: HWND): BOOL; stdcall; external user32 name 'LockWindowUpdate';
+
+function HexToInt(HexNum: string): LongInt;
+begin
+  Result := StrToInt('$' + HexNum);
+end;
 
 procedure TTreeViewFastPHP.DoFillWithFastPHPData(ptr: PChar);
 
@@ -74,7 +92,17 @@ var
   selected, magic: string;
   horPos, verPos: integer;
   i: integer;
+  crc32: string;
 begin
+  // No update if the user is dragging the scrollbar
+  // (otherwise the program will somehow lock up)
+  if GetCapture = Handle then exit;
+
+  // Don't rebuild the treeview if nothing has changed (use the Tag property to store the CRC32)
+  crc32 := Read(ptr, 8);
+  if crc32 = IntToHex(Tag, 8) then exit;
+  Tag := HexToInt(crc32);
+
   selected := '';
   expanded := TStringList.Create;
   horPos := GetScrollPos(Handle, SB_HORZ);
@@ -94,11 +122,21 @@ begin
 
     {$REGION 'Update the treeview'}
     Self.Items.Clear;
-    magic := Read(ptr, LEN_MAGIC);
-    if magic = 'FAST100!' then
-      Rec100(nil, ptr)
-    else
-      raise EFastNodeException.CreateFmt('FastNode version "%s" not supported.', [magic]);
+    try
+      magic := Read(ptr, LEN_MAGIC);
+      if magic = 'FAST100!' then
+        Rec100(nil, ptr)
+      else
+        raise EFastNodeException.CreateFmt('FastNode version "%s" not supported.', [magic]);
+    except
+      on E: Exception do
+      begin
+        Self.Items.Clear;
+        tn := Self.Items.Add(nil, 'ERROR: ' + E.Message);
+        tn.ImageIndex := -1;
+        tn.SelectedIndex := -1;
+      end;
+    end;
     {$ENDREGION}
 
     {$REGION 'Recover the previous current state (selected and expanded flags)'}
@@ -114,7 +152,6 @@ begin
     Self.Items.EndUpdate;
     LockWindowUpdate(0);
 
-    // TODO: Bug! When the user keeps pressing the scrollbar, the program hangs and locks up
     SetScrollPos(Handle, SB_HORZ, horPos, false);
     SetScrollPos(Handle, SB_VERT, verPos, false);
 
@@ -124,9 +161,6 @@ end;
 
 procedure TTreeViewFastPHP.FillWithFastPHPData(data: string);
 begin
-  //if FPrevFastPHPData = data then exit;
-  //FPrevFastPHPData := data;
-
   data := Trim(data);
   if not EndsStr('X', data) then raise EFastNodeException.Create('FastNode string must end with "X"');
 
@@ -161,8 +195,16 @@ begin
           lastTn := Self.Items.Add(nil, caption)
         else
           lastTn := Self.Items.AddChild(tn, caption);
-        // lastTn.ImageIndex := // TODO
-        lastTn.Data := Pointer(StrToInt(lineno)); // TODO: is this good?
+
+        {$REGION 'Determinate icon'}
+        if icon = '____' then
+          lastTn.ImageIndex := -1
+        else
+          lastTn.ImageIndex := StrToInt(icon);
+        lastTn.SelectedIndex := lastTn.ImageIndex;
+        {$ENDREGION}
+
+        lastTn.Data := Pointer(StrToInt(lineno)); // Hack...
       end
       else if typ = 'I' then // increase level
       begin

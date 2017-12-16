@@ -35,7 +35,7 @@ uses
   Dialogs, StdCtrls, OleCtrls, ComCtrls, ExtCtrls, ToolWin, IniFiles,
   SynEditHighlighter, SynHighlighterPHP, SynEdit, ShDocVw_TLB, FindReplace,
   System.Actions, Vcl.ActnList, System.UITypes, SynEditMiscClasses,
-  SynEditSearch, RunPHP;
+  SynEditSearch, RunPHP, System.ImageList, Vcl.ImgList;
 
 {.$DEFINE OnlineHelp}
 
@@ -86,6 +86,7 @@ type
     Splitter2: TSplitter;
     btnLint: TButton;
     ActionLint: TAction;
+    ImageList1: TImageList;
     procedure Run(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -154,7 +155,7 @@ implementation
 
 uses
   Functions, StrUtils, WebBrowserUtils, FastPHPUtils, Math, ShellAPI, RichEdit,
-  FastPHPTreeView;
+  FastPHPTreeView, ImageListEx;
 
 const
   crMouseGutter = 1;
@@ -683,6 +684,8 @@ begin
 
   Screen.Cursors[crMouseGutter] := LoadCursor(hInstance, 'MOUSEGUTTER');
   SynEdit1.Gutter.Cursor := crMouseGutter;
+
+  if FileExists('codeexplorer.bmp') then ImageList1.LoadAndSplitImages('codeexplorer.bmp');
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);

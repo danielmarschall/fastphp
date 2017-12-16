@@ -28,6 +28,9 @@ type
 
 implementation
 
+uses
+  CRC32;
+
 procedure TRunCodeExplorer.Execute;
 
   function ProcessRunning(PI: TProcessInformation): boolean; inline;
@@ -127,7 +130,7 @@ begin
           {$REGION 'Notify main thread about output'}
           if Assigned(FOutputNotifyCallback) and not Self.Terminated and ProcessRunning(PI) then
           begin
-            FOutputWaiting := result;
+            FOutputWaiting := IntToHex(CalculateCRC32String(result), 8) + result;
             Synchronize(CallOutputNotifyCallback);
           end;
           {$ENDREGION}

@@ -1,60 +1,89 @@
 
-public            1
-private           2
-protected         4
-abstract          8
-static           16
-const            32
-var              64
-function        128
-constructor     256
-destructor      512
-magic method   1024
-class          2048
-trait          4096
-interface      8192
-<reserved>    16384
-<reserved>    32768
+0 n/a		_
+1 private	1
+2 protected	2
+3 public	3
+
+0 n/a		_
+1 abstract	A
+2 final		F
+
+0 n/a		_
+1 static	S
 
 
-00000033      public const
-00000034      private const
-00000036      protected const
-00000065      public var
-00000066      private var
-00000068      protected var
-00000129      public function
-00000130      private function
-00000132      protected function
-00000137      abstract public function
-00000140      abstract protected function
-00000145      static public function
-00000146      static private function
-00000148      static protected function
-00000153      abstract static public function
-00000156      abstract static protected function
-00000257      public constructor
-00000258      private constructor
-00000260      protected constructor
-00000265      abstract public constructor
-00000268      abstract protected constructor
-00000513      public destructor
-00000514      private destructor
-00000516      protected destructor
-00000521      abstract public destructor
-00000524      abstract protected destructor
-00001025      public magic
-00001026      private magic
-00001028      protected magic
-00001033      abstract public magic
-00001036      abstract protected magic
-00001041      static public magic
-00001042      static private magic
-00001044      static protected magic
-00001049      abstract static public magic
-00001052      abstract static protected magic
-00002048      class
-00002056      abstract class
-00004096      trait
-00008192      interface
-99999999      TODO
+
+
+
+
+
+CON1__	private const
+CON2__	protected const
+CON3__	public const
+
+VAR1__	private var
+VAR2__	protected var
+VAR3__	public var
+
+FUN1__	private function
+FUN2__	protected function
+FUN3__	public function
+FUN2A_	protected abstract function
+FUN3A_	public abstract function
+FUN1_S	private static function
+FUN2_S	protected static function
+FUN3_S	public static function
+FUN2AS	protected abstract static function
+FUN3AS	public abstract static function
+FUN1F_	private final function
+FUN2F_	protected final function
+FUN3F_	public final function
+FUN1FS	private final static function
+FUN2FS	protected final static function
+FUN3FS	public final static function
+
+CST1__	private constructor
+CST2__	protected constructor
+CST3__	public constructor
+CST2A_	protected abstract constructor
+CST3A_	public abstract constructor
+CST1F_	private final constructor
+CST2F_	protected final constructor
+CST3F_	public final constructor
+
+DST1__	private destructor
+DST2__	protected destructor
+DST3__	public destructor
+DST2A_	protected abstract destructor
+DST3A_	public abstract destructor
+DST1F_	private final destructor
+DST2F_	protected final destructor
+DST3F_	public final destructor
+
+MAG1__	private magic
+MAG2__	protected magic
+MAG3__	public magic
+MAG2A_	protected abstract magic
+MAG3A_	public abstract magic
+MAG1_S	private static magic
+MAG2_S	protected static magic
+MAG3_S	public static magic
+MAG2AS	protected abstract static magic
+MAG3AS	public abstract static magic
+MAG1F_	private final magic
+MAG2F_	protected final magic
+MAG3F_	public final magic
+MAG1FS	private final static magic
+MAG2FS	protected final static magic
+MAG3FS	public final static magic
+
+CLS___	class
+CLS_A_	abstract class
+CLS_F_	final class
+
+TRA___	trait
+INT___	interface
+ERR___	Error
+FLD___	Folder icon
+FIL___	File icon
+TDO___	TODO

@@ -138,7 +138,9 @@ object Form1: TForm1
         Width = 273
         Height = 321
         Align = alLeft
+        Images = ImageList1
         Indent = 19
+        ReadOnly = True
         TabOrder = 1
         OnDblClick = TreeView1DblClick
       end
@@ -383,5 +385,9 @@ object Form1: TForm1
   object SynEditSearch1: TSynEditSearch
     Left = 780
     Top = 236
+  end
+  object ImageList1: TImageList
+    Left = 92
+    Top = 180
   end
 end
