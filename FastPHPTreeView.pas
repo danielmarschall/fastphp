@@ -39,7 +39,7 @@ type
 implementation
 
 uses
-  StrUtils;
+  StrUtils, Windows;
 
 const
   LEN_MAGIC   = 8;
@@ -47,16 +47,20 @@ const
   LEN_LINENO  = 8;
   LEN_DESCLEN = 4;
 
+{$EXTERNALSYM LockWindowUpdate}
+function LockWindowUpdate(hWndLock: HWND): BOOL; stdcall; external user32 name 'LockWindowUpdate';
+
 procedure TTreeViewFastPHP.DoFillWithFastPHPData(ptr: PChar);
 var
   s: String;
   tn, tmp: TTreeNode;
   expanded: TStringList;
-  selected, magic: string;
+  selected, top, magic: string;
   i: integer;
 begin
   selected := '';
   expanded := TStringList.Create;
+  LockWindowUpdate(Parent.Handle); // Parent is better choice for FastPHP... but for other applications it might be wrong?
   Self.Items.BeginUpdate;
   try
     {$REGION 'Remember our current state (selected and expanded flags)'}
@@ -71,6 +75,7 @@ begin
         tmp := tmp.Parent;
       end;
       if tn.Selected then selected := s;
+      if TopItem = tn then top := s;
       if tn.Expanded and tn.HasChildren then expanded.Add(s);
     end;
     {$ENDREGION}
@@ -96,12 +101,19 @@ begin
         tmp := tmp.Parent;
       end;
       if selected = s then tn.Selected := true;
+      if top = s then
+      begin
+        // TODO: Does not work!
+        //       Even if EndUpdate and LockWindowUpdate are removed, the behavior is weird (it keeps jumping back...)
+        TopItem := tn;
+      end;
       if expanded.IndexOf(s) >= 0 then tn.Expand(false);
     end;
     {$ENDREGION}
   finally
-    expanded.Free;
     Self.Items.EndUpdate;
+    LockWindowUpdate(0);
+    expanded.Free;
   end;
 end;
 
