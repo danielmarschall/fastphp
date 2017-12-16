@@ -51,15 +51,34 @@ const
 function LockWindowUpdate(hWndLock: HWND): BOOL; stdcall; external user32 name 'LockWindowUpdate';
 
 procedure TTreeViewFastPHP.DoFillWithFastPHPData(ptr: PChar);
+
+  function _NodeID(tn: TTreeNode): string;
+  var
+    tmp: TTreeNode;
+  begin
+    // Attention: This function requires that the tree node items are unique
+    //            e.g. Class1->function1() is unique
+    result := tn.Text;
+    tmp := tn.Parent;
+    while tmp <> nil do
+    begin
+      result := tmp.Text + #0 + result;
+      tmp := tmp.Parent;
+    end;
+  end;
+
 var
   s: String;
-  tn, tmp: TTreeNode;
+  tn: TTreeNode;
   expanded: TStringList;
-  selected, top, magic: string;
+  selected, magic: string;
+  horPos, verPos: integer;
   i: integer;
 begin
   selected := '';
   expanded := TStringList.Create;
+  horPos := GetScrollPos(Handle, SB_HORZ);
+  verPos := GetScrollPos(Handle, SB_VERT);
   LockWindowUpdate(Parent.Handle); // Parent is better choice for FastPHP... but for other applications it might be wrong?
   Self.Items.BeginUpdate;
   try
@@ -67,15 +86,8 @@ begin
     for i := 0 to Self.Items.Count-1 do
     begin
       tn := Self.Items.Item[i];
-      s := tn.Text;
-      tmp := tn.Parent;
-      while tmp <> nil do
-      begin
-        s := tmp.Text + #0 + s;
-        tmp := tmp.Parent;
-      end;
+      s := _NodeID(tn);
       if tn.Selected then selected := s;
-      if TopItem = tn then top := s;
       if tn.Expanded and tn.HasChildren then expanded.Add(s);
     end;
     {$ENDREGION}
@@ -93,26 +105,19 @@ begin
     for i := 0 to Self.Items.Count-1 do
     begin
       tn := Self.Items.Item[i];
-      s := tn.Text;
-      tmp := tn.Parent;
-      while tmp <> nil do
-      begin
-        s := tmp.Text + #0 + s;
-        tmp := tmp.Parent;
-      end;
+      s := _NodeID(tn);
       if selected = s then tn.Selected := true;
-      if top = s then
-      begin
-        // TODO: Does not work!
-        //       Even if EndUpdate and LockWindowUpdate are removed, the behavior is weird (it keeps jumping back...)
-        TopItem := tn;
-      end;
       if expanded.IndexOf(s) >= 0 then tn.Expand(false);
     end;
     {$ENDREGION}
   finally
     Self.Items.EndUpdate;
     LockWindowUpdate(0);
+
+    // TODO: Bug! When the user keeps pressing the scrollbar, the program hangs and locks up
+    SetScrollPos(Handle, SB_HORZ, horPos, false);
+    SetScrollPos(Handle, SB_VERT, verPos, false);
+
     expanded.Free;
   end;
 end;
