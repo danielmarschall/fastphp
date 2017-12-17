@@ -73,7 +73,7 @@ begin
   if lint then
     result := GetDosOutput('"'+phpExe+'" -l "'+APHPFileName+'"', ExtractFileDir(ParamStr(0)))
   else
-    result := GetDosOutput('"'+phpExe+'" "'+APHPFileName+'"', ExtractFileDir(ParamStr(0)));
+    result := GetDosOutput('"'+phpExe+'" -f "'+APHPFileName+'"', ExtractFileDir(ParamStr(0)));
 end;
 
 function ParseCHM(const chmFile: TFileName): boolean;

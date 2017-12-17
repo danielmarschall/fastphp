@@ -228,8 +228,8 @@ begin
         myUrl2 := StringReplace(myUrl2, ' ', '+', []);
         myUrl2 := 'http://wa.viathinksoft.de/' + myUrl2;
 
-        showmessage(myUrl2);
-        WebBrowser1.LoadHTML(GetDosOutput('"'+GetPHPExe+'" "'+myURL+'" "'+ArgGet+'" "'+ArgPost+'" "'+ArgHeader+'"', ExtractFileDir(Application.ExeName)), myUrl2);
+        // showmessage(myUrl2);
+        WebBrowser1.LoadHTML(GetDosOutput('"'+GetPHPExe+'" -f "'+myURL+'" -- "'+ArgGet+'" "'+ArgPost+'" "'+ArgHeader+'"', ExtractFileDir(Application.ExeName)), myUrl2);
       end;
       Cancel := true;
     end;

@@ -291,7 +291,9 @@ class FastNodeReader {
 			if (trim($f) == chr(1).chr(2).chr(3).chr(4).chr(5).chr(6).chr(7).chr(8)) break;
 
 			// Signal to terminate the code explorer
-			if (trim($f) == chr(8).chr(7).chr(6).chr(5).chr(4).chr(3).chr(2).chr(1)) die();
+			if (trim($f) == chr(8).chr(7).chr(6).chr(5).chr(4).chr(3).chr(2).chr(1)) {
+				 die("\n".chr(8).chr(7).chr(6).chr(5).chr(4).chr(3).chr(2).chr(1)."\n");
+			}
 
 			$lines[] = $f;
 		}
@@ -311,19 +313,19 @@ class FastNodeWriter {
 	}
 
 	public static function outputIncreaseLevel() {
-		return 'I'."\n";
+		return "I\n";
 	}
 
 	public static function outputDecreaseLevel() {
-		return 'D'."\n";
+		return "D\n";
 	}
 
 	public static function outputExit() {
-		return 'X'."\n";
+		return "X\n";
 	}
 
 	public static function signalOutputEnd() {
-		return chr(1).chr(2).chr(3).chr(4).chr(5).chr(6).chr(7).chr(8);
+		return "\n".chr(1).chr(2).chr(3).chr(4).chr(5).chr(6).chr(7).chr(8)."\n";
 	}
 
 	public static function outputHeader() {

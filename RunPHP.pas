@@ -51,7 +51,6 @@ var
   WorkDir: string;
   Handle: Boolean;
   testString: AnsiString;
-  CommandLine: string;
   Output, OutputLastCache: string;
 const
   SIGNAL_END_OF_TRANSMISSION = #1#2#3#4#5#6#7#8;
@@ -64,8 +63,6 @@ begin
 
   if not FileExists(Self.PhpExe) then exit;
   if not FileExists(Self.PhpFile) then exit;
-
-  CommandLine := '"'+Self.PhpExe+'" "'+Self.PhpFile+'"';
 
   Output := '';
   OutputLastCache := '';
@@ -88,7 +85,7 @@ begin
       hStdError := StdOutPipeWrite;
     end;
 
-    Handle := CreateProcess(nil, PChar('cmd.exe /C "' + CommandLine + '"'),
+    Handle := CreateProcess(nil, PChar('"'+Self.PhpExe+'" -f "'+Self.PhpFile+'"'),
                             nil, nil, True, 0, nil, PChar(WorkDir), SI, PI);
     CloseHandle(StdOutPipeWrite);
 
