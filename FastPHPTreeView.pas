@@ -117,21 +117,11 @@ begin
 
     {$REGION 'Update the treeview'}
     Self.Items.Clear;
-    try
-      magic := Read(ptr, LEN_MAGIC);
-      if magic = 'FAST100!' then
-        Rec100(nil, ptr)
-      else
-        raise EFastNodeException.CreateFmt('FastNode version "%s" not supported.', [magic]);
-    except
-      on E: Exception do
-      begin
-        Self.Items.Clear;
-        tn := Self.Items.Add(nil, 'ERROR: ' + E.Message);
-        tn.ImageIndex := -1;
-        tn.SelectedIndex := -1;
-      end;
-    end;
+    magic := Read(ptr, LEN_MAGIC);
+    if magic = 'FAST100!' then
+      Rec100(nil, ptr)
+    else
+      raise EFastNodeException.CreateFmt('FastNode version "%s" not supported.', [magic]);
     {$ENDREGION}
 
     {$REGION 'Recover the previous current state (selected and expanded flags)'}
@@ -155,11 +145,23 @@ begin
 end;
 
 function TTreeViewFastPHP.FillWithFastPHPData(data: string): boolean;
+var
+  tn: TTreeNode;
 begin
-  data := Trim(data);
-  if not EndsStr('X', data) then raise EFastNodeException.Create('FastNode string must end with "X"');
+  try
+    data := Trim(data);
+    if not EndsStr('X', data) then raise EFastNodeException.Create('FastNode string must end with "X"');
 
-  result := DoFillWithFastPHPData(PChar(data));
+    result := DoFillWithFastPHPData(PChar(data));
+  except
+    on E: Exception do
+    begin
+      Self.Items.Clear;
+      tn := Self.Items.Add(nil, 'ERROR: ' + E.Message);
+      tn.ImageIndex := -1;
+      tn.SelectedIndex := -1;
+    end;
+  end;
 end;
 
 class function TTreeViewFastPHP.Read(var ptr: PChar; len: integer): string;

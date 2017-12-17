@@ -5,6 +5,7 @@ Deploy following files after compilation:
 - FastPHPEditor.exe
 - codeexplorer.bmp
 - codeexplorer.php
+- codeexplorer_api.inc.php
 
 (For the browser:)
 - FastPHPBrowser.exe
