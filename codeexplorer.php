@@ -190,23 +190,23 @@ function _isToDoDescription($comment) {
 }
 
 function _iconCodeToIndex(/* FastPHPIcon */ $icon) {
-	     if (($icon->getType() == ICON_TYPE_CLASS)                               && (!$icon->isAbstract())) return  0;
-	else if (($icon->getType() == ICON_TYPE_CLASS)                               && ( $icon->isAbstract())) return  1;
-	else if (($icon->getType() == ICON_TYPE_INTERFACE)                                                    ) return  1;
-	else if (($icon->getType() == ICON_TYPE_TRAIT)                                                        ) return  2;
-	else if (($icon->getType() == ICON_TYPE_CONST)     && ($icon->isPrivate())                            ) return  3;
-	else if (($icon->getType() == ICON_TYPE_VAR)       && ($icon->isPrivate())                            ) return  4;
-	else if (($icon->isMethod())                       && ($icon->isPrivate())   && (!$icon->isAbstract())) return  5;
-	else if (($icon->isMethod())                       && ($icon->isPrivate())   && ( $icon->isAbstract())) return  6;
-	else if (($icon->getType() == ICON_TYPE_CONST)     && ($icon->isProtected())                          ) return  7;
-	else if (($icon->getType() == ICON_TYPE_VAR)       && ($icon->isProtected())                          ) return  8;
-	else if (($icon->isMethod())                       && ($icon->isProtected()) && (!$icon->isAbstract())) return  9;
-	else if (($icon->isMethod())                       && ($icon->isProtected()) && ( $icon->isAbstract())) return 10;
-	else if (($icon->getType() == ICON_TYPE_CONST)     && ($icon->isPublic())                             ) return 11;
-	else if (($icon->getType() == ICON_TYPE_VAR)       && ($icon->isPublic())                             ) return 12;
-	else if (($icon->isMethod())                       && ($icon->isPublic())    && (!$icon->isAbstract())) return 13;
-	else if (($icon->isMethod())                       && ($icon->isPublic())    && ( $icon->isAbstract())) return 14;
-	else if (($icon->getType() == ICON_TYPE_TODO)                                                         ) return 15;
+	     if (($icon->getType() == ICON_TYPE_CLASS)                               && (!$icon->isAbstract())) return  0; // class
+	else if (($icon->getType() == ICON_TYPE_CLASS)                               && ( $icon->isAbstract())) return  1; // abstract class
+	else if (($icon->getType() == ICON_TYPE_INTERFACE)                                                    ) return  2; // interface
+	else if (($icon->getType() == ICON_TYPE_TRAIT)                                                        ) return  3; // trait
+	else if (($icon->getType() == ICON_TYPE_CONST)     && ($icon->isPrivate())                            ) return  4; // private const
+	else if (($icon->getType() == ICON_TYPE_VAR)       && ($icon->isPrivate())                            ) return  5; // private var
+	else if (($icon->isMethod())                       && ($icon->isPrivate())   && (!$icon->isAbstract())) return  6; // private function
+	else if (($icon->isMethod())                       && ($icon->isPrivate())   && ( $icon->isAbstract())) return  7; // private abstract function
+	else if (($icon->getType() == ICON_TYPE_CONST)     && ($icon->isProtected())                          ) return  8; // protected const
+	else if (($icon->getType() == ICON_TYPE_VAR)       && ($icon->isProtected())                          ) return  9; // protected var
+	else if (($icon->isMethod())                       && ($icon->isProtected()) && (!$icon->isAbstract())) return 10; // protected function
+	else if (($icon->isMethod())                       && ($icon->isProtected()) && ( $icon->isAbstract())) return 11; // protected abstract function
+	else if (($icon->getType() == ICON_TYPE_CONST)     && ($icon->isPublic())                             ) return 12; // public const
+	else if (($icon->getType() == ICON_TYPE_VAR)       && ($icon->isPublic())                             ) return 13; // public var
+	else if (($icon->isMethod())                       && ($icon->isPublic())    && (!$icon->isAbstract())) return 14; // public function
+	else if (($icon->isMethod())                       && ($icon->isPublic())    && ( $icon->isAbstract())) return 15; // public abstract function
+	else if (($icon->getType() == ICON_TYPE_TODO)                                                         ) return 16; // ToDo comment
 	else                                                                                                    return -1;
 }
 
