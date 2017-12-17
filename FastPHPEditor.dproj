@@ -106,7 +106,6 @@
         <DCCReference Include="FindReplace.pas"/>
         <DCCReference Include="RunPHP.pas"/>
         <DCCReference Include="FastPHPTreeView.pas"/>
-        <DCCReference Include="CRC32.pas"/>
         <DCCReference Include="ImageListEx.pas"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>

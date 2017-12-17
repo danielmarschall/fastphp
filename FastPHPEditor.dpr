@@ -9,7 +9,6 @@ uses
   FindReplace in 'FindReplace.pas',
   RunPHP in 'RunPHP.pas',
   FastPHPTreeView in 'FastPHPTreeView.pas',
-  CRC32 in 'CRC32.pas',
   ImageListEx in 'ImageListEx.pas';
 
 {$R *.res}

@@ -42,9 +42,9 @@ type
     class function Read(var ptr: PChar; len: integer): string; inline;
     procedure Rec100(tn: TTreeNode; var ptr: PChar);
   protected
-    procedure DoFillWithFastPHPData(ptr: PChar);
+    function DoFillWithFastPHPData(ptr: PChar): boolean;
   public
-    procedure FillWithFastPHPData(data: string);
+    function FillWithFastPHPData(data: string): boolean;
   end;
 
   EFastNodeException = class(Exception);
@@ -68,7 +68,7 @@ begin
   Result := StrToInt('$' + HexNum);
 end;
 
-procedure TTreeViewFastPHP.DoFillWithFastPHPData(ptr: PChar);
+function TTreeViewFastPHP.DoFillWithFastPHPData(ptr: PChar): boolean;
 
   function _NodeID(tn: TTreeNode): string;
   var
@@ -92,22 +92,17 @@ var
   selected, magic: string;
   horPos, verPos: integer;
   i: integer;
-  crc32: string;
 begin
   // No update if the user is dragging the scrollbar
   // (otherwise the program will somehow lock up)
-  if GetCapture = Handle then exit;
-
-  // Don't rebuild the treeview if nothing has changed (use the Tag property to store the CRC32)
-  crc32 := Read(ptr, 8);
-  if crc32 = IntToHex(Tag, 8) then exit;
-  Tag := HexToInt(crc32);
+  result := GetCapture <> Handle;
+  if not result then exit;
 
   selected := '';
   expanded := TStringList.Create;
   horPos := GetScrollPos(Handle, SB_HORZ);
   verPos := GetScrollPos(Handle, SB_VERT);
-  LockWindowUpdate(Parent.Handle); // Parent is better choice for FastPHP... but for other applications it might be wrong?
+  LockWindowUpdate(Handle); // Parent is better choice for FastPHP... but for other applications it might be wrong?
   Self.Items.BeginUpdate;
   try
     {$REGION 'Remember our current state (selected and expanded flags)'}
@@ -159,12 +154,12 @@ begin
   end;
 end;
 
-procedure TTreeViewFastPHP.FillWithFastPHPData(data: string);
+function TTreeViewFastPHP.FillWithFastPHPData(data: string): boolean;
 begin
   data := Trim(data);
   if not EndsStr('X', data) then raise EFastNodeException.Create('FastNode string must end with "X"');
 
-  DoFillWithFastPHPData(PChar(data));
+  result := DoFillWithFastPHPData(PChar(data));
 end;
 
 class function TTreeViewFastPHP.Read(var ptr: PChar; len: integer): string;

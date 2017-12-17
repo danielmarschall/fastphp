@@ -6,14 +6,16 @@ uses
   SysUtils, Forms, Classes, Windows;
 
 type
-  TInputRequestCallback = function: AnsiString of object;
-  TOutputNotifyCallback = procedure(const output: AnsiString) of object;
+  TInputRequestCallback = function(var data: AnsiString): boolean of object;
+  TOutputNotifyCallback = function(const output: AnsiString): boolean of object;
   TRunCodeExplorer = class(TThread)
   private
     FInputRequestCallback: TInputRequestCallback;
     FOutputNotifyCallback: TOutputNotifyCallback;
     FInputWaiting: AnsiString;
+    FInputWasSuccessful: boolean;
     FOutputWaiting: AnsiString;
+    FOutputWasSuccessful: boolean;
   protected
     procedure CallInputRequestCallback;
     procedure CallOutputNotifyCallback;
@@ -27,9 +29,6 @@ type
   end;
 
 implementation
-
-uses
-  CRC32;
 
 procedure TRunCodeExplorer.Execute;
 
@@ -53,7 +52,7 @@ var
   Handle: Boolean;
   testString: AnsiString;
   CommandLine: string;
-  result: string;
+  Output, OutputLastCache: string;
 begin
   if Self.WorkDir = '' then
     WorkDir := ExtractFilePath(ParamStr(0))
@@ -65,7 +64,8 @@ begin
 
   CommandLine := '"'+Self.PhpExe+'" "'+Self.PhpFile+'"';
 
-  Result := '';
+  Output := '';
+  OutputLastCache := '';
   with SA do begin
     nLength := SizeOf(SA);
     bInheritHandle := True;
@@ -100,6 +100,12 @@ begin
           begin
             Synchronize(CallInputRequestCallback);
 
+            if not FInputWasSuccessful then
+            begin
+              Sleep(100);
+              continue;
+            end;
+
             // Attention: This call will block if the process exited
             WriteFile(StdInPipeWrite, FInputWaiting[1], Length(FInputWaiting), BytesWritten, nil);
           end;
@@ -111,16 +117,16 @@ begin
           {$ENDREGION}
 
           {$REGION 'Gather output'}
-          result := '';
+          Output := '';
           repeat
             WasOK := ReadFile(StdOutPipeRead, Buffer, 255, BytesRead, nil);
             if BytesRead > 0 then
             begin
               Buffer[BytesRead] := #0;
-              Result := Result + Buffer;
-              if Pos(#1#2#3#4#5#6#7#8, result) >= 1 then
+              Output := Output + Buffer;
+              if Pos(#1#2#3#4#5#6#7#8, Output) >= 1 then
               begin
-                result := StringReplace(result, #1#2#3#4#5#6#7#8, '', []);
+                Output := StringReplace(Output, #1#2#3#4#5#6#7#8, '', []);
                 break;
               end;
             end;
@@ -128,10 +134,14 @@ begin
           {$ENDREGION}
 
           {$REGION 'Notify main thread about output'}
-          if Assigned(FOutputNotifyCallback) and not Self.Terminated and ProcessRunning(PI) then
+          if Assigned(FOutputNotifyCallback) and (OutputLastCache <> Output) and not Self.Terminated and ProcessRunning(PI) then
           begin
-            FOutputWaiting := IntToHex(CalculateCRC32String(result), 8) + result;
+            FOutputWaiting := Output;
             Synchronize(CallOutputNotifyCallback);
+            if FOutputWasSuccessful then
+            begin
+              OutputLastCache := Output;
+            end;
           end;
           {$ENDREGION}
         end;
@@ -149,14 +159,14 @@ begin
   end;
 end;
 
-procedure TRunCodeExplorer.CallInputRequestCallback;
+{synchron} procedure TRunCodeExplorer.CallInputRequestCallback;
 begin
-  FInputWaiting := FInputRequestCallback;
+  FInputWasSuccessful := FInputRequestCallback(FInputWaiting);
 end;
 
-procedure TRunCodeExplorer.CallOutputNotifyCallback;
+{synchron} procedure TRunCodeExplorer.CallOutputNotifyCallback;
 begin
-  FOutputNotifyCallback(FOutputWaiting);
+  FOutputWasSuccessful := FOutputNotifyCallback(FOutputWaiting);
 end;
 
 end.

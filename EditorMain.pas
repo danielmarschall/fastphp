@@ -133,8 +133,8 @@ type
     {$ENDIF}
     procedure Help;
     function MarkUpLineReference(cont: string): string;
-    function InputRequestCallback: AnsiString;
-    procedure OutputNotifyCallback(const data: AnsiString);
+    function InputRequestCallback(var data: AnsiString): boolean;
+    function OutputNotifyCallback(const data: AnsiString): boolean;
   protected
     ChmIndex: TMemIniFile;
     FScrapFile: string;
@@ -989,14 +989,15 @@ begin
   result := cont;
 end;
 
-function TForm1.InputRequestCallback: AnsiString;
+function TForm1.InputRequestCallback(var data: AnsiString): boolean;
 begin
-  result := UTF8Encode(SynEdit1.Text);
+  data := UTF8Encode(SynEdit1.Text);
+  result := true;
 end;
 
-procedure TForm1.OutputNotifyCallback(const data: AnsiString);
+function TForm1.OutputNotifyCallback(const data: AnsiString): boolean;
 begin
-  TreeView1.FillWithFastPHPData(data);
+  result := TreeView1.FillWithFastPHPData(data);
 end;
 
 end.
