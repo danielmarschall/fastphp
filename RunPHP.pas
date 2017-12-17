@@ -53,6 +53,9 @@ var
   testString: AnsiString;
   CommandLine: string;
   Output, OutputLastCache: string;
+const
+  SIGNAL_END_OF_TRANSMISSION = #1#2#3#4#5#6#7#8;
+  SIGNAL_TERMINATE           = #8#7#6#5#4#3#2#1;
 begin
   if Self.WorkDir = '' then
     WorkDir := ExtractFilePath(ParamStr(0))
@@ -112,7 +115,7 @@ begin
           {$ENDREGION}
 
           {$REGION 'Terminate input sequence'}
-          testString := #13#10#1#2#3#4#5#6#7#8#13#10;
+          testString := #13#10+SIGNAL_END_OF_TRANSMISSION+#13#10;
           WriteFile(StdInPipeWrite, testString[1], Length(testString), BytesWritten, nil);
           {$ENDREGION}
 
@@ -124,9 +127,9 @@ begin
             begin
               Buffer[BytesRead] := #0;
               Output := Output + Buffer;
-              if Pos(#1#2#3#4#5#6#7#8, Output) >= 1 then
+              if Pos(SIGNAL_END_OF_TRANSMISSION, Output) >= 1 then
               begin
-                Output := StringReplace(Output, #1#2#3#4#5#6#7#8, '', []);
+                Output := StringReplace(Output, SIGNAL_END_OF_TRANSMISSION, '', []);
                 break;
               end;
             end;
@@ -146,9 +149,12 @@ begin
           {$ENDREGION}
         end;
 
-        CloseHandle(StdInPipeWrite);
-        TerminateProcess(pi.hProcess, 0);  // TODO: for some reason, after closing the editor, php.exe keeps running in the task list
+        // Signal the code explorer to terminate
+        testString := #13#10+SIGNAL_TERMINATE+#13#10;
+        WriteFile(StdInPipeWrite, testString[1], Length(testString), BytesWritten, nil);
         WaitForSingleObject(PI.hProcess, INFINITE);
+
+        CloseHandle(StdInPipeWrite);
       finally
         CloseHandle(PI.hThread);
         CloseHandle(PI.hProcess);

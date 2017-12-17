@@ -289,6 +289,10 @@ class FastNodeReader {
 		$lines = array();
 		while ($f = fgets(STDIN)){
 			if (trim($f) == chr(1).chr(2).chr(3).chr(4).chr(5).chr(6).chr(7).chr(8)) break;
+
+			// Signal to terminate the code explorer
+			if (trim($f) == chr(8).chr(7).chr(6).chr(5).chr(4).chr(3).chr(2).chr(1)) die();
+
 			$lines[] = $f;
 		}
 		return implode("", $lines);
