@@ -1,0 +1,11 @@
+
+Deploy following files after compilation:
+
+(For the editor:)
+- FastPHPEditor.exe
+- codeexplorer.bmp
+- codeexplorer.php
+
+(For the browser:)
+- FastPHPBrowser.exe
+- fastphp_server.inc.php  (currently not in use)
