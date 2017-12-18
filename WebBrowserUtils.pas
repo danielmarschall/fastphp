@@ -149,9 +149,12 @@ begin
   end;
 
   try
+    // TODO: Delphi2007 and FastMM4 say that here we have a memory leak
     loader := TLoadHTMLMoniker.Create;
+
     loader.InitLoader(AHTML, url);
   except
+    if Assigned(loader) then FreeAndNil(loader);
     result := false;
     exit;
   end;

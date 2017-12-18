@@ -148,6 +148,7 @@ function TTreeViewFastPHP.FillWithFastPHPData(data: string): boolean;
 var
   tn: TTreeNode;
 begin
+  result := false;
   try
     data := Trim(data);
     if not EndsStr('X', data) then raise EFastNodeException.Create('FastNode string must end with "X"');

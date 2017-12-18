@@ -33,9 +33,8 @@ uses
   // TODO: "{$IFDEF USE_SHDOCVW_TLB}_TLB{$ENDIF}" does not work with Delphi 10.2
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, OleCtrls, ComCtrls, ExtCtrls, ToolWin, IniFiles,
-  SynEditHighlighter, SynHighlighterPHP, SynEdit, ShDocVw_TLB, FindReplace,
-  System.Actions, Vcl.ActnList, System.UITypes, SynEditMiscClasses,
-  SynEditSearch, RunPHP, System.ImageList, Vcl.ImgList;
+  SynEditHighlighter, SynHighlighterPHP, SynEdit, ShDocVw, FindReplace,
+  ActnList, SynEditMiscClasses, SynEditSearch, RunPHP, ImgList, SynUnicode;
 
 {.$DEFINE OnlineHelp}
 
@@ -94,9 +93,16 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure PageControl2Changing(Sender: TObject; var AllowChange: Boolean);
     procedure Memo2DblClick(Sender: TObject);
+    {$IFDEF USE_SHDOCVW_TLB}
     procedure WebBrowser1BeforeNavigate2(ASender: TObject;
       const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
       Headers: OleVariant; var Cancel: WordBool);
+    {$ELSE}
+    procedure WebBrowser1BeforeNavigate2(ASender: TObject;
+      const pDisp: IDispatch; var URL, Flags, TargetFrameName, PostData,
+      Headers: OleVariant; var Cancel: WordBool);
+    {$ENDIF}
+    procedure BeforeNavigate(const URL: OleVariant; var Cancel: WordBool);
     procedure SynEditFocusTimerTimer(Sender: TObject);
     procedure ActionFindExecute(Sender: TObject);
     procedure ActionReplaceExecute(Sender: TObject);
@@ -232,15 +238,15 @@ procedure TForm1.ActionSpaceToTabExecute(Sender: TObject);
 
     function SpacesAtBeginning(line: string): integer;
     begin
-      if line.Trim = '' then exit(0);
       result := 0;
+      if Trim(line) = '' then exit;
       while line[result+1] = ' ' do
       begin
         inc(result);
       end;
     end;
 
-    function GuessIndent(lines: TStrings): integer;
+    function GuessIndent(lines: {$IFDEF UNICODE}TStrings{$ELSE}TUnicodeStrings{$ENDIF}): integer;
       function _Check(indent: integer): boolean;
       var
         i: integer;
@@ -250,7 +256,8 @@ procedure TForm1.ActionSpaceToTabExecute(Sender: TObject);
           if SpacesAtBeginning(lines.Strings[i]) mod indent <> 0 then
           begin
             // ShowMessageFmt('Zeile "%s" nicht durch %d teilbar!', [lines.strings[i], indent]);
-            exit(false);
+            result := false;
+            exit;
           end;
       end;
     var
@@ -258,12 +265,16 @@ procedure TForm1.ActionSpaceToTabExecute(Sender: TObject);
     begin
       for i := 8 downto 2 do
       begin
-        if _Check(i) then exit(i);
+        if _Check(i) then
+        begin
+          result := i;
+          exit;
+        end;
       end;
       result := -1;
     end;
 
-    procedure SpaceToTab(lines: TStrings; indent: integer);
+    procedure SpaceToTab(lines: {$IFDEF UNICODE}TStrings{$ELSE}TUnicodeStrings{$ENDIF}; indent: integer);
     var
       i, spaces: integer;
     begin
@@ -274,16 +285,21 @@ procedure TForm1.ActionSpaceToTabExecute(Sender: TObject);
       end;
     end;
 
-    function SpacesAvailable(lines: TStrings): boolean;
+    function SpacesAvailable(lines: {$IFDEF UNICODE}TStrings{$ELSE}TUnicodeStrings{$ENDIF}): boolean;
     var
       i, spaces: integer;
     begin
       for i := 0 to lines.Count-1 do
       begin
         spaces := SpacesAtBeginning(lines.Strings[i]);
-        if spaces > 0 then exit(true);
+        if spaces > 0 then
+        begin
+          result := true;
+          exit;
+        end;
       end;
-      exit(false);
+      result := false;
+      exit;
     end;
 
 var
@@ -304,7 +320,7 @@ begin
   if ind <> -1 then val := IntToStr(ind);
 
   InputQuery('Spaces to tabs', 'Indent:', val); // TODO: handle CANCEL correctly...
-  if TryStrToInt(val.Trim, ind) then
+  if TryStrToInt(Trim(val), ind) then
   begin
     if ind = 0 then exit;
     SpaceToTab(SynEdit1.Lines, ind);
@@ -459,7 +475,7 @@ var
   ArrayLength: Integer;
   start: Integer;
   TmpCharA, TmpCharB: WideChar;
-begin
+begin       
   // Source: https://github.com/SynEdit/SynEdit/blob/master/Demos/OnPaintTransientDemo/Unit1.pas
 
   if TSynEdit(Sender).SelAvail then exit;
@@ -493,7 +509,7 @@ begin
   else
     TmpCharA := #0;
 
-  if (Start < length(Editor.Text)) then
+  if (Start > 0){Added by VTS} and (Start < length(Editor.Text)) then
     TmpCharB := Editor.Text[Start + 1]
   else
     TmpCharB := #0;
@@ -597,9 +613,23 @@ begin
   if lineNo > 0 then GotoLineNo(lineNo);
 end;
 
+{$IFDEF USE_SHDOCVW_TLB}
 procedure TForm1.WebBrowser1BeforeNavigate2(ASender: TObject;
   const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
   Headers: OleVariant; var Cancel: WordBool);
+begin
+  BeforeNavigate(URL, Cancel);
+end;
+{$ELSE}
+procedure TForm1.WebBrowser1BeforeNavigate2(ASender: TObject;
+  const pDisp: IDispatch; var URL, Flags, TargetFrameName, PostData,
+  Headers: OleVariant; var Cancel: WordBool);
+begin
+  BeforeNavigate(URL, Cancel);
+end;
+{$ENDIF}
+
+procedure TForm1.BeforeNavigate(const URL: OleVariant; var Cancel: WordBool);
 var
   s, myURL: string;
   lineno: integer;
@@ -674,6 +704,8 @@ begin
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
+var
+  exeDir: string;
 begin
   HlpPrevPageIndex := -1;
   CurSearchTerm := '';
@@ -685,7 +717,8 @@ begin
   Screen.Cursors[crMouseGutter] := LoadCursor(hInstance, 'MOUSEGUTTER');
   SynEdit1.Gutter.Cursor := crMouseGutter;
 
-  if FileExists('codeexplorer.bmp') then ImageList1.LoadAndSplitImages('codeexplorer.bmp');
+  exeDir := IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0)));
+  if FileExists(exeDir + 'codeexplorer.bmp') then ImageList1.LoadAndSplitImages(exeDir + 'codeexplorer.bmp');
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
@@ -739,12 +772,16 @@ begin
   codeExplorer.PhpExe := GetPHPExe;
   codeExplorer.PhpFile := IncludeTrailingPathDelimiter(ExtractFileDir(Application.ExeName)) + 'codeexplorer.php'; // GetScrapFile;
   codeExplorer.WorkDir := ExtractFileDir(Application.ExeName);
-  codeExplorer.Start;
+  codeExplorer.Resume;
 end;
 
 function TForm1.GetScrapFile: string;
 begin
-  if FScrapFile <> '' then exit(FScrapFile);
+  if FScrapFile <> '' then
+  begin
+    result := FScrapFile;
+    exit;
+  end;
 
   if ParamStr(1) <> '' then
     result := ParamStr(1)
@@ -756,7 +793,8 @@ begin
       if not OpenDialog3.Execute then
       begin
         Application.Terminate;
-        exit('');
+        result := '';
+        exit;
       end;
 
       if not DirectoryExists(ExtractFilePath(OpenDialog3.FileName)) then
@@ -846,7 +884,11 @@ begin
 
   w := GetWordUnderCaret(SynEdit1);
   if w = '' then exit;
+  {$IFDEF UNICODE}
   if CharInSet(w[1], ['0'..'9']) then exit;
+  {$ELSE}
+  if w[1] in ['0'..'9'] then exit;
+  {$ENDIF}
 
   Originalword := w;
 //  w := StringReplace(w, '_', '-', [rfReplaceAll]);
@@ -882,7 +924,11 @@ begin
   line := SynEdit1.Lines[SynEdit1.CaretY];
   for i := 1 to Length(line) do
   begin
+    {$IFDEF UNICODE}
     if not CharInSet(line[i], [' ', #9]) then
+    {$ELSE}
+    if not (line[i] in [' ', #9]) then
+    {$ENDIF}
     begin
       SynEdit1.CaretX := i-1;
       break;
@@ -915,7 +961,7 @@ var
     if FileSystemCaseSensitive then
       p := Pos(toFind, line)
     else
-      p := Pos(toFind.ToLower, line.ToLower);
+      p := Pos(LowerCase(toFind), LowerCase(line));
     if p <> 0 then
     begin
       line := copy(line, p+length(toFind), 99);
@@ -953,13 +999,17 @@ function TForm1.MarkUpLineReference(cont: string): string;
     if FileSystemCaseSensitive then
       p := Pos(toFind, cont)
     else
-      p := Pos(toFind.ToLower, cont.ToLower);
+      p := Pos(LowerCase(toFind), LowerCase(cont));
     while p >= 1 do
     begin
       a := p;
       b := p + length(toFind);
       num := 0;
+      {$IFDEF UNICODE}
       while CharInSet(cont[b], ['0'..'9']) do
+      {$ELSE}
+      while cont[b] in ['0'..'9'] do
+      {$ENDIF}
       begin
         num := num*10 + StrToInt(cont[b]);
         inc(b);

@@ -135,6 +135,36 @@ object Form1: TForm1
         OnMouseCursor = SynEdit1MouseCursor
         OnPaintTransient = SynEdit1PaintTransient
         FontSmoothing = fsmNone
+        RemovedKeystrokes = <
+          item
+            Command = ecUndo
+            ShortCut = 32776
+          end
+          item
+            Command = ecRedo
+            ShortCut = 40968
+          end
+          item
+            Command = ecDeleteWord
+            ShortCut = 16468
+          end
+          item
+            Command = ecDeleteLine
+            ShortCut = 16473
+          end
+          item
+            Command = ecRedo
+            ShortCut = 24666
+          end>
+        AddedKeystrokes = <
+          item
+            Command = ecDeleteWord
+            ShortCut = 16430
+          end
+          item
+            Command = ecRedo
+            ShortCut = 16473
+          end>
       end
       object TreeView1: TTreeView
         Left = 0
