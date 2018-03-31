@@ -16,6 +16,7 @@ function GetWordUnderCaret(AMemo: TSynEdit): string;
 function MyVarToStr(v: Variant): string;
 function FileSystemCaseSensitive: boolean;
 function HighColorWindows: boolean;
+function GetTempDir: string;
 
 implementation
 
@@ -280,6 +281,22 @@ begin
 
   result := ((dwMajorVersion = 5) and (dwMinorVersion >= 1)) or
             ((dwMajorVersion = 6) and (dwMinorVersion <= 1));
+end;
+
+function GetTempDir: string;
+var
+  Dir: string;
+  Len: DWord;
+begin
+  SetLength(Dir,MAX_PATH);
+  Len:=GetTempPath(MAX_PATH, PChar(Dir));
+  if Len>0 then
+  begin
+    SetLength(Dir,Len);
+    Result:=Dir;
+  end
+  else
+    RaiseLastOSError;
 end;
 
 end.

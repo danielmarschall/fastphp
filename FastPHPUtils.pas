@@ -3,14 +3,14 @@ unit FastPHPUtils;
 interface
 
 uses
-  Windows, SysUtils, StrUtils, Dialogs, IniFiles, Classes, Forms;
+  Windows, SysUtils, StrUtils, Dialogs, IniFiles, Classes, Forms, ShellAPI;
 
 const
   FASTPHP_GOTO_URI_PREFIX = 'fastphp://editor/gotoline/';
 
 function FastPHPConfig: TMemIniFile;
 function GetPHPExe: string;
-function RunPHPScript(APHPFileName: string; lint: boolean=false): string;
+function RunPHPScript(APHPFileName: string; lint: boolean=false; inConsole: boolean=False): string;
 function ParseCHM(const chmFile: TFileName): boolean;
 function IsValidPHPExe(const exeFile: TFileName): boolean;
 
@@ -64,16 +64,46 @@ begin
   end;
 end;
 
-function RunPHPScript(APHPFileName: string; lint: boolean=false): string;
+function RunPHPScript(APHPFileName: string; lint: boolean=false; inConsole: boolean=False): string;
 var
-  phpExe: string;
+  phpExe, args, batFile, workdir: string;
+  slBat: TStringList;
 begin
   phpExe := GetPHPExe;
   if phpExe = '' then Abort;
+
   if lint then
-    result := GetDosOutput('"'+phpExe+'" -l "'+APHPFileName+'"', ExtractFileDir(ParamStr(0)))
+    args := '-l "'+APHPFileName+'"'
   else
-    result := GetDosOutput('"'+phpExe+'" -f "'+APHPFileName+'"', ExtractFileDir(ParamStr(0)));
+    args := '-f "'+APHPFileName+'"';
+
+  //workdir := ExtractFileDir(ParamStr(0));
+  workdir := ExtractFileDir(APHPFileName);
+
+  if inConsole then
+  begin
+    (*
+    ShellExecute(0, 'open', PChar(phpExe), PChar(args), PChar(workdir), SW_NORMAL);
+    *)
+    batFile := IncludeTrailingPathDelimiter(GetTempDir) + 'RunFastPHP.bat';
+    slBat := TStringList.Create;
+    try
+      slBat.Add('@echo off');
+      slBat.Add('cd /d "'+workdir+'"');
+      slBat.Add('"'+phpExe+'" ' + args);
+      slBat.Add('pause.');
+      slBat.SaveToFile(batFile);
+      ShellExecute(0, 'open', PChar(batFile), '', '', SW_NORMAL);
+    finally
+      slBat.Free;
+    end;
+
+    result := '';
+  end
+  else
+  begin
+    result := GetDosOutput('"'+phpExe+'" ' + args, workdir);
+  end;
 end;
 
 function ParseCHM(const chmFile: TFileName): boolean;

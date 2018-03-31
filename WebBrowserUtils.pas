@@ -5,7 +5,8 @@ unit WebBrowserUtils;
 interface
 
 uses
-  Windows, {$IFDEF USE_SHDOCVW_TLB}ShDocVw_TLB{$ELSE}ShDocVw{$ENDIF}, SysUtils, Forms;
+  // TODO: "{$IFDEF USE_SHDOCVW_TLB}ShDocVw_TLB{$ELSE}ShDocVw{$ENDIF}" does not work with Delphi 10.2
+  Windows, ShDocVw_TLB, SysUtils, Forms;
 
 procedure WaitForBrowser(AWebBrowser: TWebbrowser);
 

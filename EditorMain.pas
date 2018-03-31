@@ -33,8 +33,9 @@ uses
   // TODO: "{$IFDEF USE_SHDOCVW_TLB}_TLB{$ENDIF}" does not work with Delphi 10.2
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, OleCtrls, ComCtrls, ExtCtrls, ToolWin, IniFiles,
-  SynEditHighlighter, SynHighlighterPHP, SynEdit, ShDocVw, FindReplace,
-  ActnList, SynEditMiscClasses, SynEditSearch, RunPHP, ImgList, SynUnicode;
+  SynEditHighlighter, SynHighlighterPHP, SynEdit, ShDocVw_TLB, FindReplace,
+  ActnList, SynEditMiscClasses, SynEditSearch, RunPHP, ImgList, SynUnicode,
+  System.ImageList, System.Actions, Vcl.Menus;
 
 {.$DEFINE OnlineHelp}
 
@@ -86,22 +87,31 @@ type
     btnLint: TButton;
     ActionLint: TAction;
     ImageList1: TImageList;
+    RunPopup: TPopupMenu;
+    OpeninIDE1: TMenuItem;
+    ActionRunConsole: TAction;
+    Runinconsole1: TMenuItem;
     procedure Run(Sender: TObject);
+    procedure RunConsole(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure PageControl2Changing(Sender: TObject; var AllowChange: Boolean);
     procedure Memo2DblClick(Sender: TObject);
+    (*
     {$IFDEF USE_SHDOCVW_TLB}
+    *)
     procedure WebBrowser1BeforeNavigate2(ASender: TObject;
       const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
       Headers: OleVariant; var Cancel: WordBool);
+    (*
     {$ELSE}
     procedure WebBrowser1BeforeNavigate2(ASender: TObject;
       const pDisp: IDispatch; var URL, Flags, TargetFrameName, PostData,
       Headers: OleVariant; var Cancel: WordBool);
     {$ENDIF}
+    *)
     procedure BeforeNavigate(const URL: OleVariant; var Cancel: WordBool);
     procedure SynEditFocusTimerTimer(Sender: TObject);
     procedure ActionFindExecute(Sender: TObject);
@@ -130,6 +140,7 @@ type
     procedure SynEdit1PaintTransient(Sender: TObject; Canvas: TCanvas;
       TransientType: TTransientType);
     procedure ActionLintExecute(Sender: TObject);
+    procedure ActionRunConsoleExecute(Sender: TObject);
   private
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
@@ -220,6 +231,12 @@ end;
 procedure TForm1.ActionReplaceExecute(Sender: TObject);
 begin
   SrcRep.ReplaceExecute;
+end;
+
+procedure TForm1.ActionRunConsoleExecute(Sender: TObject);
+begin
+  RunConsole(Sender);
+  SynEdit1.SetFocus;
 end;
 
 procedure TForm1.ActionRunExecute(Sender: TObject);
@@ -375,7 +392,7 @@ begin
   try
     SynEdit1.Lines.SaveToFile(GetScrapFile);
 
-    memo2.Lines.Text := RunPHPScript(GetScrapFile, Sender=ActionLint);
+    memo2.Lines.Text := RunPHPScript(GetScrapFile, Sender=ActionLint, False);
 
     Webbrowser1.LoadHTML(MarkUpLineReference(memo2.Lines.Text), GetScrapFile);
 
@@ -386,6 +403,12 @@ begin
   finally
     Screen.Cursor := crDefault;
   end;
+end;
+
+procedure TForm1.RunConsole(Sender: TObject);
+begin
+  SynEdit1.Lines.SaveToFile(GetScrapFile);
+  RunPHPScript(GetScrapFile, Sender=ActionLint, True);
 end;
 
 procedure TForm1.SynEdit1GutterClick(Sender: TObject; Button: TMouseButton; X,
@@ -613,13 +636,16 @@ begin
   if lineNo > 0 then GotoLineNo(lineNo);
 end;
 
+(*
 {$IFDEF USE_SHDOCVW_TLB}
+*)
 procedure TForm1.WebBrowser1BeforeNavigate2(ASender: TObject;
   const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
   Headers: OleVariant; var Cancel: WordBool);
 begin
   BeforeNavigate(URL, Cancel);
 end;
+(*
 {$ELSE}
 procedure TForm1.WebBrowser1BeforeNavigate2(ASender: TObject;
   const pDisp: IDispatch; var URL, Flags, TargetFrameName, PostData,
@@ -628,6 +654,7 @@ begin
   BeforeNavigate(URL, Cancel);
 end;
 {$ENDIF}
+*)
 
 procedure TForm1.BeforeNavigate(const URL: OleVariant; var Cancel: WordBool);
 var

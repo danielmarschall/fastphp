@@ -61,10 +61,6 @@ object Form1: TForm1
     object HtmlTabSheet: TTabSheet
       Caption = 'HTML'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object WebBrowser1: TWebBrowser
         Left = 0
         Top = 0
@@ -182,10 +178,6 @@ object Form1: TForm1
     object HelpTabsheet: TTabSheet
       Caption = 'Help'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object WebBrowser2: TWebBrowser
         Left = 0
         Top = 0
@@ -226,6 +218,7 @@ object Form1: TForm1
       Width = 75
       Height = 35
       Action = ActionRun
+      PopupMenu = RunPopup
       TabOrder = 0
     end
     object Button2: TButton
@@ -348,12 +341,12 @@ object Form1: TForm1
     Enabled = False
     Interval = 500
     OnTimer = SynEditFocusTimerTimer
-    Left = 668
+    Left = 692
     Top = 249
   end
   object ActionList: TActionList
-    Left = 252
-    Top = 276
+    Left = 132
+    Top = 252
     object ActionFind: TAction
       Caption = 'Find'
       ShortCut = 16454
@@ -394,6 +387,11 @@ object Form1: TForm1
       ShortCut = 120
       OnExecute = ActionRunExecute
     end
+    object ActionRunConsole: TAction
+      Caption = 'Run in console'
+      ShortCut = 8312
+      OnExecute = ActionRunConsoleExecute
+    end
     object ActionESC: TAction
       Caption = 'Esc'
       ShortCut = 27
@@ -421,11 +419,22 @@ object Form1: TForm1
     Top = 8
   end
   object SynEditSearch1: TSynEditSearch
-    Left = 780
-    Top = 236
+    Left = 788
+    Top = 252
   end
   object ImageList1: TImageList
     Left = 92
     Top = 180
+  end
+  object RunPopup: TPopupMenu
+    Left = 60
+    Top = 4
+    object OpeninIDE1: TMenuItem
+      Action = ActionRun
+      Default = True
+    end
+    object Runinconsole1: TMenuItem
+      Action = ActionRunConsole
+    end
   end
 end
