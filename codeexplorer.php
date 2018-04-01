@@ -87,6 +87,8 @@ class MyFastPHPCodeExplorer {
 			$value = (!is_array($data)) ? null : $data[1];
 			$line  = (!is_array($data)) ? null : $data[2];
 
+			if ($value == '${') $dep++;
+
 			if ($wait_function && ($token == T_STRING)) {
 				$wait_function = false;
 				if ($icon->isAbstract()) {
