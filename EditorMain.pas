@@ -141,6 +141,7 @@ type
       TransientType: TTransientType);
     procedure ActionLintExecute(Sender: TObject);
     procedure ActionRunConsoleExecute(Sender: TObject);
+    procedure SynEdit1Change(Sender: TObject);
   private
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
@@ -159,6 +160,7 @@ type
     procedure GotoLineNo(LineNo: integer);
     function GetScrapFile: string;
     procedure StartCodeExplorer;
+    procedure RefreshModifySign;
   end;
 
 var
@@ -177,7 +179,18 @@ uses
 const
   crMouseGutter = 1;
 
-// TODO: FindPrev ?
+procedure TForm1.RefreshModifySign;
+var
+  tmp: string;
+begin
+  tmp := Caption;
+
+  tmp := StringReplace(tmp, '*', '', [rfReplaceAll]);
+  if SynEdit1.Modified then tmp := tmp + '*';
+
+  if Caption <> tmp then Caption := tmp;
+end;
+
 procedure TForm1.ActionFindNextExecute(Sender: TObject);
 begin
   SrcRep.FindNext;
@@ -249,6 +262,7 @@ procedure TForm1.ActionSaveExecute(Sender: TObject);
 begin
   SynEdit1.Lines.SaveToFile(GetScrapFile);
   SynEdit1.Modified := false;
+  RefreshModifySign;
 end;
 
 procedure TForm1.ActionSpaceToTabExecute(Sender: TObject);
@@ -390,7 +404,7 @@ begin
   Application.ProcessMessages;
 
   try
-    SynEdit1.Lines.SaveToFile(GetScrapFile);
+    ActionSave.Execute; // TODO: if it is not the scrap file: do not save the file, since the user did not intended to save... better create a temporary file and run it instead.
 
     memo2.Lines.Text := RunPHPScript(GetScrapFile, Sender=ActionLint, False);
 
@@ -407,8 +421,13 @@ end;
 
 procedure TForm1.RunConsole(Sender: TObject);
 begin
-  SynEdit1.Lines.SaveToFile(GetScrapFile);
+  ActionSave.Execute; // TODO: if it is not the scrap file: do not save the file, since the user did not intended to save... better create a temporary file and run it instead.
   RunPHPScript(GetScrapFile, Sender=ActionLint, True);
+end;
+
+procedure TForm1.SynEdit1Change(Sender: TObject);
+begin
+  RefreshModifySign;
 end;
 
 procedure TForm1.SynEdit1GutterClick(Sender: TObject; Button: TMouseButton; X,
@@ -718,13 +737,13 @@ begin
       end
       else if r = mrYes then
       begin
-        SynEdit1.Lines.SaveToFile(GetScrapFile);
+        ActionSave.Execute;
         CanClose := true;
       end;
     end
     else
     begin
-      SynEdit1.Lines.SaveToFile(GetScrapFile);
+      ActionSave.Execute;
       CanClose := true;
     end;
   end;
@@ -834,8 +853,8 @@ begin
       end;
     until result <> '';
 
-    SynEdit1.Lines.Clear;
-    SynEdit1.Lines.SaveToFile(result);
+    //SynEdit1.Lines.Clear;
+    //SynEdit1.Lines.SaveToFile(result);
 
     FastPHPConfig.WriteString('Paths', 'ScrapFile', result);
     FScrapFile := result;
