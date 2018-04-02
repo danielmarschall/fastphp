@@ -13,10 +13,11 @@ unit EditorMain;
 
 // TODO: localize
 // TODO: wieso geht copy paste im twebbrowser nicht???
-// Wieso dauert webbrowser1 erste kompilierung so lange???
+// TODO: Wieso dauert webbrowser1 erste kompilierung so lange???
 // TODO: wieso kommt syntax fehler zweimal? einmal stderr einmal stdout?
 // TODO: Browser titlebar (link preview)
-// TODO: todo liste
+// TODO: "jump to next/prev todo" buttons/shortcuts
+// TODO: "increase/decrease indent" buttons/shortcuts
 
 // Future ideas
 // - code insight
@@ -174,7 +175,7 @@ implementation
 
 uses
   Functions, StrUtils, WebBrowserUtils, FastPHPUtils, Math, ShellAPI, RichEdit,
-  FastPHPTreeView, ImageListEx;
+  FastPHPTreeView, ImageListEx, FastPHPConfig;
 
 const
   crMouseGutter = 1;
@@ -343,7 +344,7 @@ begin
 
   if not SpacesAvailable(SynEdit1.Lines) then
   begin
-    ShowMessage(SNoLinesAvailable);
+    MessageDlg(SNoLinesAvailable, mtInformation, [mbOk], 0);
     exit;
   end;
 
@@ -718,7 +719,7 @@ end;
 
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  FastPHPConfig.WriteInteger('User', 'FontSize', SynEdit1.Font.Size);
+  TFastPHPConfig.FontSize := SynEdit1.Font.Size;
 end;
 
 procedure TForm1.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -786,6 +787,7 @@ end;
 procedure TForm1.FormShow(Sender: TObject);
 var
   ScrapFile: string;
+  tmpFontSize: integer;
 begin
   ScrapFile := GetScrapFile;
   if ScrapFile = '' then
@@ -803,7 +805,8 @@ begin
   PageControl2.ActivePage := CodeTabsheet;
   HelpTabsheet.TabVisible := false;
 
-  SynEdit1.Font.Size := FastPHPConfig.ReadInteger('User', 'FontSize', SynEdit1.Font.Size);
+  tmpFontSize := TFastPHPConfig.FontSize;
+  if tmpFontSize <> -1 then SynEdit1.Font.Size := tmpFontSize;
   SynEdit1.SetFocus;
 
   DoubleBuffered := true;
@@ -822,6 +825,8 @@ begin
 end;
 
 function TForm1.GetScrapFile: string;
+var
+  tmpPath: string;
 begin
   if FScrapFile <> '' then
   begin
@@ -830,34 +835,107 @@ begin
   end;
 
   if ParamStr(1) <> '' then
-    result := ParamStr(1)
-  else
-    result := FastPHPConfig.ReadString('Paths', 'ScrapFile', '');
-  if not FileExists(result) then
   begin
-    repeat
-      if not OpenDialog3.Execute then
+    // Program was started with a filename
+
+    result := ParamStr(1);
+
+    if not FileExists(result) then
+    begin
+      case MessageDlg(Format('File %s does not exist. Create it?', [result]), mtConfirmation, mbYesNoCancel, 0) of
+        mrYes:
+          try
+            SynEdit1.Lines.SaveToFile(result);
+          except
+            on E: Exception do
+            begin
+              MessageDlg(E.Message, mtError, [mbOk], 0);
+              Application.Terminate;
+              result := '';
+              exit;
+            end;
+          end;
+        mrNo:
+          begin
+            Application.Terminate;
+            result := '';
+            exit;
+          end;
+        mrCancel:
+          begin
+            Application.Terminate;
+            result := '';
+            exit;
+          end;
+      end;
+    end;
+  end
+  else
+  begin
+    // Program is started without filename -> use scrap file
+
+    result := TFastPHPConfig.ScrapFile;
+
+    if not FileExists(result) then
+    begin
+      repeat
+        {$REGION 'Determinate opendialog initial directory'}
+        if result <> '' then
+        begin
+          tmpPath := ExtractFilePath(result);
+          if DirectoryExists(tmpPath) then
+          begin
+            OpenDialog3.InitialDir := tmpPath;
+            OpenDialog3.FileName := Result;
+          end
+          else
+          begin
+            OpenDialog3.InitialDir := GetMyDocumentsFolder;
+          end;
+        end
+        else
+        begin
+          OpenDialog3.InitialDir := GetMyDocumentsFolder;
+        end;
+        {$ENDREGION}
+
+        if not OpenDialog3.Execute then
+        begin
+          Application.Terminate;
+          result := '';
+          exit;
+        end;
+
+        if not DirectoryExists(ExtractFilePath(OpenDialog3.FileName)) then
+        begin
+          MessageDlg('Path does not exist! Please try again.', mtWarning, [mbOk], 0);
+        end
+        else
+        begin
+          result := OpenDialog3.FileName;
+        end;
+      until result <> '';
+
+      if not FileExists(result) then
       begin
-        Application.Terminate;
-        result := '';
-        exit;
+        try
+          // Try saving the file; check if we have permissions
+          //SynEdit1.Lines.Clear;
+          SynEdit1.Lines.SaveToFile(result);
+        except
+          on E: Exception do
+          begin
+            MessageDlg(E.Message, mtError, [mbOk], 0);
+            Application.Terminate;
+            result := '';
+            exit;
+          end;
+        end;
       end;
 
-      if not DirectoryExists(ExtractFilePath(OpenDialog3.FileName)) then
-      begin
-        ShowMessage('Path does not exist! Please try again.');
-      end
-      else
-      begin
-        result := OpenDialog3.FileName;
-      end;
-    until result <> '';
-
-    //SynEdit1.Lines.Clear;
-    //SynEdit1.Lines.SaveToFile(result);
-
-    FastPHPConfig.WriteString('Paths', 'ScrapFile', result);
-    FScrapFile := result;
+      TFastPHPConfig.ScrapFile := result;
+      FScrapFile := result;
+    end;
   end;
 end;
 
@@ -868,7 +946,7 @@ var
 begin
   if not Assigned(ChmIndex) then
   begin
-    IndexFile := FastPHPConfig.ReadString('Paths', 'HelpIndex', '');
+    IndexFile := TFastPHPConfig.HelpIndex;
     IndexFile := ChangeFileExt(IndexFile, '.ini'); // Just to be sure. Maybe someone wrote manually the ".chm" file in there
     if FileExists(IndexFile) then
     begin
@@ -878,7 +956,7 @@ begin
 
   if Assigned(ChmIndex) then
   begin
-    IndexFile := FastPHPConfig.ReadString('Paths', 'HelpIndex', '');
+    IndexFile := TFastPHPConfig.HelpIndex;
     // We don't check if IndexFile still exists. It is not important since we have ChmIndex pre-loaded in memory
 
     chmFile := ChangeFileExt(IndexFile, '.chm');
@@ -907,7 +985,7 @@ begin
       try
         if not ParseCHM(chmFile) then
         begin
-          ShowMessage('The CHM file is not a valid PHP documentation. Cannot use help.');
+          MessageDlg('The CHM file is not a valid PHP documentation. Cannot use help.', mtError, [mbOk], 0);
           exit;
         end;
       finally
@@ -917,13 +995,12 @@ begin
 
       if not FileExists(IndexFile) then
       begin
-        ShowMessage('Unknown error. Cannot use help.');
+        MessageDlg('Unknown error. Cannot use help.', mtError, [mbOk], 0);
         exit;
       end;
     end;
 
-    FastPHPConfig.WriteString('Paths', 'HelpIndex', IndexFile);
-    FastPHPConfig.UpdateFile;
+    TFastPHPConfig.HelpIndex := IndexFile;
 
     ChmIndex := TMemIniFile.Create(IndexFile);
   end;

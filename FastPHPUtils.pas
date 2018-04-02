@@ -8,7 +8,6 @@ uses
 const
   FASTPHP_GOTO_URI_PREFIX = 'fastphp://editor/gotoline/';
 
-function FastPHPConfig: TMemIniFile;
 function GetPHPExe: string;
 function RunPHPScript(APHPFileName: string; lint: boolean=false; inConsole: boolean=False): string;
 function ParseCHM(const chmFile: TFileName): boolean;
@@ -17,25 +16,13 @@ function IsValidPHPExe(const exeFile: TFileName): boolean;
 implementation
 
 uses
-  Functions;
-
-var
-  __FastPHPConfig: TMemIniFile;
-
-function FastPHPConfig: TMemIniFile;
-begin
-  if not Assigned(__FastPHPConfig) then
-  begin
-    __FastPHPConfig := TMemIniFile.Create(IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))) + 'FastPHP.ini');
-  end;
-  result := __FastPHPConfig;
-end;
+  Functions, FastPHPConfig;
 
 function GetPHPExe: string;
 var
   od: TOpenDialog;
 begin
-  result := FastPHPConfig.ReadString('Paths', 'PHPInterpreter', '');
+  result := TFastPHPConfig.PhpInterpreter;
   if not FileExists(result) then
   begin
     od := TOpenDialog.Create(nil);
@@ -44,7 +31,7 @@ begin
       od.FileName := 'php.exe';
       od.Filter := 'Executable file (*.exe)|*.exe';
       od.Options := [ofReadOnly, ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing];
-      od.Title := 'Please chose your PHP interpreter (php.exe)';
+      od.Title := 'Please choose your PHP interpreter (php.exe)';
 
       if not od.Execute then exit;
       if not FileExists(od.FileName) then exit;
@@ -55,12 +42,11 @@ begin
 
     if not IsValidPHPExe(result) then
     begin
-      ShowMessage('This is not a valid PHP executable.');
+      MessageDlg('This is not a valid PHP executable.', mtError, [mbOk], 0);
       exit;
     end;
 
-    FastPHPConfig.WriteString('Paths', 'PHPInterpreter', result);
-    FastPHPConfig.UpdateFile;
+    TFastPHPConfig.PhpInterpreter := result;
   end;
 end;
 
@@ -231,11 +217,4 @@ begin
             (Pos('PHP_SELF', cont) >= 0);
 end;
 
-initialization
-finalization
-  if Assigned(__FastPHPConfig) then
-  begin
-    __FastPHPConfig.UpdateFile;
-    FreeAndNil(__FastPHPConfig);
-  end;
 end.

@@ -9,7 +9,8 @@ uses
   FindReplace in 'FindReplace.pas',
   RunPHP in 'RunPHP.pas',
   FastPHPTreeView in 'FastPHPTreeView.pas',
-  ImageListEx in 'ImageListEx.pas';
+  ImageListEx in 'ImageListEx.pas',
+  FastPHPConfig in 'FastPHPConfig.pas';
 
 {$R *.res}
 

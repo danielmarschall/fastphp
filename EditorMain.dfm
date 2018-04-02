@@ -1,7 +1,7 @@
 object Form1: TForm1
   Left = 0
   Top = 0
-  Caption = 'ViaThinkSoft FastPHP'
+  Caption = 'ViaThinkSoft FastPHP 0.1'
   ClientHeight = 661
   ClientWidth = 1120
   Color = clBtnFace
@@ -124,7 +124,7 @@ object Form1: TForm1
         Gutter.Gradient = True
         Gutter.GradientStartColor = cl3DLight
         Highlighter = SynPHPSyn1
-        Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceHomeKey, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollByOneLess, eoShowScrollHint, eoTabIndent, eoTrimTrailingSpaces]
+        Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceHomeKey, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoKeepCaretX, eoScrollByOneLess, eoShowScrollHint, eoSmartTabDelete, eoTabIndent, eoTrimTrailingSpaces]
         SearchEngine = SynEditSearch1
         WantTabs = True
         OnChange = SynEdit1Change

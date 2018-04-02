@@ -37,7 +37,7 @@ class MyFastPHPIcon extends FastPHPIcon {
 		else if (($this->getType() == ICON_TYPE_VAR)       && ($this->isPublic())                             ) return 13; // public var
 		else if (($this->isMethod())                       && ($this->isPublic())    && (!$this->isAbstract())) return 14; // public function
 		else if (($this->isMethod())                       && ($this->isPublic())    && ( $this->isAbstract())) return 15; // public abstract function
-		else if (($this->getType() == ICON_TYPE_TODO)                                                         ) return 16; // ToDo comment
+		else if (($this->getType() == ICON_TYPE_TODO)                                                         ) return 16; // To-Do comment
 		else                                                                                                    return -1;
 	}
 

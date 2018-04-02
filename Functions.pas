@@ -17,8 +17,13 @@ function MyVarToStr(v: Variant): string;
 function FileSystemCaseSensitive: boolean;
 function HighColorWindows: boolean;
 function GetTempDir: string;
+function GetSpecialFolder(const aCSIDL: Integer): string;
+function GetMyDocumentsFolder: string;
 
 implementation
+
+uses
+  ShlObj; // Needed for the CSIDL constants
 
 function GetDosOutput(CommandLine: string; Work: string = ''): string;
 var
@@ -297,6 +302,24 @@ begin
   end
   else
     RaiseLastOSError;
+end;
+
+function SHGetFolderPath(hwnd: HWND; csidl: Integer; hToken: THandle;
+  dwFlags: DWord; pszPath: LPWSTR): HRESULT; stdcall;
+  external 'SHFolder.dll' name 'SHGetFolderPathW';
+
+function GetSpecialFolder(const aCSIDL: Integer): string;
+var
+  FolderPath: array[0 .. MAX_PATH] of Char;
+begin
+  SetLastError(ERROR_SUCCESS);
+  if SHGetFolderPath(0, aCSIDL, 0, 0, @FolderPath) = S_OK then
+    Result := FolderPath;
+end;
+
+function GetMyDocumentsFolder: string;
+begin
+  Result := GetSpecialFolder(CSIDL_PERSONAL);
 end;
 
 end.

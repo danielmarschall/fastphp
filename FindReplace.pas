@@ -140,9 +140,9 @@ begin
   if not found then
   begin
     if direction = sdForwards then
-      ShowMessage('End of document reached.')
+      MessageDlg('End of document reached.', mtInformation, [mbOk], 0)
     else
-      ShowMessage('Begin of document reached.');
+      MessageDlg('Begin of document reached.', mtInformation, [mbOk], 0);
   end;
 
   if fAutofocus and fEditor.CanFocus then fEditor.SetFocus;
