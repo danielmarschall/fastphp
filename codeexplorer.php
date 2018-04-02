@@ -202,21 +202,21 @@ class MyFastPHPCodeExplorer {
 			}
 
 			if (($token == T_COMMENT) && self::isToDoDescription($value)) {
-				// Because a TO-DO-entry can stand everywhere (e.g. between a "private" and a "function")
+				// Because a TO-DO-entry can stand everywhere (e.g. between a "private" and a "function" keyword)
 				// we shall not alter the $icon instance
 				$todoIcon = clone $icon;
 				$todoIcon->setType(ICON_TYPE_TODO);
-				unset($todoIcon);
 				FastPHPWriter::outputLeafNode($todoIcon, $line, self::stripComment($value));
+				unset($todoIcon);
 			}
 		}
 	}
 
         private static function isToDoDescription($comment) {
-		return ((stripos($value, 'TODO')   !== false) ||
-		        (stripos($value, 'BUGBUG') !== false) ||
-		        (stripos($value, 'FIXME')  !== false) ||
-		        (stripos($value, 'XXX')    !== false));
+		return ((stripos($comment, 'TODO')   !== false) ||
+		        (stripos($comment, 'BUGBUG') !== false) ||
+		        (stripos($comment, 'FIXME')  !== false) ||
+		        (stripos($comment, 'XXX')    !== false));
 	}
 
 	private static function stripComment($x) {
