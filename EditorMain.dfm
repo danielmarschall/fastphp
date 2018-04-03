@@ -315,7 +315,11 @@ object Form1: TForm1
   object OpenDialog3: TOpenDialog
     DefaultExt = '.php'
     FileName = 'scrap.php'
-    Filter = 'PHP file (*.php;*.xphp)|*.php;*.xphp|All files (*.*)|*.*'
+    Filter = 
+      'All PHP files (*.php*;*.phtml;*.inc;*.xphp)|*.php*;*.phtml;*.inc' +
+      ';*.xphp|PHP files (*.php*;*.phtml)|*.php*;*.phtml|Include files ' +
+      '(*.inc)|*.inc|PHP source files (*.phps)|*.phps|Executable PHP fi' +
+      'le (*.xphp)|*.xphp|All files (*.*)|*.*'
     Options = [ofHideReadOnly, ofPathMustExist, ofEnableSizing]
     Title = 'Please select (or create) a scrap file'
     Left = 608
