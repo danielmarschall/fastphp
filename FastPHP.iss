@@ -42,13 +42,15 @@ Name: fileassocEditor;  Description: "{cm:AssocFileExtension,'FastPHP Editor','.
 Name: fileassocBrowser; Description: "{cm:AssocFileExtension,'FastPHP Browser','.xphp'}";  GroupDescription: "{cm:Assoc}"; Components: browser
 
 [Files]
+Source: "Icons\Icons.dll";          DestDir: "{app}"; Flags: ignoreversion
+
 Source: "FastPHPEditor.exe";        DestDir: "{app}"; Flags: ignoreversion; Components: editor
 Source: "codeexplorer.bmp";         DestDir: "{app}"; Flags: ignoreversion; Components: editor
 Source: "codeexplorer.php";         DestDir: "{app}"; Flags: ignoreversion; Components: editor
 Source: "codeexplorer_api.inc.php"; DestDir: "{app}"; Flags: ignoreversion; Components: editor
 
 Source: "FastPHPBrowser.exe";       DestDir: "{app}"; Flags: ignoreversion; Components: browser
-Source: "fastphp_server.inc.php";                DestDir: "{app}"; Flags: ignoreversion; Components: browser
+Source: "fastphp_server.inc.php";   DestDir: "{app}"; Flags: ignoreversion; Components: browser
 
 [Dirs]
 
@@ -64,7 +66,7 @@ Filename: "{app}\FastPHPBrowser.exe"; Description: "Run FastPHP Browser"; Flags:
 Root: HKCR; Subkey: ".php";                                       ValueData: "FastPHPScript";                       ValueType: string; ValueName: ""; Flags: uninsdeletevalue; Components: editor;  Tasks: fileassocEditor
 Root: HKCR; Subkey: ".phps";                                      ValueData: "FastPHPScript";                       ValueType: string; ValueName: ""; Flags: uninsdeletevalue; Components: editor;  Tasks: fileassocEditor
 Root: HKCR; Subkey: "FastPHPScript";                              ValueData: "PHP script";                          ValueType: string; ValueName: ""; Flags: uninsdeletekey;   Components: editor;  Tasks: fileassocEditor
-Root: HKCR; Subkey: "FastPHPScript\DefaultIcon";                  ValueData: "{app}\FastPHPEditor.exe";             ValueType: string; ValueName: "";                          Components: editor;  Tasks: fileassocEditor
+Root: HKCR; Subkey: "FastPHPScript\DefaultIcon";                  ValueData: "{app}\Icons.dll,0";                   ValueType: string; ValueName: "";                          Components: editor;  Tasks: fileassocEditor
 Root: HKCR; Subkey: "FastPHPScript\shell\open\command";           ValueData: """{app}\FastPHPEditor.exe"" ""%1""";  ValueType: string; ValueName: "";                          Components: editor;  Tasks: fileassocEditor
            
 Root: HKCR; Subkey: ".php\ShellNew";                              ValueData: "PHP script";                          ValueType: string; ValueName: "ItemName";                  Components: editor;  Tasks: fileassocEditor
@@ -72,7 +74,7 @@ Root: HKCR; Subkey: ".php\ShellNew";                              ValueData: "";
 
 Root: HKCR; Subkey: ".xphp";                                      ValueData: "FastPHPExecutableScript";             ValueType: string; ValueName: ""; Flags: uninsdeletevalue; Components: browser; Tasks: fileassocBrowser
 Root: HKCR; Subkey: "FastPHPExecutableScript";                    ValueData: "Executable PHP application";          ValueType: string; ValueName: ""; Flags: uninsdeletekey;   Components: browser; Tasks: fileassocBrowser
-Root: HKCR; Subkey: "FastPHPExecutableScript\DefaultIcon";        ValueData: "{app}\FastPHPEditor.exe";             ValueType: string; ValueName: "";                          Components: browser; Tasks: fileassocBrowser
+Root: HKCR; Subkey: "FastPHPExecutableScript\DefaultIcon";        ValueData: "{app}\Icons.exe,1";                   ValueType: string; ValueName: "";                          Components: browser; Tasks: fileassocBrowser
 Root: HKCR; Subkey: "FastPHPExecutableScript\shell\open\command"; ValueData: """{app}\FastPHPBrowser.exe"" ""%1"""; ValueType: string; ValueName: "";                          Components: browser; Tasks: fileassocBrowser
 Root: HKCR; Subkey: "FastPHPExecutableScript\shell\edit\command"; ValueData: """{app}\FastPHPEditor.exe"" ""%1""";  ValueType: string; ValueName: "";                          Components: browser; Tasks: fileassocBrowser
 
@@ -87,5 +89,30 @@ begin
   else
   begin
     Result := False;
+  end;
+end;
+function IsAnyComponentSelected: Boolean;
+var
+  I: Integer;
+begin
+  // Source: https://stackoverflow.com/questions/20691583/innosetup-if-no-components-are-selected-go-back-to-components-page
+  Result := False;
+  for I := 0 to WizardForm.ComponentsList.Items.Count - 1 do
+    if WizardForm.ComponentsList.Checked[I] then
+    begin
+      Result := True;
+      Exit;
+    end;
+end;
+function NextButtonClick(PageID: Integer): Boolean;
+begin
+  Result:= True;
+  if PageID = wpSelectComponents then
+  begin
+    if not IsAnyComponentSelected then
+    begin
+      MsgBox('No items selected, please select at least one item', mbError, MB_OK);
+      Result := False;
+    end;
   end;
 end;
