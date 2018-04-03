@@ -37,7 +37,6 @@ Name: "editor";  Description: "FastPHP Editor";  Types: full compact custom
 Name: "browser"; Description: "FastPHP Browser"; Types: full
 
 [Tasks]
-; xphp = executable PHP (only for PHP browser)
 Name: fileassocEditor;  Description: "{cm:AssocFileExtension,'FastPHP Editor','.php(s)'}"; GroupDescription: "{cm:Assoc}"; Components: editor
 Name: fileassocBrowser; Description: "{cm:AssocFileExtension,'FastPHP Browser','.xphp'}";  GroupDescription: "{cm:Assoc}"; Components: browser
 
@@ -63,20 +62,27 @@ Filename: "{app}\FastPHPEditor.exe";  Description: "Run FastPHP Editor";  Flags:
 Filename: "{app}\FastPHPBrowser.exe"; Description: "Run FastPHP Browser"; Flags: nowait postinstall skipifsilent unchecked; Components: browser
 
 [Registry]
-Root: HKCR; Subkey: ".php";                                       ValueData: "FastPHPScript";                       ValueType: string; ValueName: ""; Flags: uninsdeletevalue; Components: editor;  Tasks: fileassocEditor
-Root: HKCR; Subkey: ".phps";                                      ValueData: "FastPHPScript";                       ValueType: string; ValueName: ""; Flags: uninsdeletevalue; Components: editor;  Tasks: fileassocEditor
-Root: HKCR; Subkey: "FastPHPScript";                              ValueData: "PHP script";                          ValueType: string; ValueName: ""; Flags: uninsdeletekey;   Components: editor;  Tasks: fileassocEditor
-Root: HKCR; Subkey: "FastPHPScript\DefaultIcon";                  ValueData: "{app}\Icons.dll,0";                   ValueType: string; ValueName: "";                          Components: editor;  Tasks: fileassocEditor
-Root: HKCR; Subkey: "FastPHPScript\shell\open\command";           ValueData: """{app}\FastPHPEditor.exe"" ""%1""";  ValueType: string; ValueName: "";                          Components: editor;  Tasks: fileassocEditor
+Root: HKCR; Subkey: ".php";                                       ValueName: ""; ValueType: string; ValueData: "FastPHPScript";                       Flags: uninsdeletevalue; Components: editor;  Tasks: fileassocEditor
+Root: HKCR; Subkey: ".phps";                                      ValueName: ""; ValueType: string; ValueData: "FastPHPScript";                       Flags: uninsdeletevalue; Components: editor;  Tasks: fileassocEditor
+;Root: HKCR; Subkey: ".inc";                                      ValueName: ""; ValueType: string; ValueData: "FastPHPScript";                       Flags: uninsdeletevalue; Components: editor;  Tasks: fileassocEditor
+;Root: HKCR; Subkey: ".phtml";                                    ValueName: ""; ValueType: string; ValueData: "FastPHPScript";                       Flags: uninsdeletevalue; Components: editor;  Tasks: fileassocEditor
+;Root: HKCR; Subkey: ".php2";                                     ValueName: ""; ValueType: string; ValueData: "FastPHPScript";                       Flags: uninsdeletevalue; Components: editor;  Tasks: fileassocEditor
+;Root: HKCR; Subkey: ".php3";                                     ValueName: ""; ValueType: string; ValueData: "FastPHPScript";                       Flags: uninsdeletevalue; Components: editor;  Tasks: fileassocEditor
+;Root: HKCR; Subkey: ".php4";                                     ValueName: ""; ValueType: string; ValueData: "FastPHPScript";                       Flags: uninsdeletevalue; Components: editor;  Tasks: fileassocEditor
+;Root: HKCR; Subkey: ".php5";                                     ValueName: ""; ValueType: string; ValueData: "FastPHPScript";                       Flags: uninsdeletevalue; Components: editor;  Tasks: fileassocEditor
+Root: HKCR; Subkey: "FastPHPScript";                              ValueName: ""; ValueType: string; ValueData: "PHP script";                          Flags: uninsdeletekey;   Components: editor;  Tasks: fileassocEditor
+Root: HKCR; Subkey: "FastPHPScript\DefaultIcon";                  ValueName: ""; ValueType: string; ValueData: "{app}\Icons.dll,0";                                            Components: editor;  Tasks: fileassocEditor
+Root: HKCR; Subkey: "FastPHPScript\shell\open\command";           ValueName: ""; ValueType: string; ValueData: """{app}\FastPHPEditor.exe"" ""%1""";                           Components: editor;  Tasks: fileassocEditor
            
-Root: HKCR; Subkey: ".php\ShellNew";                              ValueData: "PHP script";                          ValueType: string; ValueName: "ItemName";                  Components: editor;  Tasks: fileassocEditor
-Root: HKCR; Subkey: ".php\ShellNew";                              ValueData: "";                                    ValueType: string; ValueName: "NullFile";                  Components: editor;  Tasks: fileassocEditor
+Root: HKCR; Subkey: ".php\ShellNew";                              ValueName: "ItemName"; ValueType: string; ValueData: "PHP script";                                           Components: editor;  Tasks: fileassocEditor
+Root: HKCR; Subkey: ".php\ShellNew";                              ValueName: "NullFile"; ValueType: string; ValueData: "";                                                     Components: editor;  Tasks: fileassocEditor
 
-Root: HKCR; Subkey: ".xphp";                                      ValueData: "FastPHPExecutableScript";             ValueType: string; ValueName: ""; Flags: uninsdeletevalue; Components: browser; Tasks: fileassocBrowser
-Root: HKCR; Subkey: "FastPHPExecutableScript";                    ValueData: "Executable PHP application";          ValueType: string; ValueName: ""; Flags: uninsdeletekey;   Components: browser; Tasks: fileassocBrowser
-Root: HKCR; Subkey: "FastPHPExecutableScript\DefaultIcon";        ValueData: "{app}\Icons.exe,1";                   ValueType: string; ValueName: "";                          Components: browser; Tasks: fileassocBrowser
-Root: HKCR; Subkey: "FastPHPExecutableScript\shell\open\command"; ValueData: """{app}\FastPHPBrowser.exe"" ""%1"""; ValueType: string; ValueName: "";                          Components: browser; Tasks: fileassocBrowser
-Root: HKCR; Subkey: "FastPHPExecutableScript\shell\edit\command"; ValueData: """{app}\FastPHPEditor.exe"" ""%1""";  ValueType: string; ValueName: "";                          Components: browser; Tasks: fileassocBrowser
+; xphp = executable PHP (only for PHP browser)
+Root: HKCR; Subkey: ".xphp";                                      ValueName: ""; ValueType: string; ValueData: "FastPHPExecutableScript";             Flags: uninsdeletevalue; Components: browser; Tasks: fileassocBrowser
+Root: HKCR; Subkey: "FastPHPExecutableScript";                    ValueName: ""; ValueType: string; ValueData: "Executable PHP application";          Flags: uninsdeletekey;   Components: browser; Tasks: fileassocBrowser
+Root: HKCR; Subkey: "FastPHPExecutableScript\DefaultIcon";        ValueName: ""; ValueType: string; ValueData: "{app}\Icons.dll,1";                                            Components: browser; Tasks: fileassocBrowser
+Root: HKCR; Subkey: "FastPHPExecutableScript\shell\open\command"; ValueName: ""; ValueType: string; ValueData: """{app}\FastPHPBrowser.exe"" ""%1""";                          Components: browser; Tasks: fileassocBrowser
+Root: HKCR; Subkey: "FastPHPExecutableScript\shell\edit\command"; ValueName: ""; ValueType: string; ValueData: """{app}\FastPHPEditor.exe"" ""%1""";                           Components: browser; Tasks: fileassocBrowser
 
 [Code]
 function InitializeSetup(): Boolean;
