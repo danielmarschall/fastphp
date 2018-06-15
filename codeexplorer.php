@@ -53,6 +53,8 @@ class MyFastPHPIcon extends FastPHPIcon {
 class MyFastPHPCodeExplorer {
 
 	public function handle($code) {
+		$code = preg_replace('@function\s*\(@sm', '(', $code); // invalidate Lamba functions
+		
 		$token = token_get_all($code);
 		$wait_function = false;
 		$wait_const = false;
