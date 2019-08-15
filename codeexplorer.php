@@ -53,8 +53,6 @@ class MyFastPHPIcon extends FastPHPIcon {
 class MyFastPHPCodeExplorer {
 
 	public function handle($code) {
-		$code = preg_replace('@function\s*\(@sm', '(', $code); // invalidate Lamba functions
-		
 		$token = token_get_all($code);
 		$wait_function = false;
 		$wait_const = false;
@@ -90,6 +88,10 @@ class MyFastPHPCodeExplorer {
 			$line  = (!is_array($data)) ? null : $data[2];
 
 			if ($value == '${') $dep++;
+
+			if ($wait_function && ($data == '{')) {
+				$wait_function = false; // Anonymous functions do not have a name
+			}
 
 			if ($wait_function && ($token == T_STRING)) {
 				$wait_function = false;
