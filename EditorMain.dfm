@@ -114,6 +114,12 @@ object Form1: TForm1
         TabOrder = 0
         OnMouseWheelDown = SynEdit1MouseWheelDown
         OnMouseWheelUp = SynEdit1MouseWheelUp
+        CodeFolding.CollapsedLineColor = clGrayText
+        CodeFolding.FolderBarLinesColor = clGrayText
+        CodeFolding.ShowCollapsedLine = True
+        CodeFolding.IndentGuidesColor = clGray
+        CodeFolding.IndentGuides = True
+        UseCodeFolding = False
         Gutter.AutoSize = True
         Gutter.Font.Charset = DEFAULT_CHARSET
         Gutter.Font.Color = clWindowText
@@ -268,6 +274,7 @@ object Form1: TForm1
       Width = 75
       Height = 35
       Action = ActionSave
+      PopupMenu = SavePopup
       TabOrder = 2
     end
     object Button8: TButton
@@ -441,5 +448,31 @@ object Form1: TForm1
     object Runinconsole1: TMenuItem
       Action = ActionRunConsole
     end
+  end
+  object SavePopup: TPopupMenu
+    Left = 196
+    Top = 28
+    object Save1: TMenuItem
+      Caption = 'Save'
+      Default = True
+      OnClick = Save1Click
+    end
+    object Saveas1: TMenuItem
+      Caption = 'Save as...'
+      OnClick = Saveas1Click
+    end
+  end
+  object SaveDialog1: TSaveDialog
+    DefaultExt = '.php'
+    FileName = 'scrap.php'
+    Filter = 
+      'All PHP files (*.php*;*.phtml;*.inc;*.xphp)|*.php*;*.phtml;*.inc' +
+      ';*.xphp|PHP files (*.php*;*.phtml)|*.php*;*.phtml|Include files ' +
+      '(*.inc)|*.inc|PHP source files (*.phps)|*.phps|Executable PHP fi' +
+      'le (*.xphp)|*.xphp|All files (*.*)|*.*'
+    Options = [ofOverwritePrompt, ofHideReadOnly, ofEnableSizing]
+    Title = 'Save as...'
+    Left = 608
+    Top = 320
   end
 end

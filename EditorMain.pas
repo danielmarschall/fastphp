@@ -36,7 +36,7 @@ uses
   Dialogs, StdCtrls, OleCtrls, ComCtrls, ExtCtrls, ToolWin, IniFiles,
   SynEditHighlighter, SynHighlighterPHP, SynEdit, ShDocVw_TLB, FindReplace,
   ActnList, SynEditMiscClasses, SynEditSearch, RunPHP, ImgList, SynUnicode,
-  System.ImageList, System.Actions, Vcl.Menus;
+  System.ImageList, System.Actions, Vcl.Menus, SHDocVw;
 
 {.$DEFINE OnlineHelp}
 
@@ -92,6 +92,10 @@ type
     OpeninIDE1: TMenuItem;
     ActionRunConsole: TAction;
     Runinconsole1: TMenuItem;
+    SavePopup: TPopupMenu;
+    Saveas1: TMenuItem;
+    Save1: TMenuItem;
+    SaveDialog1: TSaveDialog;
     procedure Run(Sender: TObject);
     procedure RunConsole(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -143,6 +147,8 @@ type
     procedure ActionLintExecute(Sender: TObject);
     procedure ActionRunConsoleExecute(Sender: TObject);
     procedure SynEdit1Change(Sender: TObject);
+    procedure Saveas1Click(Sender: TObject);
+    procedure Save1Click(Sender: TObject);
   private
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
@@ -157,6 +163,7 @@ type
   protected
     ChmIndex: TMemIniFile;
     FScrapFile: string;
+    FSaveAsFilename: string;
     codeExplorer: TRunCodeExplorer;
     procedure GotoLineNo(LineNo: integer);
     function GetScrapFile: string;
@@ -728,7 +735,7 @@ var
 begin
   if SynEdit1.Modified then
   begin
-    if ParamStr(1) <> '' then
+    if (ParamStr(1) <> '') or (FSaveAsFilename <> '') then
     begin
       r := MessageDlg('Do you want to save?', mtConfirmation, mbYesNoCancel, 0);
       if r = mrCancel then
@@ -813,6 +820,21 @@ begin
   StartCodeExplorer;
 end;
 
+procedure TForm1.Save1Click(Sender: TObject);
+begin
+  Button7.Click;
+end;
+
+procedure TForm1.Saveas1Click(Sender: TObject);
+begin
+  if SaveDialog1.Execute then
+  begin
+    FSaveAsFilename := SaveDialog1.FileName;
+    Caption := Copy(Caption, 1, Pos(' - ', Caption)-1) + ' - ' + FSaveAsFilename;
+    Button7.Click;
+  end;
+end;
+
 procedure TForm1.StartCodeExplorer;
 begin
   codeExplorer := TRunCodeExplorer.Create(true);
@@ -828,6 +850,12 @@ function TForm1.GetScrapFile: string;
 var
   tmpPath: string;
 begin
+  if FSaveAsFilename <> '' then
+  begin
+    result := FSaveAsFilename;
+    exit;
+  end;
+
   if FScrapFile <> '' then
   begin
     result := FScrapFile;
