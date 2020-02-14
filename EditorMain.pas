@@ -96,6 +96,9 @@ type
     Saveas1: TMenuItem;
     Save1: TMenuItem;
     SaveDialog1: TSaveDialog;
+    BtnSpecialChars: TImage;
+    BtnSpecialCharsOff: TImage;
+    BtnSpecialCharsOn: TImage;
     procedure Run(Sender: TObject);
     procedure RunConsole(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -149,6 +152,7 @@ type
     procedure SynEdit1Change(Sender: TObject);
     procedure Saveas1Click(Sender: TObject);
     procedure Save1Click(Sender: TObject);
+    procedure BtnSpecialCharsClick(Sender: TObject);
   private
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
@@ -724,6 +728,26 @@ begin
   {$ENDREGION}
 end;
 
+procedure TForm1.BtnSpecialCharsClick(Sender: TObject);
+var
+  opts: TSynEditorOptions;
+begin
+  opts := SynEdit1.Options;
+  if eoShowSpecialChars in SynEdit1.Options then
+  begin
+    BtnSpecialChars.Picture.Assign(BtnSpecialCharsOff.Picture);
+    Exclude(opts, eoShowSpecialChars);
+    TFastPHPConfig.SpecialChars := false;
+  end
+  else
+  begin
+    BtnSpecialChars.Picture.Assign(BtnSpecialCharsOn.Picture);
+    Include(opts, eoShowSpecialChars);
+    TFastPHPConfig.SpecialChars := true;
+  end;
+  SynEdit1.Options := opts;
+end;
+
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   TFastPHPConfig.FontSize := SynEdit1.Font.Size;
@@ -795,6 +819,7 @@ procedure TForm1.FormShow(Sender: TObject);
 var
   ScrapFile: string;
   tmpFontSize: integer;
+  opts: TSynEditorOptions;
 begin
   ScrapFile := GetScrapFile;
   if ScrapFile = '' then
@@ -802,6 +827,20 @@ begin
     Application.Terminate; // Close;
     exit;
   end;
+
+  opts := SynEdit1.Options;
+  if TFastPHPConfig.SpecialChars then
+  begin
+    BtnSpecialChars.Picture.Assign(BtnSpecialCharsOn.Picture);
+    Include(opts, eoShowSpecialChars);
+  end
+  else
+  begin
+    BtnSpecialChars.Picture.Assign(BtnSpecialCharsOff.Picture);
+    Exclude(opts, eoShowSpecialChars);
+  end;
+  SynEdit1.Options := opts;
+
   if FileExists(ScrapFile) then
     SynEdit1.Lines.LoadFromFile(ScrapFile)
   else

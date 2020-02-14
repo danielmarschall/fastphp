@@ -13,11 +13,14 @@ type
     class procedure SetHelpIndex(const Value: string); static;
     class function GetPhpInterpreter: string; static;
     class procedure SetPhpInterpreter(const Value: string); static;
+    class function GetSpecialChars: boolean; static;
+    class procedure SetSpecialChars(const Value: boolean); static;
   public
     class property FontSize: integer read GetFontSize write SetFontSize;
     class property ScrapFile: string read GetScrapFile write SetScrapFile;
     class property HelpIndex: string read GetHelpIndex write SetHelpIndex;
     class property PhpInterpreter: string read GetPhpInterpreter write SetPhpInterpreter;
+    class property SpecialChars: boolean read GetSpecialChars write SetSpecialChars;
   end;
 
 implementation
@@ -75,6 +78,25 @@ begin
     begin
       if reg.ValueExists('ScrapFile') then
         result := reg.ReadString('ScrapFile');
+      reg.CloseKey;
+    end;
+  finally
+    reg.Free;
+  end;
+end;
+
+class function TFastPHPConfig.GetSpecialChars: boolean;
+var
+  reg: TRegistry;
+begin
+  result := false;
+  reg := TRegistry.Create;
+  try
+    reg.RootKey := HKEY_CURRENT_USER;
+    if reg.OpenKey('Software\ViaThinkSoft\FastPHP\Editor', false) then
+    begin
+      if reg.ValueExists('SpecialChars') then
+        result := reg.ReadBool('SpecialChars');
       reg.CloseKey;
     end;
   finally
@@ -161,6 +183,23 @@ begin
     if reg.OpenKey('Software\ViaThinkSoft\FastPHP\Editor', true) then
     begin
       reg.WriteString('ScrapFile', Value);
+      reg.CloseKey;
+    end;
+  finally
+    reg.Free;
+  end;
+end;
+
+class procedure TFastPHPConfig.SetSpecialChars(const Value: boolean);
+var
+  reg: TRegistry;
+begin
+  reg := TRegistry.Create;
+  try
+    reg.RootKey := HKEY_CURRENT_USER;
+    if reg.OpenKey('Software\ViaThinkSoft\FastPHP\Editor', true) then
+    begin
+      reg.WriteBool('SpecialChars', Value);
       reg.CloseKey;
     end;
   finally
