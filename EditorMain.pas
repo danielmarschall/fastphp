@@ -153,6 +153,8 @@ type
     procedure Saveas1Click(Sender: TObject);
     procedure Save1Click(Sender: TObject);
     procedure BtnSpecialCharsClick(Sender: TObject);
+    procedure SynEdit1KeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
@@ -450,6 +452,29 @@ begin
   TSynEdit(Sender).CaretY := Line;
   TSynEdit(Sender).SelLength := Length(TSynEdit(Sender).LineText);
   *)
+end;
+
+procedure TForm1.SynEdit1KeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var
+  opts: TSynEditorOptions;
+begin
+  // Hack: We want to use smart tabs/delete, but we don't want to jump to the very beginning if we have a fully empty line
+  //       e.g. you start a line, add 10 tabs, and want to delete 1 tab, but then you remove all 10! That sucks!
+  if Trim(SynEdit1.LineText) = '' then
+  begin
+    opts := SynEdit1.Options;
+    Exclude(opts, eoSmartTabDelete);
+    Exclude(opts, eoTrimTrailingSpaces);
+    SynEdit1.Options := opts;
+  end
+  else
+  begin
+    opts := SynEdit1.Options;
+    Include(opts, eoSmartTabDelete);
+    Include(opts, eoTrimTrailingSpaces);
+    SynEdit1.Options := opts;
+  end;
 end;
 
 procedure TForm1.SynEdit1MouseCursor(Sender: TObject; const aLineCharPos: TBufferCoord; var aCursor: TCursor);

@@ -112,6 +112,7 @@ object Form1: TForm1
         Font.Name = 'Courier New'
         Font.Style = []
         TabOrder = 0
+        OnKeyDown = SynEdit1KeyDown
         OnMouseWheelDown = SynEdit1MouseWheelDown
         OnMouseWheelUp = SynEdit1MouseWheelUp
         CodeFolding.CollapsedLineColor = clGrayText
