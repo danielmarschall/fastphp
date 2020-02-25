@@ -22,6 +22,7 @@ object Form2: TForm2
     Align = alClient
     TabOrder = 0
     OnBeforeNavigate2 = WebBrowser1BeforeNavigate2
+    OnWindowClosing = WebBrowser1WindowClosing
     ExplicitLeft = 80
     ExplicitTop = 64
     ExplicitWidth = 300

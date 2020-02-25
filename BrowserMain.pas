@@ -6,8 +6,9 @@ interface
 
 uses
   // TODO: "{$IFDEF USE_SHDOCVW_TLB}_TLB{$ENDIF}" does not work with Delphi 10.2
+  //       so you have to change the reference SHDocVw / SHDocVw_TLB yourself
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, Dialogs, OleCtrls, SHDocVw_TLB, ExtCtrls, StrUtils,
+  Controls, Forms, Dialogs, OleCtrls, SHDocVw, ExtCtrls, StrUtils,
   StdCtrls, activex, UrlMon;
 
 type
@@ -16,8 +17,10 @@ type
     Timer1: TTimer;
     procedure Timer1Timer(Sender: TObject);
     procedure WebBrowser1BeforeNavigate2(ASender: TObject;
-      const pDisp: IDispatch; {$IFDEF USE_SHDOCVW_TLB}const{$ELSE}var{$ENDIF} URL, Flags, TargetFrameName, PostData,
+      const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
       Headers: OleVariant; var Cancel: WordBool);
+    procedure WebBrowser1WindowClosing(ASender: TObject;
+      IsChildWindow: WordBool; var Cancel: WordBool);
   strict private
     function EmbeddedWBQueryService(const rsid, iid: TGUID; out Obj{: IInterface}): HRESULT;
   end;
@@ -151,7 +154,7 @@ begin
 end;
 
 procedure TForm2.WebBrowser1BeforeNavigate2(ASender: TObject;
-  const pDisp: IDispatch; {$IFDEF USE_SHDOCVW_TLB}const{$ELSE}var{$ENDIF} URL, Flags, TargetFrameName, PostData,
+  const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
   Headers: OleVariant; var Cancel: WordBool);
 var
   myURL, myUrl2, getData: string;
@@ -235,6 +238,13 @@ begin
     end;
   end;
   {$ENDREGION}
+end;
+
+procedure TForm2.WebBrowser1WindowClosing(ASender: TObject;
+  IsChildWindow: WordBool; var Cancel: WordBool);
+begin
+  Close;
+  Cancel := true;
 end;
 
 end.

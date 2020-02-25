@@ -69,6 +69,7 @@ object Form1: TForm1
         Align = alClient
         TabOrder = 0
         OnBeforeNavigate2 = WebBrowser1BeforeNavigate2
+        OnWindowClosing = WebBrowser1WindowClosing
         ExplicitWidth = 348
         ExplicitHeight = 150
         ControlData = {
@@ -112,7 +113,6 @@ object Form1: TForm1
         Font.Name = 'Courier New'
         Font.Style = []
         TabOrder = 0
-        OnKeyDown = SynEdit1KeyDown
         OnMouseWheelDown = SynEdit1MouseWheelDown
         OnMouseWheelUp = SynEdit1MouseWheelUp
         CodeFolding.CollapsedLineColor = clGrayText
@@ -131,7 +131,7 @@ object Form1: TForm1
         Gutter.Gradient = True
         Gutter.GradientStartColor = cl3DLight
         Highlighter = SynPHPSyn1
-        Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceHomeKey, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoKeepCaretX, eoScrollByOneLess, eoShowScrollHint, eoSmartTabDelete, eoTabIndent, eoTrimTrailingSpaces]
+        Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceHomeKey, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoKeepCaretX, eoScrollByOneLess, eoShowScrollHint, eoTabIndent]
         SearchEngine = SynEditSearch1
         WantTabs = True
         OnChange = SynEdit1Change
