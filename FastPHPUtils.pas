@@ -3,20 +3,20 @@ unit FastPHPUtils;
 interface
 
 uses
-  Windows, SysUtils, StrUtils, Dialogs, IniFiles, Classes, Forms, ShellAPI;
+  Windows, SysUtils, StrUtils, Dialogs, IniFiles, Classes, Forms, ShellAPI, Functions;
 
 const
   FASTPHP_GOTO_URI_PREFIX = 'fastphp://editor/gotoline/';
 
 function GetPHPExe: string;
-function RunPHPScript(APHPFileName: string; lint: boolean=false; inConsole: boolean=False): string;
+function RunPHPScript(APHPFileName: string; lint: boolean=false; inConsole: boolean=False; ContentCallBack: TContentCallBack=nil): string;
 function ParseCHM(const chmFile: TFileName): boolean;
 function IsValidPHPExe(const exeFile: TFileName): boolean;
 
 implementation
 
 uses
-  Functions, FastPHPConfig;
+  FastPHPConfig;
 
 function GetPHPExe: string;
 var
@@ -50,7 +50,7 @@ begin
   end;
 end;
 
-function RunPHPScript(APHPFileName: string; lint: boolean=false; inConsole: boolean=False): string;
+function RunPHPScript(APHPFileName: string; lint: boolean=false; inConsole: boolean=False; ContentCallBack: TContentCallBack=nil): string;
 var
   phpExe, args, batFile, workdir: string;
   slBat: TStringList;
@@ -88,7 +88,7 @@ begin
   end
   else
   begin
-    result := GetDosOutput('"'+phpExe+'" ' + args, workdir);
+    result := GetDosOutput('"'+phpExe+'" ' + args, workdir, ContentCallBack);
   end;
 end;
 

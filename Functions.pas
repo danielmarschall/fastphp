@@ -6,7 +6,10 @@ uses
   Windows, Messages, SysUtils, StrUtils, IniFiles, Classes, Forms, Variants, MsHTML,
   StdCtrls, SynEdit, ActiveX;
 
-function GetDosOutput(CommandLine: string; Work: string = ''): string;
+type
+  TContentCallBack = procedure(Content: string) of object;
+
+function GetDosOutput(CommandLine: string; Work: string = ''; ContentCallBack: TContentCallBack=nil): string;
 function StrIPos(const SubStr, S: string): Integer;
 function LoadFileToStr(const FileName: TFileName): AnsiString;
 function LastPos(const SubStr, S: string): integer;
@@ -25,7 +28,7 @@ implementation
 uses
   ShlObj; // Needed for the CSIDL constants
 
-function GetDosOutput(CommandLine: string; Work: string = ''): string;
+function GetDosOutput(CommandLine: string; Work: string = ''; ContentCallBack: TContentCallBack=nil): string;
 var
   SA: TSecurityAttributes;
   SI: TStartupInfo;
@@ -70,6 +73,7 @@ begin
           begin
             Buffer[BytesRead] := #0;
             Result := Result + Buffer;
+            if Assigned(ContentCallBack) then ContentCallBack(Buffer);
           end;
         until not WasOK or (BytesRead = 0);
         WaitForSingleObject(PI.hProcess, INFINITE);

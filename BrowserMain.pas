@@ -128,6 +128,7 @@ end;
 procedure TForm2.Timer1Timer(Sender: TObject);
 var
   phpScript: string;
+  sl: TStringList;
 begin
   Timer1.Enabled := false;
   phpScript := ParamStr(1);
@@ -151,6 +152,21 @@ begin
   end;
 
   WebBrowser1.LoadHTML(RunPHPScript(phpScript), phpScript);
+
+  Application.ProcessMessages; // This is important, otherwise the metatags can't be read...
+
+  sl := TStringList.Create;
+  try
+    WebBrowser1.ReadMetaTags(sl);
+    // TODO: case insensitive
+    if sl.Values['fastphp_title'] <> '' then Caption := sl.Values['fastphp_title'];
+    if sl.Values['fastphp_width'] <> '' then ClientWidth := StrToInt(sl.Values['fastphp_width']);
+    if sl.Values['fastphp_height'] <> '' then ClientHeight := StrToInt(sl.Values['fastphp_height']);
+    // TODO: Add more attributes, like HTA applications had
+    // TODO: Additionally implement "HTA:APPLICATION" element, see https://docs.microsoft.com/en-us/previous-versions//ms536495%28v%3dvs.85%29
+  finally
+    FreeAndNil(sl);
+  end;
 end;
 
 procedure TForm2.WebBrowser1BeforeNavigate2(ASender: TObject;

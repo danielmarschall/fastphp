@@ -6,11 +6,13 @@ interface
 
 uses
   // TODO: "{$IFDEF USE_SHDOCVW_TLB}ShDocVw_TLB{$ELSE}ShDocVw{$ENDIF}" does not work with Delphi 10.2
-  Windows, ShDocVw, SysUtils, Forms;
+  Windows, ShDocVw, SysUtils, Forms, Classes;
 
 procedure WaitForBrowser(AWebBrowser: TWebbrowser);
 
 function WebBrowserLoadHTML(AWebBrowser: TWebBrowser; const AHTML: string;
+                            const AFakeURL: string=''): boolean;
+function WebBrowserLoadStream(AWebBrowser: TWebBrowser; const AStream: TStream;
                             const AFakeURL: string=''): boolean;
 
 type
@@ -19,6 +21,8 @@ type
     procedure Clear;
     procedure Wait;
     function LoadHTML(const HTML: string; const AFakeURL: string=''): boolean;
+    function LoadStream(const Stream: TStream; const AFakeURL: string=''): boolean;
+    procedure ReadMetaTags(outSL: TStringList);
   end;
 
 implementation
@@ -39,6 +43,7 @@ type
     m_sBaseName: string;
   public
     procedure InitLoader(sContent, sBaseUrl: string);
+    procedure InitLoaderStream(sStream: TStream; sBaseUrl: string);
     {$REGION 'IMoniker members'}
     function BindToObject(const bc: IBindCtx; const mkToLeft: IMoniker;
       const iidResult: TIID; out vResult): HResult; stdcall;
@@ -152,8 +157,58 @@ begin
   try
     // TODO: Delphi2007 and FastMM4 say that here we have a memory leak
     loader := TLoadHTMLMoniker.Create;
-
     loader.InitLoader(AHTML, url);
+  except
+    if Assigned(loader) then FreeAndNil(loader);
+    result := false;
+    exit;
+  end;
+
+  result := pPM.Load(true, loader, bindctx, STGM_READ) = S_OK;
+
+  if not result and Assigned(loader) then FreeAndNil(loader);
+end;
+
+function WebBrowserLoadStream(AWebBrowser: TWebBrowser; const AStream: TStream;
+                            const AFakeURL: string=''): boolean;
+var
+  bindctx: IBindCtx;
+  pPM: IPersistMoniker;
+  loader: TLoadHTMLMoniker;
+  url: string;
+begin
+  if AFakeURL <> '' then
+    url := AFakeURL
+  else if AWebBrowser.LocationURL <> '' then
+    url := AWebBrowser.LocationURL
+  else
+    url := 'about:blank';
+
+  if AWebBrowser.Document = nil then
+  begin
+    AWebBrowser.Navigate('about:blank');
+    WaitForBrowser(AWebBrowser);
+  end;
+
+  pPM := AWebBrowser.Document as IPersistMoniker;
+  if (pPM = nil) then
+  begin
+    result := false;
+    exit;
+  end;
+
+  bindctx := nil;
+  CreateBindCtx(0, bindctx);
+  if (bindctx = nil) then
+  begin
+    result := false;
+    exit;
+  end;
+
+  try
+    // TODO: Delphi2007 and FastMM4 say that here we have a memory leak
+    loader := TLoadHTMLMoniker.Create;
+    loader.InitLoaderStream(AStream, url);
   except
     if Assigned(loader) then FreeAndNil(loader);
     result := false;
@@ -182,6 +237,15 @@ begin
   m_sBaseName := sBaseUrl;
   hr := CreateStreamOnHGlobal(StrToGlobalHandle(sContent), true, m_stream);
   if ((hr <> S_OK) or (m_stream = nil)) then raise Exception.Create(SCannotAllocMemory);
+end;
+
+procedure TLoadHTMLMoniker.InitLoaderStream(sStream: TStream; sBaseUrl: string);
+resourcestring
+  SCannotAllocMemory = 'Cannot create IStream.';
+begin
+  m_sBaseName := sBaseUrl;
+  m_stream := TStreamAdapter.Create(sStream, soReference) as IStream;
+  if (m_stream = nil) then raise Exception.Create(SCannotAllocMemory);
 end;
 
 function TLoadHTMLMoniker.GetDisplayName(const bc: IBindCtx;
@@ -331,6 +395,31 @@ function TWebBrowserEx.LoadHTML(const HTML: string; const AFakeURL: string=''): 
 begin
   result := WebBrowserLoadHTML(Self, HTML, AFakeURL);
   Self.Wait;
+end;
+
+function TWebBrowserEx.LoadStream(const Stream: TStream; const AFakeURL: string=''): boolean;
+begin
+  result := WebBrowserLoadStream(Self, Stream, AFakeURL);
+  Self.Wait;
+end;
+
+procedure TWebBrowserEx.ReadMetaTags(outSL: TStringList);
+var
+  vDocument: OleVariant;
+  vMetas: OleVariant;
+  vMetaItem: OleVariant;
+  i: Integer;
+begin
+  vDocument := Self.Document;
+  vMetas := vDocument.GetElementsByTagName('meta');
+  for i := 0 to vMetas.Length-1 do
+  begin
+    vMetaItem := vMetas.Item(i);
+    if string(vMetaItem.httpequiv) = '' then
+      outSL.Values[vMetaItem.Name] := vMetaItem.Content
+    else
+      outSL.Values[vMetaItem.httpequiv] := vMetaItem.Content;
+  end;
 end;
 
 procedure TWebBrowserEx.Clear;
