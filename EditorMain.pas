@@ -2,6 +2,8 @@ unit EditorMain;
 
 {$Include 'FastPHP.inc'}
 
+// TODO 70423 * <fastphp> bug beheben, bei dem php.exe im hintergrund geöffnet bleibt, wenn man den editor schließt !!!!!!!!!
+
 (*
   This program requires
   - Microsoft Internet Controls (TWebBrowser)
@@ -36,7 +38,7 @@ uses
   Dialogs, StdCtrls, OleCtrls, ComCtrls, ExtCtrls, ToolWin, IniFiles,
   SynEditHighlighter, SynHighlighterPHP, SynEdit, ShDocVw_TLB, FindReplace,
   ActnList, SynEditMiscClasses, SynEditSearch, RunPHP, ImgList, SynUnicode,
-  System.ImageList, System.Actions, Vcl.Menus, SHDocVw;
+  System.ImageList, System.Actions, Vcl.Menus, SHDocVw, Vcl.Themes;
 
 {.$DEFINE OnlineHelp}
 
@@ -99,6 +101,10 @@ type
     BtnSpecialChars: TImage;
     BtnSpecialCharsOff: TImage;
     BtnSpecialCharsOn: TImage;
+    BtnLightOn: TImage;
+    BtnLightOff: TImage;
+    BtnLight: TImage;
+    StartUpTimer: TTimer;
     procedure Run(Sender: TObject);
     procedure RunConsole(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -155,6 +161,8 @@ type
     procedure BtnSpecialCharsClick(Sender: TObject);
     procedure WebBrowser1WindowClosing(ASender: TObject;
       IsChildWindow: WordBool; var Cancel: WordBool);
+    procedure BtnLightClick(Sender: TObject);
+    procedure StartUpTimerTimer(Sender: TObject);
   private
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
@@ -175,6 +183,9 @@ type
     function GetScrapFile: string;
     procedure StartCodeExplorer;
     procedure RefreshModifySign;
+    procedure Theme_Light;
+    procedure Theme_Dark;
+    function IsThemeDark: boolean;
   end;
 
 var
@@ -251,7 +262,7 @@ procedure TForm1.ActionOpenExecute(Sender: TObject);
 begin
   If OpenDialog3.Execute then
   begin
-    ShellExecute(0, 'open', PChar(ParamStr(0)), PChar(OpenDialog3.FileName), '', SW_NORMAL);
+    ShellExecute(0, 'open', PChar(ParamStr(0)), PChar('"' + OpenDialog3.FileName + '"'), '', SW_NORMAL);
   end;
 end;
 
@@ -397,6 +408,8 @@ var
 procedure TForm1.Run(Sender: TObject);
 var
   bakTS: TTabSheet;
+  ss: TStringStream;
+  bakPos: Int64;
 begin
   memo2.Lines.Text := '';
 
@@ -420,9 +433,22 @@ begin
   try
     ActionSave.Execute; // TODO: if it is not the scrap file: do not save the file, since the user did not intended to save... better create a temporary file and run it instead.
 
+    // TODO 70421 * <fastphp> flush() mittels ContentCallBack implementieren... ich möchte bei langen scripts statusanzeigen realisieren können mit javascript das stück für stück geladen wird !!!!!!!!
+    // TODO 70422 * <fastphp> wenn ein script hängt, soll man es abwürgen dürfen!!!!!!
     memo2.Lines.Text := RunPHPScript(GetScrapFile, Sender=ActionLint, False);
 
-    Webbrowser1.LoadHTML(MarkUpLineReference(memo2.Lines.Text), GetScrapFile);
+
+    // Webbrowser1.LoadHTML(MarkUpLineReference(memo2.Lines.Text), GetScrapFile);
+
+    // Alternatively:
+    (*
+    ss := TstringStream.Create;
+    ss.WriteString(MarkUpLineReference(memo2.Lines.Text));
+    ss.Position := 0;
+    Webbrowser1.LoadStream(ss, GetScrapFile);
+    Webbrowser1.Wait;
+    ss.Free;
+    *)
 
     if IsTextHTML(memo2.lines.text) then
       PageControl1.ActivePage := HtmlTabSheet
@@ -648,6 +674,53 @@ begin
   SynEdit1.SetFocus;
 end;
 
+procedure TForm1.Theme_Dark;
+begin
+  if IsThemeDark then exit;
+  TStyleManager.TrySetStyle('Windows10 SlateGray');
+  Color := 1316887;
+  Font.Color := clCream;
+  //Memo2.Font.Color := clCream;
+  //Memo2.ParentColor := true;
+  SynEdit1.ActiveLineColor := 2238502;
+  SynEdit1.Color := 1316887;
+  SynEdit1.Font.Color := clCream;
+  SynEdit1.Gutter.Color := 1316887;
+  SynEdit1.Gutter.Font.Color := clCream;
+  SynEdit1.Gutter.GradientStartColor := 2238502;
+  SynEdit1.Gutter.GradientEndColor := 1316887;
+  SynPHPSyn1.CommentAttri.Foreground := 6314591;
+  SynPHPSyn1.IdentifierAttri.Foreground := 9627120;
+  SynPHPSyn1.KeyAttri.Foreground := 4157595;
+  SynPHPSyn1.NumberAttri.Foreground := 5008079;
+  SynPHPSyn1.StringAttri.Foreground := 6987151;
+  SynPHPSyn1.SymbolAttri.Foreground := 8769754;
+  SynPHPSyn1.VariableAttri.Foreground := 6924493;
+end;
+
+procedure TForm1.Theme_Light;
+begin
+  if not IsThemeDark then exit;
+  TStyleManager.TrySetStyle('Windows');
+  Color := clBtnFace;
+  Font.Color := clWindowText;
+  //Memo2.Font.Color := clWindowText;
+  SynEdit1.ActiveLineColor := 14680010;
+  SynEdit1.Color := clWindow;
+  SynEdit1.Font.Color := clWindowText;
+  SynEdit1.Gutter.Color := clBtnFace;
+  SynEdit1.Gutter.Font.Color := clWindowText;
+  SynEdit1.Gutter.GradientStartcolor := cl3dLight;
+  SynEdit1.Gutter.GradientEndColor := clBtnFace;;
+  SynPHPSyn1.CommentAttri.Foreground := 33023;
+  SynPHPSyn1.IdentifierAttri.Foreground := 4194304;
+  SynPHPSyn1.KeyAttri.Foreground := 4227072;
+  SynPHPSyn1.NumberAttri.Foreground := 213;
+  SynPHPSyn1.StringAttri.Foreground := 13762560;
+  SynPHPSyn1.SymbolAttri.Foreground := 4227072;
+  SynPHPSyn1.VariableAttri.Foreground := 213;
+end;
+
 procedure TForm1.Timer1Timer(Sender: TObject);
 begin
   {$IFDEF OnlineHelp}
@@ -720,7 +793,7 @@ begin
   end;
   {$ENDREGION}
 
-  {$REGION 'Intelligent browser (executes PHP scripts)'}
+  {$REGION 'Intelligent browser (executes PHP scripts which are clicked in a hyperlink)'}
   if URL <> 'about:blank' then
   begin
     myUrl := URL;
@@ -730,6 +803,7 @@ begin
 
     // TODO: myURL urldecode
     // TODO: maybe we could even open that file in the editor!
+    // TODO: ?parameter=....
 
     if FileExists(myURL) and (EndsText('.php', myURL) or EndsText('.php3', myURL) or EndsText('.php4', myURL) or EndsText('.php5', myURL) or EndsText('.phps', myURL)) then
     begin
@@ -738,6 +812,22 @@ begin
     end;
   end;
   {$ENDREGION}
+end;
+
+procedure TForm1.BtnLightClick(Sender: TObject);
+begin
+  if IsThemeDark then
+  begin
+    BtnLight.Picture.Assign(BtnLightOn.Picture);
+    Theme_Light;
+    TFastPHPConfig.DarkTheme := false;
+  end
+  else
+  begin
+    BtnLight.Picture.Assign(BtnLightOff.Picture);
+    Theme_Dark;
+    TFastPHPConfig.DarkTheme := true;
+  end;
 end;
 
 procedure TForm1.BtnSpecialCharsClick(Sender: TObject);
@@ -869,6 +959,8 @@ begin
 
   DoubleBuffered := true;
   StartCodeExplorer;
+
+  StartupTimer.Enabled := true;
 end;
 
 procedure TForm1.Save1Click(Sender: TObject);
@@ -895,6 +987,25 @@ begin
   codeExplorer.PhpFile := IncludeTrailingPathDelimiter(ExtractFileDir(Application.ExeName)) + 'codeexplorer.php'; // GetScrapFile;
   codeExplorer.WorkDir := ExtractFileDir(Application.ExeName);
   codeExplorer.Resume;
+end;
+
+procedure TForm1.StartUpTimerTimer(Sender: TObject);
+begin
+  StartupTimer.Enabled := false;
+
+  // We need this timer because we cannot change the Theme during OnShow,
+  // because the Delphi VCL Theme is buggy!
+
+  if TFastPHPConfig.DarkTheme then
+  begin
+    BtnLight.Picture.Assign(BtnLightOff.Picture);
+    Theme_Dark;
+  end
+  else
+  begin
+    BtnLight.Picture.Assign(BtnLightOn.Picture);
+    Theme_Light;
+  end;
 end;
 
 function TForm1.GetScrapFile: string;
@@ -1245,6 +1356,11 @@ function TForm1.InputRequestCallback(var data: AnsiString): boolean;
 begin
   data := UTF8Encode(SynEdit1.Text);
   result := true;
+end;
+
+function TForm1.IsThemeDark: boolean;
+begin
+  result := Assigned(TStyleManager.ActiveStyle) and (TStyleManager.ActiveStyle.Name<>'Windows');
 end;
 
 function TForm1.OutputNotifyCallback(const data: AnsiString): boolean;

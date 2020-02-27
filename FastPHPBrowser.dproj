@@ -72,13 +72,14 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <Icon_MainIcon>FastPHPBrowser_Icon.ico</Icon_MainIcon>
-        <DCC_ExeOutput>E:\__fastphp</DCC_ExeOutput>
-        <Debugger_RunParams>E:\__fastphp\test_ajax.xphp</Debugger_RunParams>
+        <DCC_ExeOutput>D:\__fastphp</DCC_ExeOutput>
+        <Debugger_RunParams>D:\_test\scrap.php</Debugger_RunParams>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
         <AppDPIAwarenessMode>PerMonitor</AppDPIAwarenessMode>
+        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Browser;FileVersion=1.0.0.0;InternalName=FastPHP Browser;LegalCopyright=(C) 2020 ViaThinkSoft, Daniel Marschall;LegalTrademarks=;OriginalFilename=FastPHPBrowser.exe;ProductName=FastPHP;ProductVersion=1.0.0.0;Comments=www.viathinksoft.com</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -92,6 +93,11 @@
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Icon_MainIcon>FastPHPBrowser_Icon1.ico</Icon_MainIcon>
+        <BT_BuildType>Debug</BT_BuildType>
+        <Debugger_RunParams>D:\_test\scrap.php</Debugger_RunParams>
+        <VerInfo_MajorVer>0</VerInfo_MajorVer>
+        <VerInfo_MinorVer>2</VerInfo_MinorVer>
+        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Browser;FileVersion=0.2.0.0;InternalName=FastPHP Browser;LegalCopyright=(C) 2016-2020 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHPBrowser.exe;ProductName=FastPHP;ProductVersion=0.2;Comments=www.viathinksoft.com</VerInfo_Keys>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
