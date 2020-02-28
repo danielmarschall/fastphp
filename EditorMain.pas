@@ -21,6 +21,9 @@ unit EditorMain;
 // TODO: "jump to next/prev todo" buttons/shortcuts
 // TODO: "increase/decrease indent" buttons/shortcuts
 
+// Small things:
+// - The scroll bars of SynEdit are not affected by the dark theme
+
 // Future ideas
 // - code insight
 // - verschiedene php versionen?
@@ -544,10 +547,9 @@ var
     Result := Editor.RowColumnToPixels(Editor.BufferToDisplayPos(P));
   end;
 
-const
-  COLOR_FG = clGreen;
-  COLOR_BG = clLime;
 var
+  COLOR_FG: TColor;
+  COLOR_BG: TColor;
   P: TBufferCoord;
   Pix: TPoint;
   D: TDisplayCoord;
@@ -557,8 +559,19 @@ var
   ArrayLength: Integer;
   start: Integer;
   TmpCharA, TmpCharB: WideChar;
-begin       
+begin
   // Source: https://github.com/SynEdit/SynEdit/blob/master/Demos/OnPaintTransientDemo/Unit1.pas
+
+  if IsThemeDark then
+  begin
+    COLOR_FG := clLime;
+    COLOR_BG := clGreen;
+  end
+  else
+  begin
+    COLOR_FG := clGreen;
+    COLOR_BG := clLime;
+  end;
 
   if TSynEdit(Sender).SelAvail then exit;
   Editor := TSynEdit(Sender);
