@@ -702,7 +702,7 @@ begin
   SynEdit1.Gutter.Font.Color := clCream;
   SynEdit1.Gutter.GradientStartColor := 2238502;
   SynEdit1.Gutter.GradientEndColor := 1316887;
-  SynPHPSyn1.CommentAttri.Foreground := 6314591;
+  SynPHPSyn1.CommentAttri.Foreground := $00837B82;
   SynPHPSyn1.IdentifierAttri.Foreground := 9627120;
   SynPHPSyn1.KeyAttri.Foreground := 4157595;
   SynPHPSyn1.NumberAttri.Foreground := 5008079;
