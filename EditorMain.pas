@@ -828,7 +828,12 @@ begin
 end;
 
 procedure TForm1.BtnLightClick(Sender: TObject);
+var
+  CanClose: boolean;
 begin
+  FormCloseQuery(Form1, CanClose);
+  if not CanClose then exit;
+
   if IsThemeDark then
   begin
     BtnLight.Picture.Assign(BtnLightOn.Picture);
