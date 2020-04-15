@@ -292,7 +292,7 @@ procedure TForm1.RightTrimAll;
 var
   i: integer;
 begin
-  for i := 0 to SynEdit1.Lines.Count do
+  for i := 0 to SynEdit1.Lines.Count-1 do
   begin
     SynEdit1.Lines.Strings[i] := TrimRight(SynEdit1.Lines.Strings[i]);
   end;
@@ -304,6 +304,7 @@ begin
   SynEdit1.Lines.SaveToFile(GetScrapFile);
   SynEdit1.Modified := false;
   RefreshModifySign;
+  if SynEdit1.CanFocus then SynEdit1.SetFocus;
 end;
 
 procedure TForm1.ActionSpaceToTabExecute(Sender: TObject);
