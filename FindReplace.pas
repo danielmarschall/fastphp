@@ -51,7 +51,7 @@ type
     procedure OnFind(Sender: TObject); virtual;
     procedure OnReplace(Sender: TObject); virtual;
 
-    procedure DoFind(dialog: TFindDialog; direction: TFindDirection);
+    procedure DoFind(dialog: TFindDialog; direction: TFindDirection); overload;
     procedure DoReplace(dialog: TReplaceDialog; direction: TFindDirection);
 
     function GetDirection(dialog: TFindDialog): TFindDirection;
@@ -139,6 +139,7 @@ begin
 
   if not found then
   begin
+    // TODO: If single replace was chosen, behave like Notepad and select the last replaced word
     if direction = sdForwards then
       MessageDlg('End of document reached.', mtInformation, [mbOk], 0)
     else
@@ -153,30 +154,48 @@ var
   opt: TSynSearchOptions;
   numReplacements: integer;
 begin
-  if direction = sdDefault then direction := GetDirection(dialog);
-
-  opt := [];
-  if frMatchCase in dialog.Options then Include(opt, ssoMatchCase);
-  if frWholeWord in dialog.Options then Include(opt, ssoWholeWord);
-  if frReplace in dialog.Options then Include(opt, ssoReplace);
-  if frReplaceAll in dialog.Options then Include(opt, ssoReplaceAll);
-  if direction = sdBackwards then Include(opt, ssoBackwards);
-  Include(opt, ssoPrompt); // TODO: test. geht nicht?
-  if fEditor.SelAvail then Include(opt, ssoSelectedOnly);
-  Exclude(opt, ssoEntireScope); // TODO: ok?
-
-  fEditor.BeginUpdate; // TODO: geht nicht?
-  //fEditor.BeginUndoBlock;
   try
-    numReplacements := fEditor.SearchReplace(dialog.FindText, dialog.ReplaceText, opt);
+    if direction = sdDefault then direction := GetDirection(dialog);
+
+    opt := [];
+    if frMatchCase in dialog.Options then Include(opt, ssoMatchCase);
+    if frWholeWord in dialog.Options then Include(opt, ssoWholeWord);
+    if frReplace in dialog.Options then Include(opt, ssoReplace);
+    if frReplaceAll in dialog.Options then Include(opt, ssoReplaceAll);
+    if direction = sdBackwards then Include(opt, ssoBackwards);
+    Include(opt, ssoPrompt); // TODO: test. geht nicht?
+    if fEditor.SelAvail then Include(opt, ssoSelectedOnly);
+    Exclude(opt, ssoEntireScope); // TODO: ok?
+
+    if not (ssoReplaceAll in opt) then
+    begin
+      if fEditor.SelLength = 0 then
+      begin
+        DoFind(dialog, sdForwards);
+        exit;
+      end;
+    end;
+
+    fEditor.BeginUpdate; // TODO: geht nicht?
+    //fEditor.BeginUndoBlock;
+    try
+      numReplacements := fEditor.SearchReplace(dialog.FindText, dialog.ReplaceText, opt);
+    finally
+      //fEditor.EndUndoBlock;
+      fEditor.EndUpdate;
+    end;
+
+    if not (ssoReplaceAll in opt) then
+    begin
+      DoFind(dialog, sdForwards);
+    end
+    else
+    begin
+      ShowMessageFmt('%d replaced.', [numReplacements]);
+    end;
   finally
-    //fEditor.EndUndoBlock;
-    fEditor.EndUpdate;
+    if fAutofocus and fEditor.CanFocus then fEditor.SetFocus;
   end;
-
-  ShowMessageFmt('%d replaced.', [numReplacements]);
-
-  if fAutofocus and fEditor.CanFocus then fEditor.SetFocus;
 end;
 
 procedure TSynEditFindReplace.OnFind(Sender: TObject);

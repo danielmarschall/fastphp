@@ -167,6 +167,7 @@ type
     procedure BtnLightClick(Sender: TObject);
     procedure StartUpTimerTimer(Sender: TObject);
   private
+    hMutex: THandle;
     CurSearchTerm: string;
     HlpPrevPageIndex: integer;
     SrcRep: TSynEditFindReplace;
@@ -174,9 +175,9 @@ type
     gOnlineHelpWord: string;
     {$ENDIF}
     procedure Help;
-    function MarkUpLineReference(cont: string): string;
     function InputRequestCallback(var data: AnsiString): boolean;
     function OutputNotifyCallback(const data: AnsiString): boolean;
+    procedure RightTrimAll;
   protected
     ChmIndex: TMemIniFile;
     FScrapFile: string;
@@ -189,6 +190,7 @@ type
     procedure Theme_Light;
     procedure Theme_Dark;
     function IsThemeDark: boolean;
+    function MarkUpLineReference(cont: string): string;
   end;
 
 var
@@ -286,8 +288,19 @@ begin
   SynEdit1.SetFocus;
 end;
 
+procedure TForm1.RightTrimAll;
+var
+  i: integer;
+begin
+  for i := 0 to SynEdit1.Lines.Count do
+  begin
+    SynEdit1.Lines.Strings[i] := TrimRight(SynEdit1.Lines.Strings[i]);
+  end;
+end;
+
 procedure TForm1.ActionSaveExecute(Sender: TObject);
 begin
+  RightTrimAll;
   SynEdit1.Lines.SaveToFile(GetScrapFile);
   SynEdit1.Modified := false;
   RefreshModifySign;
@@ -411,8 +424,8 @@ var
 procedure TForm1.Run(Sender: TObject);
 var
   bakTS: TTabSheet;
-  ss: TStringStream;
-  bakPos: Int64;
+  //ss: TStringStream;
+  //bakPos: Int64;
 begin
   memo2.Lines.Text := '';
 
@@ -764,16 +777,6 @@ procedure TForm1.WebBrowser1BeforeNavigate2(ASender: TObject;
 begin
   BeforeNavigate(URL, Cancel);
 end;
-procedure TForm1.WebBrowser1WindowClosing(ASender: TObject;
-  IsChildWindow: WordBool; var Cancel: WordBool);
-resourcestring
-  LNG_CLOSE_REQUEST = 'A script has requested the window to be closed. The window of a standalone script would now close.';
-begin
-  ShowMessage(LNG_CLOSE_REQUEST);
-  TWebBrowser(ASender).Clear;
-  Cancel := true;
-end;
-
 (*
 {$ELSE}
 procedure TForm1.WebBrowser1BeforeNavigate2(ASender: TObject;
@@ -784,6 +787,16 @@ begin
 end;
 {$ENDIF}
 *)
+
+procedure TForm1.WebBrowser1WindowClosing(ASender: TObject;
+  IsChildWindow: WordBool; var Cancel: WordBool);
+resourcestring
+  LNG_CLOSE_REQUEST = 'A script has requested the window to be closed. The window of a standalone script would now close.';
+begin
+  ShowMessage(LNG_CLOSE_REQUEST);
+  TWebBrowser(ASender).Clear;
+  Cancel := true;
+end;
 
 procedure TForm1.BeforeNavigate(const URL: OleVariant; var Cancel: WordBool);
 var
@@ -927,6 +940,8 @@ begin
   end;
   FreeAndNil(SrcRep);
 
+  if hMutex <> 0 then CloseHandle(hMutex);
+
   if Assigned(codeExplorer) then
   begin
     codeExplorer.Terminate;
@@ -962,7 +977,17 @@ begin
   SynEdit1.Options := opts;
 
   if FileExists(ScrapFile) then
-    SynEdit1.Lines.LoadFromFile(ScrapFile)
+  begin
+    hMutex := CreateMutex(nil, True, PChar('FastPHP'+IntToStr(StrHash(ScrapFile))));
+    if GetLastError = ERROR_ALREADY_EXISTS then
+    begin
+      // TODO: It would be great if the window of that FastPHP instance would switched to foreground
+      ShowMessageFmt('File "%s" is alrady open!', [ScrapFile]);
+      Close;
+    end;
+
+    SynEdit1.Lines.LoadFromFile(ScrapFile);
+  end
   else
     SynEdit1.Lines.Clear;
 

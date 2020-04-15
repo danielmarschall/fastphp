@@ -22,6 +22,7 @@ function HighColorWindows: boolean;
 function GetTempDir: string;
 function GetSpecialFolder(const aCSIDL: Integer): string;
 function GetMyDocumentsFolder: string;
+function StrHash(const st:string): cardinal;
 
 implementation
 
@@ -324,6 +325,16 @@ end;
 function GetMyDocumentsFolder: string;
 begin
   Result := GetSpecialFolder(CSIDL_PERSONAL);
+end;
+
+function StrHash(const st:string): cardinal;
+var
+  i:integer;
+begin
+  // https://stackoverflow.com/a/41400477/488539
+  result := 0;
+  for i := 1 to length(st) do
+    result := result*$20844 xor byte(st[i]);
 end;
 
 end.
