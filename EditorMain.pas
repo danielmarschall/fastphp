@@ -979,15 +979,18 @@ begin
 
   if FileExists(ScrapFile) then
   begin
-    hMutex := CreateMutex(nil, True, PChar('FastPHP'+IntToStr(StrHash(ScrapFile))));
-    if GetLastError = ERROR_ALREADY_EXISTS then
+    if hMutex = 0 then // If the theme is changed from normal to dark, OnShow will be called another time
     begin
-      // TODO: It would be great if the window of that FastPHP instance would switched to foreground
-      ShowMessageFmt('File "%s" is alrady open!', [ScrapFile]);
-      Close;
-    end;
+      hMutex := CreateMutex(nil, True, PChar('FastPHP'+IntToStr(StrHash(ScrapFile))));
+      if GetLastError = ERROR_ALREADY_EXISTS then
+      begin
+        // TODO: It would be great if the window of that FastPHP instance would switched to foreground
+        ShowMessageFmt('File "%s" is alrady open!', [ScrapFile]);
+        Close;
+      end;
 
-    SynEdit1.Lines.LoadFromFile(ScrapFile);
+      SynEdit1.Lines.LoadFromFile(ScrapFile);
+    end;
   end
   else
     SynEdit1.Lines.Clear;
