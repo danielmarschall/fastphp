@@ -951,12 +951,17 @@ begin
   end;
 end;
 
+var
+  FormShowRanOnce: boolean;
 procedure TForm1.FormShow(Sender: TObject);
 var
   ScrapFile: string;
   tmpFontSize: integer;
   opts: TSynEditorOptions;
 begin
+  if FormShowRanOnce then exit; // If the theme is changed from normal to dark, OnShow will be called another time
+  FormShowRanOnce := true;
+
   ScrapFile := GetScrapFile;
   if ScrapFile = '' then
   begin
@@ -979,9 +984,9 @@ begin
 
   if FileExists(ScrapFile) then
   begin
-    if hMutex = 0 then // If the theme is changed from normal to dark, OnShow will be called another time
+    if hMutex = 0 then
     begin
-      hMutex := CreateMutex(nil, True, PChar('FastPHP'+IntToStr(StrHash(ScrapFile))));
+      hMutex := CreateMutex(nil, True, PChar('FastPHP'+md5(ScrapFile)));
       if GetLastError = ERROR_ALREADY_EXISTS then
       begin
         // TODO: It would be great if the window of that FastPHP instance would switched to foreground

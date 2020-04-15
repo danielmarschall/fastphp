@@ -22,12 +22,13 @@ function HighColorWindows: boolean;
 function GetTempDir: string;
 function GetSpecialFolder(const aCSIDL: Integer): string;
 function GetMyDocumentsFolder: string;
-function StrHash(const st:string): cardinal;
+function md5(value: string): string;
 
 implementation
 
 uses
-  ShlObj; // Needed for the CSIDL constants
+  ShlObj, // Needed for the CSIDL constants
+  IdGlobal, IdHash, IdHashMessageDigest; // used for MD5 calculation
 
 function GetDosOutput(CommandLine: string; Work: string = ''; ContentCallBack: TContentCallBack=nil): string;
 var
@@ -327,14 +328,17 @@ begin
   Result := GetSpecialFolder(CSIDL_PERSONAL);
 end;
 
-function StrHash(const st:string): cardinal;
+function md5(value: string): string;
 var
-  i:integer;
+  hashMessageDigest5 : TIdHashMessageDigest5;
 begin
-  // https://stackoverflow.com/a/41400477/488539
-  result := 0;
-  for i := 1 to length(st) do
-    result := result*$20844 xor byte(st[i]);
+  hashMessageDigest5 := nil;
+  try
+    hashMessageDigest5 := TIdHashMessageDigest5.Create;
+    Result := IdGlobal.IndyLowerCase(hashMessageDigest5.HashStringAsHex(value));
+  finally
+    hashMessageDigest5.Free;
+  end;
 end;
 
 end.
