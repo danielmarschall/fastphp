@@ -55,7 +55,8 @@ uses
   StrUtils, Windows;
 
 const
-  LEN_MAGIC   = 8;
+  MAGIC_V100  = 'FAST100!';
+  UTF8_BOM    = '﻿';
   LEN_ICON    = 4;
   LEN_LINENO  = 8;
   LEN_DESCLEN = 4;
@@ -117,11 +118,24 @@ begin
 
     {$REGION 'Update the treeview'}
     Self.Items.Clear;
-    magic := Read(ptr, LEN_MAGIC);
-    if magic = 'FAST100!' then
+
+    {$REGION 'Remove UTF8-BOMs'}
+    repeat
+      magic := Read(ptr, Length(UTF8_BOM));
+    until magic <> UTF8_BOM;
+    ptr := ptr - Length(UTF8_BOM);
+    {$ENDREGION}
+
+    magic := Read(ptr, length(MAGIC_V100));
+
+    if magic = MAGIC_V100 then
+    begin
       Rec100(nil, ptr)
+    end
     else
+    begin
       raise EFastNodeException.CreateFmt('FastNode version "%s" not supported.', [magic]);
+    end;
     {$ENDREGION}
 
     {$REGION 'Recover the previous current state (selected and expanded flags)'}

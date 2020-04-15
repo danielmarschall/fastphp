@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 define('SIGNAL_END_OF_TRANSMISSION', chr(1).chr(2).chr(3).chr(4).chr(5).chr(6).chr(7).chr(8));
 define('SIGNAL_TERMINATE',           chr(8).chr(7).chr(6).chr(5).chr(4).chr(3).chr(2).chr(1));
@@ -96,7 +96,7 @@ class FastPHPReader {
 class FastPHPWriter {
 
 	public static function outputLeafNode(/*FastPHPIcon*/ $icon, /*int*/ $lineNo, /*string*/ $description) {
-                $iconImageIndex = is_null($icon) ? -1 : $icon->imageIndex();
+		$iconImageIndex = is_null($icon) ? -1 : $icon->imageIndex();
 		echo 'N'.($iconImageIndex == -1 ? '____' : sprintf('%04s', $iconImageIndex)).
 		         sprintf('%08s', $lineNo).
 		         sprintf('%04s', strlen(trim($description))).

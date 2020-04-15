@@ -147,9 +147,12 @@ begin
         end;
 
         // Signal the code explorer to terminate
+        (*
         testString := #13#10+SIGNAL_TERMINATE+#13#10;
         WriteFile(StdInPipeWrite, testString[1], Length(testString), BytesWritten, nil);
         WaitForSingleObject(PI.hProcess, INFINITE);
+        *)
+        TerminateProcess(Pi.hProcess, 0);
 
         CloseHandle(StdInPipeWrite);
       finally

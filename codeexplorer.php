@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 // TODO: show full signature of each element?
 
@@ -43,9 +43,9 @@ class MyFastPHPIcon extends FastPHPIcon {
 
 	public function isMethod() {
 		return (($this->getType() == ICON_TYPE_FUNCTION)    ||
-                        ($this->getType() == ICON_TYPE_CONSTRUCTOR) ||
-                        ($this->getType() == ICON_TYPE_DESTRUCTOR)  ||
-                        ($this->getType() == ICON_TYPE_MAGICMETHOD));
+		        ($this->getType() == ICON_TYPE_CONSTRUCTOR) ||
+		        ($this->getType() == ICON_TYPE_DESTRUCTOR)  ||
+		        ($this->getType() == ICON_TYPE_MAGICMETHOD));
 	}
 
 }
@@ -58,7 +58,7 @@ class MyFastPHPCodeExplorer {
 		$wait_const = false;
 		$wait_class = false;
 		$wait_trait = false;
-                $icon = new MyFastPHPIcon();
+		$icon = new MyFastPHPIcon();
 		$wait_interface = false;
 		$wait_abstract_func_list_end = false;
 		$levelAry = array();
@@ -104,20 +104,20 @@ class MyFastPHPCodeExplorer {
 				}
 
 				if ($value == '__construct') { // TODO: auch eine methode mit dem namen der klasse soll eine konstruktor sein
-	                                $icon->setType(ICON_TYPE_CONSTRUCTOR);
+					$icon->setType(ICON_TYPE_CONSTRUCTOR);
 				} else if ($value == '__destruct') {
-	                                $icon->setType(ICON_TYPE_DESTRUCTOR);
+					$icon->setType(ICON_TYPE_DESTRUCTOR);
 				} else if (substr($value, 0, 2) == '__') {
-	                                $icon->setType(ICON_TYPE_MAGICMETHOD);
+					$icon->setType(ICON_TYPE_MAGICMETHOD);
 				} else {
-	                                $icon->setType(ICON_TYPE_FUNCTION);
+					$icon->setType(ICON_TYPE_FUNCTION);
 				}
 				FastPHPWriter::outputLeafNode($icon, $line, $desc);
 				$icon->reset();
 			}
 
 			if ($wait_class && ($token == T_STRING)) {
-	                        if ($icon->isAbstract()) {
+				if ($icon->isAbstract()) {
 					$desc = "Abstract Class $value\n";
 				} else {
 					$desc = "Class $value\n";
@@ -149,7 +149,7 @@ class MyFastPHPCodeExplorer {
 				$wait_interface = false;
 				$levelAry[] = $dep;
 
-	                        $icon->setType(ICON_TYPE_INTERFACE);
+				$icon->setType(ICON_TYPE_INTERFACE);
 				FastPHPWriter::outputLeafNode($icon, $line, $desc);
 				$icon->reset();
 
@@ -221,7 +221,7 @@ class MyFastPHPCodeExplorer {
 		}
 	}
 
-        private static function isToDoDescription($comment) {
+	private static function isToDoDescription($comment) {
 		return ((stripos($comment, 'TODO')   !== false) ||
 		        (stripos($comment, 'BUGBUG') !== false) ||
 		        (stripos($comment, 'FIXME')  !== false) ||
