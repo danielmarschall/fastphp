@@ -2,8 +2,6 @@ unit EditorMain;
 
 {$Include 'FastPHP.inc'}
 
-// TODO 70423 * <fastphp> bug beheben, bei dem php.exe im hintergrund geöffnet bleibt, wenn man den editor schließt !!!!!!!!!
-
 (*
   This program requires
   - Microsoft Internet Controls (TWebBrowser)
@@ -13,6 +11,7 @@ unit EditorMain;
     You can obtain SynEdit via Embarcadero GetIt
 *)
 
+// TODO: if a scrapfile is already open, create a new scrap file (scrap2.php)
 // TODO: localize
 // TODO: wieso geht copy paste im twebbrowser nicht???
 // TODO: Wieso dauert webbrowser1 erste kompilierung so lange???
@@ -32,6 +31,10 @@ unit EditorMain;
 // - Onlinehelp (www) aufrufen
 // - Let all colors be adjustable
 // - code in bildschirmmitte (horizontal)?
+// - search in files of a directory
+// - multi tab?
+// - DDE (drag n drop)
+// - check if file has been modified in another application
 
 interface
 
@@ -454,8 +457,8 @@ begin
     // TODO 70422 * <fastphp> wenn ein script hängt, soll man es abwürgen dürfen!!!!!!
     memo2.Lines.Text := RunPHPScript(GetScrapFile, Sender=ActionLint, False);
 
-
-    // Webbrowser1.LoadHTML(MarkUpLineReference(memo2.Lines.Text), GetScrapFile);
+    {$REGION 'Show in Web Browser'}
+    Webbrowser1.LoadHTML(MarkUpLineReference(memo2.Lines.Text), GetScrapFile);
 
     // Alternatively:
     (*
@@ -466,6 +469,7 @@ begin
     Webbrowser1.Wait;
     ss.Free;
     *)
+    {$ENDREGION}
 
     if IsTextHTML(memo2.lines.text) then
       PageControl1.ActivePage := HtmlTabSheet
@@ -1260,7 +1264,9 @@ begin
   w := LowerCase(w);
   CurSearchTerm := w;
 
-  internalHtmlFile := ChmIndex.ReadString('_HelpWords_', CurSearchTerm, '');
+  internalHtmlFile := ChmIndex.ReadString('function', CurSearchTerm, '');
+  if internalHtmlFile = '' then
+    internalHtmlFile := ChmIndex.ReadString('_HelpWords_', CurSearchTerm, '');
   if internalHtmlFile = '' then
   begin
     HelpTabsheet.TabVisible := false;
