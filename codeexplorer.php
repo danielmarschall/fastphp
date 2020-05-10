@@ -53,6 +53,14 @@ class MyFastPHPIcon extends FastPHPIcon {
 class MyFastPHPCodeExplorer {
 
 	public function handle($code) {
+		// Quick'n'Dirty fix to correctly parse the line
+		// test(XYZ::class)
+		$code = str_replace('::class', '', $code);
+
+		// Quick'n'Dirty fix to correctly parse the line
+		// $verify=file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secret}&response={$response}");
+		$code = str_replace('{$', '{', $code);
+
 		$token = token_get_all($code);
 		$wait_function = false;
 		$wait_const = false;
