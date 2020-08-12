@@ -194,6 +194,7 @@ type
     procedure Theme_Dark;
     function IsThemeDark: boolean;
     function MarkUpLineReference(cont: string): string;
+    procedure SaveToFile(filename: string);
   end;
 
 var
@@ -304,7 +305,7 @@ end;
 procedure TForm1.ActionSaveExecute(Sender: TObject);
 begin
   RightTrimAll;
-  SynEdit1.Lines.SaveToFile(GetScrapFile);
+  SaveToFile(GetScrapFile);
   SynEdit1.Modified := false;
   RefreshModifySign;
   if SynEdit1.CanFocus then SynEdit1.SetFocus;
@@ -1048,6 +1049,19 @@ begin
   end;
 end;
 
+procedure TForm1.SaveToFile(filename: string);
+var
+  sl: TStringList;
+begin
+  sl := TStringList.Create;
+  try
+    sl.Assign(SynEdit1.Lines);
+    sl.SaveToFile(filename); // Save without BOM!
+  finally
+    sl.Free;
+  end;
+end;
+
 procedure TForm1.StartCodeExplorer;
 begin
   codeExplorer := TRunCodeExplorer.Create(true);
@@ -1105,7 +1119,7 @@ begin
       case MessageDlg(Format('File %s does not exist. Create it?', [result]), mtConfirmation, mbYesNoCancel, 0) of
         mrYes:
           try
-            SynEdit1.Lines.SaveToFile(result);
+            SaveToFile(result);
           except
             on E: Exception do
             begin
@@ -1181,7 +1195,7 @@ begin
         try
           // Try saving the file; check if we have permissions
           //SynEdit1.Lines.Clear;
-          SynEdit1.Lines.SaveToFile(result);
+          SaveToFile(result);
         except
           on E: Exception do
           begin
