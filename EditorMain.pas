@@ -300,6 +300,19 @@ begin
   begin
     SynEdit1.Lines.Strings[i] := TrimRight(SynEdit1.Lines.Strings[i]);
   end;
+
+  (*
+  while (SynEdit1.Lines.Count > 0) and (SynEdit1.Lines.Strings[SynEdit1.Lines.Count-1] = '') do
+  begin
+    SynEdit1.Lines.Delete(SynEdit1.Lines.Count-1);
+  end;
+  if SynEdit1.SelStart > Length(SynEdit1.Text)-1 then
+  begin
+    // TODO: This code does not work...
+    SynEdit1.SelStart := Length(SynEdit1.Text)-1;
+    SynEdit1.SelEnd   := Length(SynEdit1.Text)-1;
+  end;
+  *)
 end;
 
 procedure TForm1.ActionSaveExecute(Sender: TObject);
@@ -1052,11 +1065,30 @@ end;
 procedure TForm1.SaveToFile(filename: string);
 var
   sl: TStringList;
+  fil: TextFile;
+  i: Integer;
 begin
   sl := TStringList.Create;
   try
-    sl.Assign(SynEdit1.Lines);
-    sl.SaveToFile(filename); // Save without BOM!
+    sl.Assign(SynEdit1.Lines); // Save without BOM
+
+    while (sl.Count > 0) and (sl.Strings[sl.Count-1] = '') do
+    begin
+      sl.Delete(sl.Count-1);
+    end;
+
+    (*
+    sl.TrailingLineBreak := false; // requires Delphi 10.1
+    sl.SaveToFile(filename);
+    *)
+
+    // This code does the same, but works with older versions of Delphi, too.
+    AssignFile(fil, filename);
+    Rewrite(fil);
+    for i := 0 to sl.Count-2 do
+      writeln(fil, sl.Strings[i]);
+    write(fil, sl.Strings[sl.Count-1]);
+    CloseFile(fil);
   finally
     sl.Free;
   end;
