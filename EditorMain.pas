@@ -945,7 +945,7 @@ begin
   end;
   FreeAndNil(SrcRep);
 
-  if hMutex <> 0 then CloseHandle(hMutex);
+  if hMutex <> 0 then CloseHandle(hMutex); // Note: ReleaseMutex does not work as expected!
 
   if Assigned(codeExplorer) then
   begin
@@ -990,7 +990,7 @@ begin
   begin
     if hMutex = 0 then
     begin
-      hMutex := CreateMutex(nil, True, PChar('FastPHP'+md5(ScrapFile)));
+      hMutex := CreateMutex(nil, True, PChar('FastPHP'+md5(UpperCase(ScrapFile))));
       if GetLastError = ERROR_ALREADY_EXISTS then
       begin
         // TODO: It would be great if the window of that FastPHP instance would switched to foreground
@@ -1025,9 +1025,23 @@ begin
 end;
 
 procedure TForm1.Saveas1Click(Sender: TObject);
+var
+  hMutexNew: THandle;
 begin
   if SaveDialog1.Execute then
   begin
+    {$REGION 'Switch mutex'}
+    hMutexNew := CreateMutex(nil, True, PChar('FastPHP'+md5(UpperCase(SaveDialog1.FileName))));
+    if GetLastError = ERROR_ALREADY_EXISTS then
+    begin
+      ShowMessageFmt('Cannot save because file "%s", because it is alrady open in another FastPHP window!', [SaveDialog1.FileName]);
+      Close;
+    end;
+
+    if hMutex <> 0 then CloseHandle(hMutex); // Note: ReleaseMutex does not work as expected!
+    hMutex := hMutexNew;
+    {$ENDREGION}
+
     FSaveAsFilename := SaveDialog1.FileName;
     Caption := Copy(Caption, 1, Pos(' - ', Caption)-1) + ' - ' + FSaveAsFilename;
     Button7.Click;

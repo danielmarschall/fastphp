@@ -22,7 +22,8 @@ function HighColorWindows: boolean;
 function GetTempDir: string;
 function GetSpecialFolder(const aCSIDL: Integer): string;
 function GetMyDocumentsFolder: string;
-function md5(value: string): string;
+function MD5(const str: string): string;
+function MD5Stream(const s: TStream): string;
 
 implementation
 
@@ -328,17 +329,50 @@ begin
   Result := GetSpecialFolder(CSIDL_PERSONAL);
 end;
 
-function md5(value: string): string;
+
+{$IF gsIdVersion <> '10.1.5'} // Delphi 2007 built-in Indy10; gsIdVersion requires idGlobal.pas
+{$DEFINE NewIndy}
+{$IFEND}
+
+function MD5Stream(const s: TStream): string;
 var
-  hashMessageDigest5 : TIdHashMessageDigest5;
+  idmd5: TIdHashMessageDigest5;
 begin
-  hashMessageDigest5 := nil;
+  idmd5 := TIdHashMessageDigest5.Create;
   try
-    hashMessageDigest5 := TIdHashMessageDigest5.Create;
-    Result := IdGlobal.IndyLowerCase(hashMessageDigest5.HashStringAsHex(value));
+    {$IFDEF NewIndy}
+    result := idmd5.HashStreamAsHex(s);
+    {$ELSE}
+    result := idmd5.AsHex(idmd5.HashValue(s));
+    {$ENDIF}
   finally
-    hashMessageDigest5.Free;
+    idmd5.Free;
   end;
 end;
+
+function MD5(const str: string): string;
+{$IFDEF NewIndy}
+var
+  idmd5: TIdHashMessageDigest5;
+begin
+  idmd5 := TIdHashMessageDigest5.Create;
+  try
+    result := idmd5.HashStringAsHex(str,IndyTextEncoding_OSDefault);
+  finally
+    idmd5.Free;
+  end;
+{$ELSE}
+var
+  ss: TStringStream;
+begin
+  ss := TStringStream.Create(str);
+  try
+    result := MD5Stream(ss);
+  finally
+    ss.Free;
+  end;
+{$ENDIF}
+end;
+
 
 end.
