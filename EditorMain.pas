@@ -1064,33 +1064,49 @@ end;
 
 procedure TForm1.SaveToFile(filename: string);
 var
-  sl: TStringList;
-  fil: TextFile;
-  i: Integer;
+  ms: TMemoryStream;
+  fs: TFileStream;
+  temp: array[0..2] of byte;
 begin
-  sl := TStringList.Create;
+  ms := TMemoryStream.Create;
+  fs := TFileStream.Create(filename, fmCreate);
   try
-    sl.Assign(SynEdit1.Lines); // Save without BOM
+    // Save everything in a memory stream
+    // This should preserve LF / CRLF line endings
+    SynEdit1.Lines.SaveToStream(ms);
 
-    while (sl.Count > 0) and (sl.Strings[sl.Count-1] = '') do
+    // Remove trailing linebreaks
+    // (SynEdit1.Lines.TrailingLineBreak requires Delphi 10.1)
+    while ms.Size > 0 do
     begin
-      sl.Delete(sl.Count-1);
+      ms.Position := ms.Size-1;
+      ms.Read(temp[0], 1);
+      if (temp[0] = $0D) or (temp[0] = $0A) then
+      begin
+        ms.Size := ms.Size - 1;
+      end
+      else
+      begin
+        break;
+      end;
     end;
 
-    (*
-    sl.TrailingLineBreak := false; // requires Delphi 10.1
-    sl.SaveToFile(filename);
-    *)
+    // Old versions of Delphi/SynEdit write an UTF-8 BOM, which makes problems
+    // e.g. with AJAX handlers (because AJAX reponses must not have a BOM).
+    // So we try to avoid that.
+    // Note that the output is still UTF-8 encoded if the input file was UTF-8 encoded
+    ms.Position := 0;
+    ms.Read(temp[0], 3);
+    if (temp[0] <> $EF) or (temp[1] <> $BB) or (temp[2] <> $BF) then
+    begin
+      ms.Position := 0;
+    end;
 
-    // This code does the same, but works with older versions of Delphi, too.
-    AssignFile(fil, filename);
-    Rewrite(fil);
-    for i := 0 to sl.Count-2 do
-      writeln(fil, sl.Strings[i]);
-    write(fil, sl.Strings[sl.Count-1]);
-    CloseFile(fil);
+    // Now save to the file
+    fs.CopyFrom(ms, ms.Size-ms.Position);
   finally
-    sl.Free;
+    FreeAndNil(ms);
+    FreeAndNil(fs);
   end;
 end;
 
