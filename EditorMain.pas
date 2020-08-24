@@ -1064,48 +1064,75 @@ end;
 
 procedure TForm1.SaveToFile(filename: string);
 var
+  ss: TStringStream;
   ms: TMemoryStream;
   fs: TFileStream;
-  temp: array[0..2] of byte;
+  eolStyle: string;
+  str: string;
 begin
   ms := TMemoryStream.Create;
+  ss := TStringStream.Create('');
   fs := TFileStream.Create(filename, fmCreate);
   try
-    // Save everything in a memory stream
-    // This should preserve LF / CRLF line endings
+    // Save everything in a memory stream and then to a string
+    // in comparison to "str := SynEdit1.Lines.Text;",
+    // This approach should preserve LF / CRLF line endings
     SynEdit1.Lines.SaveToStream(ms);
+    ms.Position := 0;
+    ss.CopyFrom(ms, ms.Size);
+    ss.Position := 0;
+    str := ss.ReadString(ss.Size);
+    ss.Size := 0; // clear string-stream, because we need it later again
 
-    // Remove trailing linebreaks
-    // (SynEdit1.Lines.TrailingLineBreak requires Delphi 10.1)
-    while ms.Size > 0 do
+    // Detect current line-endings
+    if Copy(str, 1, 2) = '#!' then
     begin
-      ms.Position := ms.Size-1;
-      ms.Read(temp[0], 1);
-      if (temp[0] = $0D) or (temp[0] = $0A) then
-      begin
-        ms.Size := ms.Size - 1;
-      end
+      // Shebang. Use ONLY Linux LF
+      str := StringReplace(str, #13#10, #10, [rfReplaceAll]);
+      eolStyle := #10 // Linux LF
+    end
+    else
+    begin
+      if Pos(#13#10, str) > 0 then
+        eolStyle := #13#10 // Windows CRLF
+      else if Pos(#10, str) > 0 then
+        eolStyle := #10 // Linux LF
       else
       begin
-        break;
+        if DefaultTextLineBreakStyle = tlbsLF then
+          eolStyle := #10 // Linux LF
+        else if DefaultTextLineBreakStyle = tlbsCRLF then
+          eolStyle := #13#10 // Windows CRLF
+        //else if DefaultTextLineBreakStyle = tlbsCR then
+        //  eolStyle := #13 // Old Mac CR
+        else
+          eolStyle := #13#10; // (Should not happen)
       end;
     end;
+
+    // Unitfy line-endings
+    str := StringReplace(str, #13#10, eolStyle, [rfReplaceAll]);
+    str := StringReplace(str, #10, eolStyle, [rfReplaceAll]);
+    str := StringReplace(str, #13, '', [rfReplaceAll]);
+
+    // Replace all trailing linebreaks by a single line break
+    // Note: Removing all line breaks is not good, since Linux's "nano" will
+    //       re-add a linebreak at the end of the file
+    str := TrimRight(str) + eolStyle;
 
     // Old versions of Delphi/SynEdit write an UTF-8 BOM, which makes problems
     // e.g. with AJAX handlers (because AJAX reponses must not have a BOM).
     // So we try to avoid that.
     // Note that the output is still UTF-8 encoded if the input file was UTF-8 encoded
-    ms.Position := 0;
-    ms.Read(temp[0], 3);
-    if (temp[0] <> $EF) or (temp[1] <> $BB) or (temp[2] <> $BF) then
-    begin
-      ms.Position := 0;
-    end;
+    if Copy(str,1,3) = #$EF#$BB#$BF then Delete(str, 1, 3);
 
     // Now save to the file
-    fs.CopyFrom(ms, ms.Size-ms.Position);
+    ss.WriteString(str);
+    ss.Position := 0;
+    fs.CopyFrom(ss, ss.Size-ss.Position);
   finally
     FreeAndNil(ms);
+    FreeAndNil(ss);
     FreeAndNil(fs);
   end;
 end;
