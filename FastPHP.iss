@@ -21,6 +21,7 @@ VersionInfoVersion=0.4
 Compression=zip/9
 ChangesAssociations=yes
 OutputBaseFilename=FastPHP
+LicenseFile=LICENSE
 
 [CustomMessages]
 Assoc=File associations:
