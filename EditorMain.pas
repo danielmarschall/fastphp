@@ -42,9 +42,9 @@ uses
   // TODO: "{$IFDEF USE_SHDOCVW_TLB}_TLB{$ENDIF}" does not work with Delphi 10.2
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, OleCtrls, ComCtrls, ExtCtrls, ToolWin, IniFiles,
-  SynEditHighlighter, SynHighlighterPHP, SynEdit, ShDocVw_TLB, FindReplace,
+  SynEditHighlighter, SynHighlighterPHP, SynEdit, ShDocVw, FindReplace,
   ActnList, SynEditMiscClasses, SynEditSearch, RunPHP, ImgList, SynUnicode,
-  System.ImageList, System.Actions, Vcl.Menus, SHDocVw, Vcl.Themes;
+  System.ImageList, System.Actions, Vcl.Menus, Vcl.Themes;
 
 {.$DEFINE OnlineHelp}
 

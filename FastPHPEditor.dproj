@@ -49,11 +49,11 @@
         <DCC_K>false</DCC_K>
         <DCC_N>true</DCC_N>
         <VerInfo_Locale>1031</VerInfo_Locale>
-        <VerInfo_MinorVer>2</VerInfo_MinorVer>
+        <VerInfo_MinorVer>4</VerInfo_MinorVer>
         <DCC_DebugInformation>1</DCC_DebugInformation>
         <DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
         <VerInfo_MajorVer>0</VerInfo_MajorVer>
-        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Editor;FileVersion=0.2.0.0;InternalName=FastPHP;LegalCopyright=(C) 2016-2020 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHP.exe;ProductName=ViaThinkSoft FastPHP Editor;ProductVersion=0.2;Comments=www.viathinksoft.de</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Editor;FileVersion=0.4.0.0;InternalName=FastPHP;LegalCopyright=(C) 2016-2020 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHP.exe;ProductName=ViaThinkSoft FastPHP Editor;ProductVersion=0.4;Comments=www.viathinksoft.de</VerInfo_Keys>
         <DCC_ImageBase>00400000</DCC_ImageBase>
         <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;FMXTee.Chart;$(DCC_Namespace)</DCC_Namespace>
         <Custom_Styles>&quot;Windows10 SlateGray|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Windows10SlateGray.vsf&quot;</Custom_Styles>
@@ -84,7 +84,7 @@
         <VerInfo_MinorVer>0</VerInfo_MinorVer>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
-        <Icon_MainIcon>FastPHPEditor_Icon.ico</Icon_MainIcon>
+        <Icon_MainIcon>FastPHP_Icon1.ico</Icon_MainIcon>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>

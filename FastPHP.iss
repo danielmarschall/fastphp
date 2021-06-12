@@ -1,23 +1,23 @@
 ; FastPHP Setup Script for InnoSetup
 ; by Daniel Marschall, ViaThinkSoft
-; http://www.viathinksoft.de/
+; http://www.viathinksoft.com/
 
 [Setup]
 AppName=FastPHP
-AppVerName=FastPHP 0.3
-AppVersion=0.3
-AppCopyright=© Copyright 2017 - 2020 ViaThinkSoft.
+AppVerName=FastPHP 0.4
+AppVersion=0.4
+AppCopyright=© Copyright 2017 - 2021 ViaThinkSoft.
 AppPublisher=ViaThinkSoft
 AppPublisherURL=http://www.viathinksoft.de/
 AppSupportURL=http://www.daniel-marschall.de/
 AppUpdatesURL=http://www.viathinksoft.de/
-DefaultDirName={pf}\FastPHP
+DefaultDirName={commonpf}\FastPHP
 DefaultGroupName=FastPHP
 VersionInfoCompany=ViaThinkSoft
-VersionInfoCopyright=© Copyright 2017 - 2020 ViaThinkSoft.
+VersionInfoCopyright=© Copyright 2017 - 2021 ViaThinkSoft.
 VersionInfoDescription=FastPHP Setup
 VersionInfoTextVersion=1.0.0.0
-VersionInfoVersion=0.3
+VersionInfoVersion=0.4
 Compression=zip/9
 ChangesAssociations=yes
 OutputBaseFilename=FastPHP
