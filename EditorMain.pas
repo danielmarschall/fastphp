@@ -34,7 +34,6 @@ unit EditorMain;
 // - search in files of a directory
 // - multi tab?
 // - DDE (drag n drop)
-// - check if file has been modified in another application
 
 interface
 
