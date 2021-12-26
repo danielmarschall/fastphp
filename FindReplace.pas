@@ -35,7 +35,7 @@ unit FindReplace;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Dialogs, SynEdit;
+  Windows, Messages, SysUtils, Classes, Dialogs, SynEdit, System.UITypes;
 
 type
   TSynEditFindReplace = class(TComponent)

@@ -44,7 +44,7 @@ uses
   Dialogs, StdCtrls, OleCtrls, ComCtrls, ExtCtrls, ToolWin, IniFiles,
   SynEditHighlighter, SynHighlighterPHP, SynEdit, ShDocVw, FindReplace,
   ActnList, SynEditMiscClasses, SynEditSearch, RunPHP, ImgList, SynUnicode,
-  System.ImageList, System.Actions, Vcl.Menus, Vcl.Themes;
+  System.ImageList, System.Actions, Vcl.Menus, Vcl.Themes, System.UITypes;
 
 {.$DEFINE OnlineHelp}
 
@@ -111,6 +111,7 @@ type
     BtnLightOff: TImage;
     BtnLight: TImage;
     StartUpTimer: TTimer;
+    FileModTimer: TTimer;
     procedure Run(Sender: TObject);
     procedure RunConsole(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -169,6 +170,7 @@ type
       IsChildWindow: WordBool; var Cancel: WordBool);
     procedure BtnLightClick(Sender: TObject);
     procedure StartUpTimerTimer(Sender: TObject);
+    procedure FileModTimerTimer(Sender: TObject);
   private
     hMutex: THandle;
     CurSearchTerm: string;
@@ -177,6 +179,7 @@ type
     {$IFDEF OnlineHelp}
     gOnlineHelpWord: string;
     {$ENDIF}
+    FileModLast: TDateTime;
     procedure Help;
     function InputRequestCallback(var data: AnsiString): boolean;
     function OutputNotifyCallback(const data: AnsiString): boolean;
@@ -900,6 +903,30 @@ begin
   SynEdit1.Options := opts;
 end;
 
+procedure TForm1.FileModTimerTimer(Sender: TObject);
+begin
+  FileModTimer.Enabled := false;
+  if FileModLast <> FileAge(GetScrapFile) then
+  begin
+    FileModLast := FileAge(GetScrapFile);
+    if SynEdit1.Modified then
+    begin
+      if MessageDlg('The file was changed in a different application BUT IT WAS ALSO MODIFIED HERE! Reload file AND LOSE CHANGES HERE?', mtWarning, mbYesNoCancel, 0) = mrYes then
+      begin
+        SynEdit1.Lines.LoadFromFile(GetScrapFile);
+      end;
+    end
+    else
+    begin
+      if MessageDlg('The file was changed in a different application! Reload file?', mtConfirmation, mbYesNoCancel, 0) = mrYes then
+      begin
+        SynEdit1.Lines.LoadFromFile(GetScrapFile);
+      end;
+    end;
+  end;
+  FileModTimer.Enabled := true;
+end;
+
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   TFastPHPConfig.FontSize := SynEdit1.Font.Size;
@@ -936,10 +963,13 @@ end;
 procedure TForm1.FormCreate(Sender: TObject);
 var
   exeDir: string;
+  sScrapFile: string;
 begin
   HlpPrevPageIndex := -1;
   CurSearchTerm := '';
-  Caption := Caption + ' - ' + GetScrapFile;
+  sScrapFile := GetScrapFile;
+  Caption := Caption + ' - ' + sScrapFile;
+  Application.Title := Format('%s - FastPHP', [ExtractFileName(sScrapFile)]);
   SrcRep := TSynEditFindReplace.Create(self);
   SrcRep.Editor := SynEdit1;
   SynEdit1.Gutter.Gradient := HighColorWindows;
@@ -949,6 +979,9 @@ begin
 
   exeDir := IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0)));
   if FileExists(exeDir + 'codeexplorer.bmp') then ImageList1.LoadAndSplitImages(exeDir + 'codeexplorer.bmp');
+
+  FileModLast := FileAge(sScrapFile);
+  FileModTimer.Enabled := True;
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
@@ -1058,6 +1091,7 @@ begin
 
     FSaveAsFilename := SaveDialog1.FileName;
     Caption := Copy(Caption, 1, Pos(' - ', Caption)-1) + ' - ' + FSaveAsFilename;
+    Application.Title := Format('%s - FastPHP', [ExtractFileName(FSaveAsFilename)]);
     Button7.Click;
   end;
 end;
@@ -1070,6 +1104,8 @@ var
   eolStyle: string;
   str: string;
 begin
+  FileModTimer.Enabled := false;
+
   ms := TMemoryStream.Create;
   ss := TStringStream.Create('');
   fs := TFileStream.Create(filename, fmCreate);
@@ -1135,6 +1171,9 @@ begin
     FreeAndNil(ss);
     FreeAndNil(fs);
   end;
+
+  FileModLast := FileAge(GetScrapFile);
+  FileModTimer.Enabled := True;
 end;
 
 procedure TForm1.StartCodeExplorer;

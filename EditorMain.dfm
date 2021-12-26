@@ -61,10 +61,6 @@ object Form1: TForm1
     object HtmlTabSheet: TTabSheet
       Caption = 'HTML'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object WebBrowser1: TWebBrowser
         Left = 0
         Top = 0
@@ -190,10 +186,6 @@ object Form1: TForm1
     object HelpTabsheet: TTabSheet
       Caption = 'Help'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object WebBrowser2: TWebBrowser
         Left = 0
         Top = 0
@@ -864,5 +856,11 @@ object Form1: TForm1
     OnTimer = StartUpTimerTimer
     Left = 712
     Top = 56
+  end
+  object FileModTimer: TTimer
+    Enabled = False
+    OnTimer = FileModTimerTimer
+    Left = 356
+    Top = 276
   end
 end

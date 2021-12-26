@@ -3,7 +3,8 @@ unit FastPHPUtils;
 interface
 
 uses
-  Windows, SysUtils, StrUtils, Dialogs, IniFiles, Classes, Forms, ShellAPI, Functions;
+  Windows, SysUtils, StrUtils, Dialogs, IniFiles, Classes, Forms, ShellAPI, Functions,
+  System.UITypes;
 
 const
   FASTPHP_GOTO_URI_PREFIX = 'fastphp://editor/gotoline/';
