@@ -1,4 +1,4 @@
-unit FastPHPTreeView;
+﻿unit FastPHPTreeView;
 
 interface
 
@@ -56,7 +56,7 @@ uses
 
 const
   MAGIC_V100  = 'FAST100!';
-  UTF8_BOM    = '﻿';
+  UTF8_BOM    = #$EF#$BB#$BF;
   LEN_ICON    = 4;
   LEN_LINENO  = 8;
   LEN_DESCLEN = 4;
@@ -134,7 +134,8 @@ begin
     end
     else
     begin
-      raise EFastNodeException.CreateFmt('FastNode version "%s" not supported.', [magic]);
+      // Can happen if codeexplorer.php did output a warning
+      raise EFastNodeException.CreateFmt('FastNode version "%s" not supported. More content: %s', [magic, Read(ptr,1000)]);
     end;
     {$ENDREGION}
 

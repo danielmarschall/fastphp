@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 // TODO: show full signature of each element?
 
@@ -245,7 +245,7 @@ class MyFastPHPCodeExplorer {
 	}
 
 
-	private static final function array_peek($array) {
+	private static /*final*/ function array_peek($array) {
 		if (!isset($array[count($array)-1])) return null;
 		return $array[count($array)-1];
 	}
