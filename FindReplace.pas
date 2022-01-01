@@ -153,6 +153,9 @@ procedure TSynEditFindReplace.DoReplace(dialog: TReplaceDialog; direction: TFind
 var
   opt: TSynSearchOptions;
   numReplacements: integer;
+  bakSelLenght: Integer;
+  stmp: string;
+  bakSelStart: Integer;
 begin
   try
     if direction = sdDefault then direction := GetDirection(dialog);
@@ -179,7 +182,41 @@ begin
     fEditor.BeginUpdate; // TODO: geht nicht?
     //fEditor.BeginUndoBlock;
     try
+      bakSelLenght := 0; // avoid compiler warning
+      if ssoReplaceAll in opt then
+      begin
+        // Remember the selection length
+        bakSelLenght := fEditor.SelLength;
+        //bakSelStart := fEditor.SelStart;
+
+        // Remember the selection start (we don't backup fEditor.SelStart, since the replacement might change the location)!
+        // We assume that character #1 will not be in a text file!
+        stmp := fEditor.Text;
+        Insert(chr(1), stmp, fEditor.SelStart+1);
+        //showmessage(inttostr(ord(stmp[fEditor.SelStart-1])));
+        //showmessage(inttostr(ord(stmp[fEditor.SelStart])));
+        //showmessage(inttostr(ord(stmp[fEditor.SelStart+1])));
+        fEditor.Text := stmp;
+
+        // When the user presses "Replace all", then we want to replace from the very beginning!
+        fEditor.SelStart := 0;
+        fEditor.SelLength := 0;
+      end;
+
       numReplacements := fEditor.SearchReplace(dialog.FindText, dialog.ReplaceText, opt);
+
+      if ssoReplaceAll in opt then
+      begin
+        stmp := fEditor.Text;
+        bakSelStart := AnsiPos(chr(1), stmp)-1;
+        Delete(stmp, bakSelStart+1, 1);
+        fEditor.Text := stmp;
+
+        fEditor.SelStart := bakSelStart;
+        fEditor.SelLength := bakSelLenght;
+
+        // TODO: The SelStart and SelLength were kept, but the scrollposition did not. What can we do?
+      end;
     finally
       //fEditor.EndUndoBlock;
       fEditor.EndUpdate;
