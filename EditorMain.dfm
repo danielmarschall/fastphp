@@ -831,6 +831,14 @@ object Form1: TForm1
     object Runinconsole1: TMenuItem
       Action = ActionRunConsole
     end
+    object GotoPHPdir1: TMenuItem
+      Caption = 'Go to PHP dir'
+      OnClick = GotoPHPdir1Click
+    end
+    object PHPShell1: TMenuItem
+      Caption = 'PHP Interactive Shell'
+      OnClick = PHPShell1Click
+    end
   end
   object SavePopup: TPopupMenu
     Left = 196

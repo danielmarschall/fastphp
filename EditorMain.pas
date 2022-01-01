@@ -113,6 +113,8 @@ type
     BtnLight: TImage;
     StartUpTimer: TTimer;
     FileModTimer: TTimer;
+    GotoPHPdir1: TMenuItem;
+    PHPShell1: TMenuItem;
     procedure Run(Sender: TObject);
     procedure RunConsole(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -172,6 +174,8 @@ type
     procedure BtnLightClick(Sender: TObject);
     procedure StartUpTimerTimer(Sender: TObject);
     procedure FileModTimerTimer(Sender: TObject);
+    procedure GotoPHPdir1Click(Sender: TObject);
+    procedure PHPShell1Click(Sender: TObject);
   private
     hMutex: THandle;
     CurSearchTerm: string;
@@ -1497,6 +1501,15 @@ begin
   if SynEdit1.CanFocus then SynEdit1.SetFocus;
 end;
 
+procedure TForm1.GotoPHPdir1Click(Sender: TObject);
+var
+  phpExe: string;
+begin
+  phpExe := GetPHPExe;
+  if phpExe <> '' then
+    ShellExecute(Handle, 'open', 'explorer.exe', PChar(ExtractFilePath(phpExe)), '', SW_NORMAL);
+end;
+
 procedure TForm1.PageControl2Changing(Sender: TObject;
   var AllowChange: Boolean);
 begin
@@ -1506,6 +1519,15 @@ begin
     HlpPrevPageIndex := PageControl2.ActivePageIndex;
 
   AllowChange := true;
+end;
+
+procedure TForm1.PHPShell1Click(Sender: TObject);
+var
+  phpExe: string;
+begin
+  phpExe := GetPHPExe;
+  if phpExe <> '' then
+    ShellExecute(Handle, 'open', PChar(phpExe), '-a', PChar(ExtractFilePath(phpExe)), SW_NORMAL);
 end;
 
 procedure TForm1.Memo2DblClick(Sender: TObject);
