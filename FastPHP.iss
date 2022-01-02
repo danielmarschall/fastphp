@@ -6,7 +6,7 @@
 AppName=FastPHP
 AppVerName=FastPHP 0.5
 AppVersion=0.5      
-AppCopyright=© Copyright 2016 - 2021 ViaThinkSoft.
+AppCopyright=© Copyright 2016 - 2022 ViaThinkSoft.
 AppPublisher=ViaThinkSoft
 AppPublisherURL=http://www.viathinksoft.de/
 AppSupportURL=http://www.daniel-marschall.de/
@@ -14,7 +14,7 @@ AppUpdatesURL=http://www.viathinksoft.de/
 DefaultDirName={commonpf}\FastPHP
 DefaultGroupName=FastPHP
 VersionInfoCompany=ViaThinkSoft
-VersionInfoCopyright=© Copyright 2016 - 2021 ViaThinkSoft.
+VersionInfoCopyright=© Copyright 2016 - 2022 ViaThinkSoft.
 VersionInfoDescription=FastPHP Setup
 VersionInfoTextVersion=1.0.0.0
 VersionInfoVersion=0.5

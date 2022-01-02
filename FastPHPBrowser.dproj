@@ -58,7 +58,7 @@
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_UsePackage>rtl;vcl;vclactnband;vcldsnap;IndyCore;IndySystem;vclx;SynEditDR;bindcomp;tethering;svnui;appanalytics;dsnap;test;bindcompvcl;vclimg;TForge;vcltouch;VclSmp;vcldb;bindcompfmx;svn;bindengine;dbrtl;IndyProtocols;fmx;fmxdae;xmlrtl;fmxobj;vclwinx;fmxase;$(DCC_UsePackage)</DCC_UsePackage>
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
-        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Browser;FileVersion=0.5.0.0;InternalName=FastPHP Browser;LegalCopyright=(C) 2016-2021 ViaThinkSoft, Daniel Marschall;LegalTrademarks=;OriginalFilename=FastPHPBrowser.exe;ProductName=FastPHP;ProductVersion=0.5;Comments=www.viathinksoft.com</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Browser;FileVersion=0.5.0.0;InternalName=FastPHP Browser;LegalCopyright=(C) 2016-2022 ViaThinkSoft, Daniel Marschall;LegalTrademarks=;OriginalFilename=FastPHPBrowser.exe;ProductName=FastPHP;ProductVersion=0.5;Comments=www.viathinksoft.com</VerInfo_Keys>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <VerInfo_MajorVer>0</VerInfo_MajorVer>
@@ -82,7 +82,7 @@
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
         <AppDPIAwarenessMode>PerMonitor</AppDPIAwarenessMode>
-        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Browser;FileVersion=0.5.0.0;InternalName=FastPHP Browser;LegalCopyright=(C) 2016-2021 ViaThinkSoft, Daniel Marschall;LegalTrademarks=;OriginalFilename=FastPHPBrowser.exe;ProductName=FastPHP;ProductVersion=0.5;Comments=www.viathinksoft.com</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Browser;FileVersion=0.5.0.0;InternalName=FastPHP Browser;LegalCopyright=(C) 2016-2022 ViaThinkSoft, Daniel Marschall;LegalTrademarks=;OriginalFilename=FastPHPBrowser.exe;ProductName=FastPHP;ProductVersion=0.5;Comments=www.viathinksoft.com</VerInfo_Keys>
         <VerInfo_MajorVer>0</VerInfo_MajorVer>
         <VerInfo_MinorVer>5</VerInfo_MinorVer>
     </PropertyGroup>
@@ -101,7 +101,7 @@
         <Debugger_RunParams>D:\_test\scrap.php</Debugger_RunParams>
         <VerInfo_MajorVer>0</VerInfo_MajorVer>
         <VerInfo_MinorVer>5</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Browser;FileVersion=0.5.0.0;InternalName=FastPHP Browser;LegalCopyright=(C) 2016-2021 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHPBrowser.exe;ProductName=FastPHP;ProductVersion=0.5;Comments=www.viathinksoft.com</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Browser;FileVersion=0.5.0.0;InternalName=FastPHP Browser;LegalCopyright=(C) 2016-2022 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHPBrowser.exe;ProductName=FastPHP;ProductVersion=0.5;Comments=www.viathinksoft.com</VerInfo_Keys>
         <Icon_MainIcon>FastPHP_Icon2.ico</Icon_MainIcon>
     </PropertyGroup>
     <ItemGroup>
