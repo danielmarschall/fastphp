@@ -176,6 +176,8 @@ type
     procedure FileModTimerTimer(Sender: TObject);
     procedure GotoPHPdir1Click(Sender: TObject);
     procedure PHPShell1Click(Sender: TObject);
+    procedure SynEdit1DropFiles(Sender: TObject; X, Y: Integer;
+      AFiles: TStrings);
   private
     hMutex: THandle;
     CurSearchTerm: string;
@@ -189,7 +191,6 @@ type
     function InputRequestCallback(var data: AnsiString): boolean;
     function OutputNotifyCallback(const data: AnsiString): boolean;
     procedure RightTrimAll;
-    procedure WMDropFiles(var Msg: TWMDropFiles); message WM_DROPFILES;
   protected
     ChmIndex: TMemIniFile;
     FScrapFile: string;
@@ -514,6 +515,25 @@ begin
   RefreshModifySign;
 end;
 
+procedure TForm1.SynEdit1DropFiles(Sender: TObject; X, Y: Integer;
+  AFiles: TStrings);
+var
+  FileName: string;
+const
+  WARN_FILE_COUNT = 10;
+begin
+  if AFiles.Count > WARN_FILE_COUNT then
+  begin
+    if not MessageDlg(Format('Are you sure you want to open %d files?', [WARN_FILE_COUNT]), mtConfirmation, mbYesNoCancel, 0) <> mrYes then
+      exit;
+  end;
+
+  for FileName in AFiles do
+  begin
+    ShellExecute(0, 'open', PChar(ParamStr(0)), PChar('"' + FileName + '"'), '', SW_NORMAL);
+  end;
+end;
+
 procedure TForm1.SynEdit1GutterClick(Sender: TObject; Button: TMouseButton; X,
   Y, Line: Integer; Mark: TSynEditMark);
 begin
@@ -824,46 +844,6 @@ begin
   ShowMessage(LNG_CLOSE_REQUEST);
   TWebBrowser(ASender).Clear;
   Cancel := true;
-end;
-
-procedure TForm1.WMDropFiles(var Msg: TWMDropFiles);
-var
-   DropH: HDROP;               // drop handle
-   DroppedFileCount: Integer;  // number of files dropped
-   FileNameLength: Integer;    // length of a dropped file name
-   FileName: string;           // a dropped file name
-   I: Integer;                 // loops thru all dropped files
-   DropPoint: TPoint;          // point where files dropped
- begin
-   inherited;
-   // Store drop handle from the message
-   DropH := Msg.Drop;
-   try
-     // Get count of files dropped
-     DroppedFileCount := DragQueryFile(DropH, $FFFFFFFF, nil, 0);
-     // Get name of each file dropped and process it
-     for I := 0 to Pred(DroppedFileCount) do
-     begin
-       // get length of file name
-       FileNameLength := DragQueryFile(DropH, I, nil, 0);
-       // create string large enough to store file
-       SetLength(FileName, FileNameLength);
-       // get the file name
-       DragQueryFile(DropH, I, PChar(FileName), FileNameLength + 1);
-       // process file name (application specific)
-       // ... processing code here
-       ShellExecute(0, 'open', PChar(ParamStr(0)), PChar('"' + FileName + '"'), '', SW_NORMAL);
-     end;
-     // Optional: Get point at which files were dropped
-     DragQueryPoint(DropH, DropPoint);
-     // ... do something with drop point here
-   finally
-     // Tidy up - release the drop handle
-     // don't use DropH again after this
-     DragFinish(DropH);
-   end;
-   // Note we handled message
-   Msg.Result := 0;
 end;
 
 procedure TForm1.BeforeNavigate(const URL: OleVariant; var Cancel: WordBool);

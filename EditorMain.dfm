@@ -135,10 +135,11 @@ object Form1: TForm1
         Gutter.Gradient = True
         Gutter.GradientStartColor = cl3DLight
         Highlighter = SynPHPSyn1
-        Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceHomeKey, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoKeepCaretX, eoScrollByOneLess, eoShowScrollHint, eoTabIndent]
+        Options = [eoAutoIndent, eoDragDropEditing, eoDropFiles, eoEnhanceHomeKey, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoKeepCaretX, eoScrollByOneLess, eoShowScrollHint, eoTabIndent]
         SearchEngine = SynEditSearch1
         WantTabs = True
         OnChange = SynEdit1Change
+        OnDropFiles = SynEdit1DropFiles
         OnGutterClick = SynEdit1GutterClick
         OnMouseCursor = SynEdit1MouseCursor
         OnPaintTransient = SynEdit1PaintTransient
