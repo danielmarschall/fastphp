@@ -45,6 +45,7 @@ object Form1: TForm1
         Width = 1112
         Height = 245
         Align = alClient
+        Color = clCream
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -61,10 +62,6 @@ object Form1: TForm1
     object HtmlTabSheet: TTabSheet
       Caption = 'HTML'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object WebBrowser1: TWebBrowser
         Left = 0
         Top = 0
@@ -110,6 +107,7 @@ object Form1: TForm1
         Width = 836
         Height = 321
         Align = alClient
+        Color = clCream
         ActiveLineColor = 14680010
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -181,6 +179,7 @@ object Form1: TForm1
         Width = 273
         Height = 321
         Align = alLeft
+        Color = clCream
         Images = ImageList1
         Indent = 19
         ReadOnly = True
@@ -191,10 +190,6 @@ object Form1: TForm1
     object HelpTabsheet: TTabSheet
       Caption = 'Help'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object WebBrowser2: TWebBrowser
         Left = 0
         Top = 0
@@ -683,6 +678,8 @@ object Form1: TForm1
       Width = 75
       Height = 35
       Action = ActionSpaceToTab
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 9
     end
     object btnLint: TButton
@@ -691,6 +688,8 @@ object Form1: TForm1
       Width = 75
       Height = 35
       Action = ActionLint
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 10
     end
   end
@@ -744,12 +743,12 @@ object Form1: TForm1
     Left = 132
     Top = 252
     object ActionFind: TAction
-      Caption = 'Find'
+      Caption = 'Find...'
       ShortCut = 16454
       OnExecute = ActionFindExecute
     end
     object ActionReplace: TAction
-      Caption = 'Replace'
+      Caption = 'Replace...'
       ShortCut = 16456
       OnExecute = ActionReplaceExecute
     end
@@ -764,7 +763,7 @@ object Form1: TForm1
       OnExecute = ActionFindPrevExecute
     end
     object ActionGoto: TAction
-      Caption = 'Goto line'
+      Caption = 'Goto line...'
       ShortCut = 16455
       OnExecute = ActionGotoExecute
     end
@@ -772,6 +771,12 @@ object Form1: TForm1
       Caption = 'Save'
       ShortCut = 16467
       OnExecute = ActionSaveExecute
+    end
+    object ActionSaveAs: TAction
+      Caption = 'Save as...'
+      Hint = 'Save as a new file'
+      ShortCut = 24659
+      OnExecute = ActionSaveAsExecute
     end
     object ActionHelp: TAction
       Caption = 'Help'
@@ -788,6 +793,15 @@ object Form1: TForm1
       ShortCut = 8312
       OnExecute = ActionRunConsoleExecute
     end
+    object ActionGoToPHPDir: TAction
+      Caption = 'Go to PHP dir'
+      OnExecute = ActionGoToPHPDirExecute
+    end
+    object ActionPHPInteractiveShell: TAction
+      Caption = 'PHP Interactive Shell'
+      Hint = 'Opens the PHP Interactive Shell'
+      OnExecute = ActionPHPInteractiveShellExecute
+    end
     object ActionESC: TAction
       Caption = 'Esc'
       ShortCut = 27
@@ -801,10 +815,13 @@ object Form1: TForm1
     object ActionSpaceToTab: TAction
       Caption = 'SpaceToTab'
       Hint = 'Converts leading spaces to tabs'
+      ShortCut = 24660
       OnExecute = ActionSpaceToTabExecute
     end
     object ActionLint: TAction
       Caption = 'Lint'
+      Hint = 'Run PHP Lint (php -l) to check for syntax errors'
+      ShortCut = 24652
       OnExecute = ActionLintExecute
     end
   end
@@ -833,25 +850,21 @@ object Form1: TForm1
       Action = ActionRunConsole
     end
     object GotoPHPdir1: TMenuItem
-      Caption = 'Go to PHP dir'
-      OnClick = GotoPHPdir1Click
+      Action = ActionGoToPHPDir
     end
     object PHPShell1: TMenuItem
-      Caption = 'PHP Interactive Shell'
-      OnClick = PHPShell1Click
+      Action = ActionPHPInteractiveShell
     end
   end
   object SavePopup: TPopupMenu
     Left = 196
     Top = 28
     object Save1: TMenuItem
-      Caption = 'Save'
+      Action = ActionSave
       Default = True
-      OnClick = Save1Click
     end
     object Saveas1: TMenuItem
-      Caption = 'Save as...'
-      OnClick = Saveas1Click
+      Action = ActionSaveAs
     end
   end
   object SaveDialog1: TSaveDialog

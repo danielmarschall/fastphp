@@ -110,7 +110,7 @@ begin
 
   outFile := ChangeFileExt(chmFile, '.ini');
   DeleteFile(outFile);
-  test := LoadFileToStr(chmFile);
+  test := LoadFileToStr(chmFile); // TODO: RawByteString instead of AnsiString?
   if Pos('/php_manual_', test) = -1 then
   begin
     result := false;
@@ -213,7 +213,7 @@ function IsValidPHPExe(const exeFile: TFileName): boolean;
 var
   cont: string;
 begin
-  cont := LoadFileToStr(exeFile);
+  cont := LoadFileToStr(exeFile); // TODO: RawByteString instead of AnsiString?
   result := (Pos('php://stdout', cont) >= 0) or
             (Pos('PHP_SELF', cont) >= 0);
 end;

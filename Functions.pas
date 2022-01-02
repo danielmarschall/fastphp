@@ -9,7 +9,7 @@ uses
 type
   TContentCallBack = procedure(Content: string) of object;
 
-function GetDosOutput(CommandLine: string; Work: string = ''; ContentCallBack: TContentCallBack=nil): string;
+function GetDosOutput(CommandLine: string; Work: string = ''; ContentCallBack: TContentCallBack=nil): String;
 function StrIPos(const SubStr, S: string): Integer;
 function LoadFileToStr(const FileName: TFileName): AnsiString;
 function LastPos(const SubStr, S: string): integer;
@@ -31,7 +31,7 @@ uses
   ShlObj, // Needed for the CSIDL constants
   IdGlobal, IdHash, IdHashMessageDigest; // used for MD5 calculation
 
-function GetDosOutput(CommandLine: string; Work: string = ''; ContentCallBack: TContentCallBack=nil): string;
+function GetDosOutput(CommandLine: string; Work: string = ''; ContentCallBack: TContentCallBack=nil): String;
 var
   SA: TSecurityAttributes;
   SI: TStartupInfo;
@@ -75,8 +75,8 @@ begin
           if BytesRead > 0 then
           begin
             Buffer[BytesRead] := #0;
-            Result := Result + Buffer;
-            if Assigned(ContentCallBack) then ContentCallBack(Buffer);
+            Result := Result + string(Buffer);
+            if Assigned(ContentCallBack) then ContentCallBack(string(Buffer));
           end;
         until not WasOK or (BytesRead = 0);
         WaitForSingleObject(PI.hProcess, INFINITE);
@@ -99,8 +99,8 @@ var
   FileStream : TFileStream;
 
 begin
-  Result:= '';
-  FileStream:= TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
+  Result := '';
+  FileStream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
   try
     if FileStream.Size>0 then begin
       SetLength(Result, FileStream.Size);

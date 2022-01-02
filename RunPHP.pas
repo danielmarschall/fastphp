@@ -123,7 +123,7 @@ begin
             if BytesRead > 0 then
             begin
               Buffer[BytesRead] := #0;
-              Output := Output + Buffer;
+              Output := Output + string(Buffer);
               if Pos(SIGNAL_END_OF_TRANSMISSION, Output) >= 1 then
               begin
                 Output := StringReplace(Output, SIGNAL_END_OF_TRANSMISSION, '', []);

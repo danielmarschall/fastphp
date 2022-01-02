@@ -11,8 +11,7 @@ unit EditorMain;
     You can obtain SynEdit via Embarcadero GetIt
 *)
 
-// TODO: "DragAcceptFiles" does not work with Delphi Dark Design Template !!!
-
+// TODO: "crHourGlass" does not work if F9 is pressed!
 // TODO: if a scrapfile is already open, create a new scrap file (scrap2.php)
 // TODO: localize
 // TODO: wieso geht copy paste im twebbrowser nicht???
@@ -22,6 +21,19 @@ unit EditorMain;
 // TODO: "jump to next/prev todo" buttons/shortcuts
 // TODO: "increase/decrease indent" buttons/shortcuts
 
+// In regards Unicode:
+// - Solve compiler warnings
+// - If you place Unicode symbols in a ANSI file, they will be replaced during saving
+//   by "?" without asking the user if the code should be converted to Unicode!
+// - FastPHP can only read a UTF-8 file correctly if it has a BOM
+//   However, the PSR-1 standard requires that files have UTF-8 without BOM!
+//   So we need auto-detect (since many people are working with ANSI!)
+// - When a file is correctly loaded with UTF-8/BOM,
+//   the run output (Plaintext and HTML) will show UTF-8 instead of Unicode
+//   (that COULD be intended since the Windows CMD is not Unicode ready?)
+//   But HTML is also shown as UTF-8 even though I have added <meta charset="UTF-8"> ?!
+// - Is it possible that UTF8 BOM automatically gets removed by FastPHP, generating pure ANSI?
+
 // Small things:
 // - The scroll bars of SynEdit are not affected by the dark theme
 
@@ -30,12 +42,12 @@ unit EditorMain;
 // - verschiedene php versionen?
 // - webbrowser1 nur laden, wenn man den tab anw‰hlt?
 // - doppelklick auf tab soll diesen schlieﬂen
-// - Onlinehelp (www) aufrufen
+// - Onlinehelp (www) aufrufen oder CHM datei
 // - Let all colors be adjustable
 // - code in bildschirmmitte (horizontal)?
 // - search in files of a directory
-// - multi tab?
-// - DDE (drag n drop)
+// - Files in multiple tabs?
+// - Configurable tabulator display-width
 
 interface
 
@@ -115,6 +127,9 @@ type
     FileModTimer: TTimer;
     GotoPHPdir1: TMenuItem;
     PHPShell1: TMenuItem;
+    ActionSaveAs: TAction;
+    ActionGoToPHPDir: TAction;
+    ActionPHPInteractiveShell: TAction;
     procedure Run(Sender: TObject);
     procedure RunConsole(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -166,18 +181,17 @@ type
     procedure ActionLintExecute(Sender: TObject);
     procedure ActionRunConsoleExecute(Sender: TObject);
     procedure SynEdit1Change(Sender: TObject);
-    procedure Saveas1Click(Sender: TObject);
-    procedure Save1Click(Sender: TObject);
     procedure BtnSpecialCharsClick(Sender: TObject);
     procedure WebBrowser1WindowClosing(ASender: TObject;
       IsChildWindow: WordBool; var Cancel: WordBool);
     procedure BtnLightClick(Sender: TObject);
     procedure StartUpTimerTimer(Sender: TObject);
     procedure FileModTimerTimer(Sender: TObject);
-    procedure GotoPHPdir1Click(Sender: TObject);
-    procedure PHPShell1Click(Sender: TObject);
     procedure SynEdit1DropFiles(Sender: TObject; X, Y: Integer;
       AFiles: TStrings);
+    procedure ActionSaveAsExecute(Sender: TObject);
+    procedure ActionGoToPHPDirExecute(Sender: TObject);
+    procedure ActionPHPInteractiveShellExecute(Sender: TObject);
   private
     hMutex: THandle;
     CurSearchTerm: string;
@@ -187,6 +201,8 @@ type
     gOnlineHelpWord: string;
     {$ENDIF}
     FileModLast: TDateTime;
+    FormShowRanOnce: boolean;
+    BrowserLoadedOnce: boolean;
     procedure Help;
     function InputRequestCallback(var data: AnsiString): boolean;
     function OutputNotifyCallback(const data: AnsiString): boolean;
@@ -249,17 +265,29 @@ procedure TForm1.ActionGotoExecute(Sender: TObject);
 var
   val: string;
   lineno: integer;
+resourcestring
+  SGoTo = 'Go to';
+  SLineNumber = 'Line number:';
 begin
   // TODO: VK_LMENU does not work! only works with AltGr but not Alt
   // http://stackoverflow.com/questions/16828250/delphi-xe2-how-to-prevent-the-alt-key-stealing-focus ?
 
-  InputQuery('Go to', 'Line number:', val);
-  if not TryStrToInt(val, lineno) then
+  if not InputQuery(SGoTo, SLineNumber, val) or
+     not TryStrToInt(val, lineno) then
   begin
     if SynEdit1.CanFocus then SynEdit1.SetFocus;
     exit;
   end;
   GotoLineNo(lineno);
+end;
+
+procedure TForm1.ActionGoToPHPDirExecute(Sender: TObject);
+var
+  phpExe: string;
+begin
+  phpExe := GetPHPExe;
+  if phpExe <> '' then
+    ShellExecute(Handle, 'open', 'explorer.exe', PChar(ExtractFilePath(phpExe)), '', SW_NORMAL);
 end;
 
 procedure TForm1.ActionHelpExecute(Sender: TObject);
@@ -283,6 +311,15 @@ begin
   begin
     ShellExecute(0, 'open', PChar(ParamStr(0)), PChar('"' + OpenDialog3.FileName + '"'), '', SW_NORMAL);
   end;
+end;
+
+procedure TForm1.ActionPHPInteractiveShellExecute(Sender: TObject);
+var
+  phpExe: string;
+begin
+  phpExe := GetPHPExe;
+  if phpExe <> '' then
+    ShellExecute(Handle, 'open', PChar(phpExe), '-a', PChar(ExtractFilePath(phpExe)), SW_NORMAL);
 end;
 
 procedure TForm1.ActionReplaceExecute(Sender: TObject);
@@ -323,6 +360,33 @@ begin
     SynEdit1.SelEnd   := Length(SynEdit1.Text)-1;
   end;
   *)
+end;
+
+procedure TForm1.ActionSaveAsExecute(Sender: TObject);
+var
+  hMutexNew: THandle;
+resourcestring
+  SCannotSaveBecauseMutex = 'Cannot save because file "%s", because it is alrady open in another FastPHP window!';
+begin
+  if SaveDialog1.Execute then
+  begin
+    {$REGION 'Switch mutex'}
+    hMutexNew := CreateMutex(nil, True, PChar('FastPHP'+md5(UpperCase(SaveDialog1.FileName))));
+    if GetLastError = ERROR_ALREADY_EXISTS then
+    begin
+      ShowMessageFmt(SCannotSaveBecauseMutex, [SaveDialog1.FileName]);
+      Close;
+    end;
+
+    if hMutex <> 0 then CloseHandle(hMutex); // Note: ReleaseMutex does not work as expected!
+    hMutex := hMutexNew;
+    {$ENDREGION}
+
+    FSaveAsFilename := SaveDialog1.FileName;
+    Caption := Copy(Caption, 1, Pos(' - ', Caption)-1) + ' - ' + FSaveAsFilename;
+    Application.Title := Format('%s - FastPHP', [ExtractFileName(FSaveAsFilename)]); // do not translate!
+    Button7.Click;
+  end;
 end;
 
 procedure TForm1.ActionSaveExecute(Sender: TObject);
@@ -407,6 +471,8 @@ var
   ind: integer;
 resourcestring
   SNoLinesAvailable = 'No lines with spaces at the beginning available';
+  SSpacesToLabs = 'Spaces to tabs';
+  SIndent = 'Indent:';
 begin
   // TODO: if something is selected, only process the selected part
 
@@ -419,14 +485,15 @@ begin
   ind := GuessIndent(SynEdit1.Lines);
   if ind <> -1 then val := IntToStr(ind);
 
-  InputQuery('Spaces to tabs', 'Indent:', val); // TODO: handle CANCEL correctly...
-  if TryStrToInt(Trim(val), ind) then
+  if not InputQuery(SSpacesToLabs, SIndent, val) or
+     not TryStrToInt(Trim(val), ind) then
   begin
-    if ind = 0 then exit;
-    SpaceToTab(SynEdit1.Lines, ind);
+    if SynEdit1.CanFocus then SynEdit1.SetFocus;
+    exit;
   end;
 
-  if SynEdit1.CanFocus then SynEdit1.SetFocus;
+  if ind = 0 then exit;
+  SpaceToTab(SynEdit1.Lines, ind);
 end;
 
 procedure TForm1.ActionESCExecute(Sender: TObject);
@@ -447,8 +514,6 @@ begin
   SrcRep.FindExecute;
 end;
 
-var
-  firstTimeBrowserLoad: boolean = true;
 procedure TForm1.Run(Sender: TObject);
 var
   bakTS: TTabSheet;
@@ -457,7 +522,7 @@ var
 begin
   memo2.Lines.Text := '';
 
-  if firstTimeBrowserLoad then
+  if not BrowserLoadedOnce then
   begin
     bakTS := PageControl1.ActivePage;
     try
@@ -466,12 +531,12 @@ begin
     finally
       PageControl1.ActivePage := bakTS;
     end;
-    firstTimeBrowserLoad := false;
+    BrowserLoadedOnce := true;
   end
   else
     Webbrowser1.Clear;
 
-  Screen.Cursor := crHourGlass;
+  Screen.Cursor := crHourGlass; // TODO: Doesn't work with F9
   Application.ProcessMessages;
 
   try
@@ -521,10 +586,12 @@ var
   FileName: string;
 const
   WARN_FILE_COUNT = 10;
+resourcestring
+  SAreYouSure = 'Are you sure you want to open %d files?';
 begin
   if AFiles.Count > WARN_FILE_COUNT then
   begin
-    if not MessageDlg(Format('Are you sure you want to open %d files?', [WARN_FILE_COUNT]), mtConfirmation, mbYesNoCancel, 0) <> mrYes then
+    if not MessageDlg(Format(SAreYouSure, [WARN_FILE_COUNT]), mtConfirmation, mbYesNoCancel, 0) <> mrYes then
       exit;
   end;
 
@@ -751,7 +818,7 @@ end;
 procedure TForm1.Theme_Dark;
 begin
   if IsThemeDark then exit;
-  TStyleManager.TrySetStyle('Windows10 SlateGray');
+  TStyleManager.TrySetStyle('Windows10 SlateGray'); // do not translate
   Color := 1316887;
   Font.Color := clCream;
   //Memo2.Font.Color := clCream;
@@ -775,12 +842,12 @@ end;
 procedure TForm1.Theme_Light;
 begin
   if not IsThemeDark then exit;
-  TStyleManager.TrySetStyle('Windows');
+  TStyleManager.TrySetStyle('Windows'); // do not translate
   Color := clBtnFace;
   Font.Color := clWindowText;
   //Memo2.Font.Color := clWindowText;
   SynEdit1.ActiveLineColor := 14680010;
-  SynEdit1.Color := clWindow;
+  SynEdit1.Color := clCream;
   SynEdit1.Font.Color := clWindowText;
   SynEdit1.Gutter.Color := clBtnFace;
   SynEdit1.Gutter.Font.Color := clWindowText;
@@ -839,9 +906,9 @@ end;
 procedure TForm1.WebBrowser1WindowClosing(ASender: TObject;
   IsChildWindow: WordBool; var Cancel: WordBool);
 resourcestring
-  LNG_CLOSE_REQUEST = 'A script has requested the window to be closed. The window of a standalone script would now close.';
+  SCloseRequest = 'A script has requested the window to be closed. The window of a standalone script would now close.';
 begin
-  ShowMessage(LNG_CLOSE_REQUEST);
+  ShowMessage(SCloseRequest);
   TWebBrowser(ASender).Clear;
   Cancel := true;
 end;
@@ -930,6 +997,9 @@ begin
 end;
 
 procedure TForm1.FileModTimerTimer(Sender: TObject);
+resourcestring
+  SChangeConflict = 'The file was changed in a different application BUT IT WAS ALSO MODIFIED HERE! Reload file AND LOSE CHANGES HERE?';
+  SChangeNotify = 'The file was changed in a different application! Reload file?';
 begin
   FileModTimer.Enabled := false;
   if FileModLast <> FileAge(GetScrapFile) then
@@ -937,14 +1007,14 @@ begin
     FileModLast := FileAge(GetScrapFile);
     if SynEdit1.Modified then
     begin
-      if MessageDlg('The file was changed in a different application BUT IT WAS ALSO MODIFIED HERE! Reload file AND LOSE CHANGES HERE?', mtWarning, mbYesNoCancel, 0) = mrYes then
+      if MessageDlg(SChangeConflict, mtWarning, mbYesNoCancel, 0) = mrYes then
       begin
         SynEdit1.Lines.LoadFromFile(GetScrapFile);
       end;
     end
     else
     begin
-      if MessageDlg('The file was changed in a different application! Reload file?', mtConfirmation, mbYesNoCancel, 0) = mrYes then
+      if MessageDlg(SChangeNotify, mtConfirmation, mbYesNoCancel, 0) = mrYes then
       begin
         SynEdit1.Lines.LoadFromFile(GetScrapFile);
       end;
@@ -962,12 +1032,14 @@ end;
 procedure TForm1.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 var
   r: integer;
+resourcestring
+  SWantToSave = 'Do you want to save?';
 begin
   if SynEdit1.Modified then
   begin
     if (ParamStr(1) <> '') or (FSaveAsFilename <> '') then
     begin
-      r := MessageDlg('Do you want to save?', mtConfirmation, mbYesNoCancel, 0);
+      r := MessageDlg(SWantToSave, mtConfirmation, mbYesNoCancel, 0);
       if r = mrCancel then
       begin
         CanClose := false;
@@ -996,7 +1068,7 @@ begin
   CurSearchTerm := '';
   sScrapFile := GetScrapFile;
   Caption := Caption + ' - ' + sScrapFile;
-  Application.Title := Format('%s - FastPHP', [ExtractFileName(sScrapFile)]);
+  Application.Title := Format('%s - FastPHP', [ExtractFileName(sScrapFile)]); // do not translate!
   SrcRep := TSynEditFindReplace.Create(self);
   SrcRep.Editor := SynEdit1;
   SynEdit1.Gutter.Gradient := HighColorWindows;
@@ -1029,13 +1101,13 @@ begin
   end;
 end;
 
-var
-  FormShowRanOnce: boolean;
 procedure TForm1.FormShow(Sender: TObject);
 var
   ScrapFile: string;
   tmpFontSize: integer;
   opts: TSynEditorOptions;
+resourcestring
+  SFileAlreadyOpen = 'File "%s" is alrady open!';
 begin
   if FormShowRanOnce then exit; // If the theme is changed from normal to dark, OnShow will be called another time
   FormShowRanOnce := true;
@@ -1068,7 +1140,7 @@ begin
       if GetLastError = ERROR_ALREADY_EXISTS then
       begin
         // TODO: It would be great if the window of that FastPHP instance would switched to foreground
-        ShowMessageFmt('File "%s" is alrady open!', [ScrapFile]);
+        ShowMessageFmt(SFileAlreadyOpen, [ScrapFile]);
         Close;
       end;
 
@@ -1093,36 +1165,6 @@ begin
   DragAcceptFiles(Handle, True);
 
   StartupTimer.Enabled := true;
-end;
-
-procedure TForm1.Save1Click(Sender: TObject);
-begin
-  Button7.Click;
-end;
-
-procedure TForm1.Saveas1Click(Sender: TObject);
-var
-  hMutexNew: THandle;
-begin
-  if SaveDialog1.Execute then
-  begin
-    {$REGION 'Switch mutex'}
-    hMutexNew := CreateMutex(nil, True, PChar('FastPHP'+md5(UpperCase(SaveDialog1.FileName))));
-    if GetLastError = ERROR_ALREADY_EXISTS then
-    begin
-      ShowMessageFmt('Cannot save because file "%s", because it is alrady open in another FastPHP window!', [SaveDialog1.FileName]);
-      Close;
-    end;
-
-    if hMutex <> 0 then CloseHandle(hMutex); // Note: ReleaseMutex does not work as expected!
-    hMutex := hMutexNew;
-    {$ENDREGION}
-
-    FSaveAsFilename := SaveDialog1.FileName;
-    Caption := Copy(Caption, 1, Pos(' - ', Caption)-1) + ' - ' + FSaveAsFilename;
-    Application.Title := Format('%s - FastPHP', [ExtractFileName(FSaveAsFilename)]);
-    Button7.Click;
-  end;
 end;
 
 procedure TForm1.SaveToFile(filename: string);
@@ -1238,6 +1280,9 @@ end;
 function TForm1.GetScrapFile: string;
 var
   tmpPath: string;
+resourcestring
+  SFileDoesNotExistsCreate = 'File %s does not exist. Create it?';
+  SPathDoesNotExistTryAgain = 'Path does not exist! Please try again.';
 begin
   if FSaveAsFilename <> '' then
   begin
@@ -1259,7 +1304,7 @@ begin
 
     if not FileExists(result) then
     begin
-      case MessageDlg(Format('File %s does not exist. Create it?', [result]), mtConfirmation, mbYesNoCancel, 0) of
+      case MessageDlg(Format(SFileDoesNotExistsCreate, [result]), mtConfirmation, mbYesNoCancel, 0) of
         mrYes:
           try
             SaveToFile(result);
@@ -1325,7 +1370,7 @@ begin
 
         if not DirectoryExists(ExtractFilePath(OpenDialog3.FileName)) then
         begin
-          MessageDlg('Path does not exist! Please try again.', mtWarning, [mbOk], 0);
+          MessageDlg(SPathDoesNotExistTryAgain, mtWarning, [mbOk], 0);
         end
         else
         begin
@@ -1360,6 +1405,10 @@ procedure TForm1.Help;
 var
   IndexFile, chmFile, w, OriginalWord, url: string;
   internalHtmlFile: string;
+resourcestring
+  SChmFileNotAValidPHPDocumentation = 'The CHM file is not a valid PHP documentation. Cannot use help.';
+  SUnknownErrorCannotUseHelp = 'Unknown error. Cannot use help.';
+  SNoHelpAvailable = 'No help for "%s" available';
 begin
   if not Assigned(ChmIndex) then
   begin
@@ -1402,7 +1451,7 @@ begin
       try
         if not ParseCHM(chmFile) then
         begin
-          MessageDlg('The CHM file is not a valid PHP documentation. Cannot use help.', mtError, [mbOk], 0);
+          MessageDlg(SChmFileNotAValidPHPDocumentation, mtError, [mbOk], 0);
           exit;
         end;
       finally
@@ -1412,7 +1461,7 @@ begin
 
       if not FileExists(IndexFile) then
       begin
-        MessageDlg('Unknown error. Cannot use help.', mtError, [mbOk], 0);
+        MessageDlg(SUnknownErrorCannotUseHelp, mtError, [mbOk], 0);
         exit;
       end;
     end;
@@ -1435,14 +1484,14 @@ begin
   w := LowerCase(w);
   CurSearchTerm := w;
 
-  internalHtmlFile := ChmIndex.ReadString('function', CurSearchTerm, '');
+  internalHtmlFile := ChmIndex.ReadString('function', CurSearchTerm, ''); // do not translate
   if internalHtmlFile = '' then
-    internalHtmlFile := ChmIndex.ReadString('_HelpWords_', CurSearchTerm, '');
+    internalHtmlFile := ChmIndex.ReadString('_HelpWords_', CurSearchTerm, ''); // do not translate
   if internalHtmlFile = '' then
   begin
     HelpTabsheet.TabVisible := false;
     HlpPrevPageIndex := -1;
-    ShowMessageFmt('No help for "%s" available', [Originalword]);
+    ShowMessageFmt(SNoHelpAvailable, [Originalword]);
     Exit;
   end;
 
@@ -1481,15 +1530,6 @@ begin
   if SynEdit1.CanFocus then SynEdit1.SetFocus;
 end;
 
-procedure TForm1.GotoPHPdir1Click(Sender: TObject);
-var
-  phpExe: string;
-begin
-  phpExe := GetPHPExe;
-  if phpExe <> '' then
-    ShellExecute(Handle, 'open', 'explorer.exe', PChar(ExtractFilePath(phpExe)), '', SW_NORMAL);
-end;
-
 procedure TForm1.PageControl2Changing(Sender: TObject;
   var AllowChange: Boolean);
 begin
@@ -1499,15 +1539,6 @@ begin
     HlpPrevPageIndex := PageControl2.ActivePageIndex;
 
   AllowChange := true;
-end;
-
-procedure TForm1.PHPShell1Click(Sender: TObject);
-var
-  phpExe: string;
-begin
-  phpExe := GetPHPExe;
-  if phpExe <> '' then
-    ShellExecute(Handle, 'open', PChar(phpExe), '-a', PChar(ExtractFilePath(phpExe)), SW_NORMAL);
 end;
 
 procedure TForm1.Memo2DblClick(Sender: TObject);
@@ -1538,7 +1569,7 @@ begin
   {$ENDREGION}
 
   {$REGION 'Possibility 2: on line xx'}
-  _process(ExtractFileName(GetScrapFile) + ' on line ');
+  _process(ExtractFileName(GetScrapFile) + ' on line '); // do not translate!
   {$ENDREGION}
 end;
 
@@ -1593,7 +1624,7 @@ begin
   {$ENDREGION}
 
   {$REGION 'Possibility 2: on line xx'}
-  _process(ExtractFileName(GetScrapFile) + ' on line ');
+  _process(ExtractFileName(GetScrapFile) + ' on line '); // do not translate!
   {$ENDREGION}
 
   result := cont;
@@ -1612,7 +1643,7 @@ end;
 
 function TForm1.OutputNotifyCallback(const data: AnsiString): boolean;
 begin
-  result := TreeView1.FillWithFastPHPData(data);
+  result := TreeView1.FillWithFastPHPData(string(data));
 end;
 
 end.

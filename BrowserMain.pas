@@ -15,6 +15,7 @@ type
   TForm2 = class(TForm)
     WebBrowser1: TWebBrowser;
     Timer1: TTimer;
+    OpenDialog3: TOpenDialog;
     procedure Timer1Timer(Sender: TObject);
     procedure WebBrowser1BeforeNavigate2(ASender: TObject;
       const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
@@ -111,24 +112,29 @@ end;
 
 function TForm2.EmbeddedWBQueryService(const rsid, iid: TGUID; out Obj{: IInterface}): HRESULT;
 var
-    sam: IInternetSecurityManager;
+  sam: IInternetSecurityManager;
 begin
-    Result := E_NOINTERFACE;
+  Result := E_NOINTERFACE;
 
-    //rsid ==> Service Identifier
-    //iid ==> Interface identifier
-    if IsEqualGUID(rsid, IInternetSecurityManager) and IsEqualGUID(iid, IInternetSecurityManager) then
-    begin
-        sam := TEmbeddedSecurityManager.Create;
-        IInterface(Obj) := sam;
-        Result := S_OK;
-    end;
+  //rsid ==> Service Identifier
+  //iid ==> Interface identifier
+  if IsEqualGUID(rsid, IInternetSecurityManager) and IsEqualGUID(iid, IInternetSecurityManager) then
+  begin
+      sam := TEmbeddedSecurityManager.Create;
+      IInterface(Obj) := sam;
+      Result := S_OK;
+  end;
 end;
 
 procedure TForm2.Timer1Timer(Sender: TObject);
 var
   phpScript: string;
   sl: TStringList;
+resourcestring
+  SRunningScriptPleaseWait = 'Running script... please wait...';
+  SPleaseEnterPHPScript = 'Please enter a PHP file to execute.';
+  SFileDoesNotExist = 'File %s does not exist.';
+  SFastPHP = 'ViaThinkSoft FastPHP';
 begin
   Timer1.Enabled := false;
   phpScript := ParamStr(1);
@@ -136,18 +142,22 @@ begin
   // Remove Security
   WebBrowser1.ServiceQuery := EmbeddedWBQueryService;
 
-  WebBrowser1.LoadHTML('<h1>FastPHP</h1>Running script... please wait...');
+  WebBrowser1.LoadHTML('<h1>'+SFastPHP+'</h1>'+SRunningScriptPleaseWait);
 
   // TODO: nice HTML error/intro pages (as resource?)
   if phpScript = '' then
   begin
-    WebBrowser1.LoadHTML('<h1>FastPHP</h1>Please enter a PHP file to execute.');
-    Abort;
+    WebBrowser1.LoadHTML('<h1>'+SFastPHP+'</h1>'+SPleaseEnterPHPScript);
+    if not OpenDialog3.Execute then
+    begin
+      Abort;
+    end;
+    phpScript := OpenDialog3.FileName;
   end;
 
   if not FileExists(phpScript) then
   begin
-    WebBrowser1.LoadHTML(Format('<h1>FastPHP</h1>File %s does not exist.', [phpScript]));
+    WebBrowser1.LoadHTML(Format('<h1>'+SFastPHP+'</h1>'+SFileDoesNotExist, [phpScript]));
     Abort;
   end;
 
@@ -177,14 +187,16 @@ var
   p: integer;
   background: boolean;
   ArgGet, ArgPost, ArgHeader: string;
+resourcestring
+  SOnlyWorksInEditor = 'This action only works in FastPHP editor.';
 begin
-  background := Pos('background|', URL) >= 1;
+  background := Pos('background|', URL) >= 1; // do not translate
 
   {$REGION 'Line number references (PHP errors and warnings)'}
   if Copy(URL, 1, length(FASTPHP_GOTO_URI_PREFIX)) = FASTPHP_GOTO_URI_PREFIX then
   begin
     // TODO: maybe we could even open that file in the editor!
-    ShowMessage('This action only works in FastPHP editor.');
+    ShowMessage(SOnlyWorksInEditor);
     Cancel := true;
     Exit;
   end;
@@ -195,7 +207,7 @@ begin
   begin
     myUrl := URL;
 
-    myurl := StringReplace(myurl, 'background|', '', []);
+    myurl := StringReplace(myurl, 'background|', '', []); // do not translate
 
     p := Pos('?', myUrl);
     if p >= 1 then

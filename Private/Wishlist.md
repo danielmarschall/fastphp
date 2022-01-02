@@ -27,3 +27,7 @@ maybe as simple as:
 7. More intelligent find of the correct method/function/symbol when you press F1
 
 8. When dark theme is enabled, the left top pixel cannot be used to open the window menu (close by double click). This is extremely annoying if you are used to close maximized windows this way.
+
+9. Console output (lower part of the screen): Button to stop the execution, and show flushed output in realtime
+
+10. ANSI/UTF8 Saving and Auto Detect loading
