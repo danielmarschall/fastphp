@@ -251,7 +251,7 @@ class MyFastPHPCodeExplorer {
 	}
 }
 
-$parser = new MyFastPHPCodeExplorer($icon);
+$parser = new MyFastPHPCodeExplorer();
 while (true) {
 	try {
 		$code = FastPHPReader::readCodeFromEditor();

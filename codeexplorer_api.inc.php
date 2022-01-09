@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 define('SIGNAL_END_OF_TRANSMISSION', chr(1).chr(2).chr(3).chr(4).chr(5).chr(6).chr(7).chr(8));
 define('SIGNAL_TERMINATE',           chr(8).chr(7).chr(6).chr(5).chr(4).chr(3).chr(2).chr(1));
