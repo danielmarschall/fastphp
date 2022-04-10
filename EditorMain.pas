@@ -441,11 +441,23 @@ procedure TForm1.ActionSpaceToTabExecute(Sender: TObject);
     procedure SpaceToTab(lines: {$IFDEF UNICODE}TStrings{$ELSE}TUnicodeStrings{$ENDIF}; indent: integer);
     var
       i, spaces: integer;
+      newval: string;
+      somethingchanged: boolean;
     begin
+      somethingchanged := false;
       for i := 0 to lines.Count-1 do
       begin
         spaces := SpacesAtBeginning(lines.Strings[i]);
-        lines.Strings[i] := StringOfChar(#9, spaces div indent) + StringOfChar(' ', spaces mod indent) + Copy(lines.Strings[i], spaces+1, Length(lines.Strings[i])-spaces);
+        newval := StringOfChar(#9, spaces div indent) + StringOfChar(' ', spaces mod indent) + Copy(lines.Strings[i], spaces+1, Length(lines.Strings[i])-spaces);
+        if lines.Strings[i] <> newval then
+        begin
+          somethingchanged := true;
+          lines.Strings[i] := newval;
+        end;
+      end;
+      if somethingchanged then
+      begin
+        SynEdit1Change(SynEdit1); // set the "changed" flag
       end;
     end;
 
