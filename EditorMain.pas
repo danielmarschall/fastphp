@@ -20,12 +20,7 @@
 // TODO: Browser titlebar (link preview)
 // TODO: "jump to next/prev todo" buttons/shortcuts
 // TODO: "increase/decrease indent" buttons/shortcuts
-
-// In regards Unicode:
-// - Solve compiler warnings
-// - If you place Unicode symbols in a ANSI file, they will be replaced during saving
-//   by "?" without asking the user if the code should be converted to Unicode!
-// - Is it possible that UTF8 BOM automatically gets removed by FastPHP, generating pure ANSI?
+// TODO: Solve all compiler warnings, especially in regards Encoding
 
 // Note in re Unicode:
 // - In Embarcadero® Delphi 10.4 Version 27.0.40680.4203:
@@ -35,6 +30,7 @@
 
 // Small things:
 // - The scroll bars of SynEdit are not affected by the dark theme
+// - dark theme full screen: doubleclick to desktop pixel "0,0" cannot be used to close the app
 
 // Future ideas
 // - code insight
@@ -220,6 +216,7 @@ type
     procedure Theme_Dark;
     function IsThemeDark: boolean;
     function MarkUpLineReference(cont: string): string;
+    function ContainsUnicodeCharsInAnsiFile: boolean;
     procedure SaveToFile(filename: string);
   end;
 
@@ -1185,6 +1182,30 @@ begin
   StartupTimer.Enabled := true;
 end;
 
+function TForm1.ContainsUnicodeCharsInAnsiFile: boolean;
+var
+  lines: TStringList;
+  ms: TMemoryStream;
+begin
+  if SynEdit1.Lines.Encoding = TEncoding.UTF8 then
+  begin
+    result := false;
+    exit;
+  end;
+
+  lines := TStringList.Create;
+  ms := TMemoryStream.Create;
+  try
+    SynEdit1.Lines.SaveToStream(ms);
+    ms.Position := 0;
+    lines.LoadFromStream(ms);
+    result := Trim(lines.Text) <> Trim(synedit1.Lines.Text);
+  finally
+    FreeAndNil(ms);
+    FreeAndNil(lines);
+  end;
+end;
+
 procedure TForm1.SaveToFile(filename: string);
 var
   ss: TStringStream;
@@ -1192,8 +1213,36 @@ var
   fs: TFileStream;
   eolStyle: string;
   str: string;
+  UpgradeEncodingToUnicode: boolean;
+  DoReloadEncoding: boolean;
+resourcestring
+  LNG_UpgradeToUtf8 = 'Unicode characters have been inserted to this ANSI encoded file. Convert file to UTF-8? (If you choose "No", the Unicode characters will be replaced with "?")';
 begin
   FileModTimer.Enabled := false;
+
+  if ContainsUnicodeCharsInAnsiFile then
+  begin
+    DoReloadEncoding := true;
+    case MessageBox(Handle, PChar(LNG_UpgradeToUtf8), PChar(Caption), MB_YESNOCANCEL) of
+      ID_YES:
+      begin
+        UpgradeEncodingToUnicode := true;
+      end;
+      ID_NO:
+      begin
+        UpgradeEncodingToUnicode := false;
+      end;
+      ID_CANCEL:
+      begin
+        Abort;
+      end;
+    end;
+  end
+  else
+  begin
+    DoReloadEncoding := false;
+    UpgradeEncodingToUnicode := false;
+  end;
 
   ms := TMemoryStream.Create;
   ss := TStringStream.Create('');
@@ -1202,7 +1251,15 @@ begin
     // Save everything in a memory stream and then to a string
     // in comparison to "str := SynEdit1.Lines.Text;",
     // This approach should preserve LF / CRLF line endings
-    SynEdit1.Lines.SaveToStream(ms);
+    if UpgradeEncodingToUnicode then
+      SynEdit1.Lines.SaveToStream(ms, TEncoding.UTF8) // upgrade an ANSI file to UTF-8 (e.g. if you include Japanese characters)
+    else
+      SynEdit1.Lines.SaveToStream(ms);
+    if DoReloadEncoding then
+    begin
+      ms.Position := 0;
+      SynEdit1.Lines.LoadFromStream(ms);
+    end;
     ms.Position := 0;
     ss.CopyFrom(ms, ms.Size);
     ss.Position := 0;
