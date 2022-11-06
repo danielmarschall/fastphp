@@ -1,4 +1,4 @@
-unit EditorMain;
+ï»¿unit EditorMain;
 
 {$Include 'FastPHP.inc'}
 
@@ -25,14 +25,13 @@ unit EditorMain;
 // - Solve compiler warnings
 // - If you place Unicode symbols in a ANSI file, they will be replaced during saving
 //   by "?" without asking the user if the code should be converted to Unicode!
-// - FastPHP can only read a UTF-8 file correctly if it has a BOM
-//   However, the PSR-1 standard requires that files have UTF-8 without BOM!
-//   So we need auto-detect (since many people are working with ANSI!)
-// - When a file is correctly loaded with UTF-8/BOM,
-//   the run output (Plaintext and HTML) will show UTF-8 instead of Unicode
-//   (that COULD be intended since the Windows CMD is not Unicode ready?)
-//   But HTML is also shown as UTF-8 even though I have added <meta charset="UTF-8"> ?!
 // - Is it possible that UTF8 BOM automatically gets removed by FastPHP, generating pure ANSI?
+
+// Note in re Unicode:
+// - In EmbarcaderoÂ® Delphi 10.4 Version 27.0.40680.4203:
+//   SynEdit correctly detects UTF-8 files without BOM as well as ANSI files with Umlauts.
+//   (Previous versions could not detect UTF-8 files without BOM?!)
+// - If BOM is existing, it will be removed. (which is good, because this is defined by PSR-1)
 
 // Small things:
 // - The scroll bars of SynEdit are not affected by the dark theme
@@ -40,8 +39,8 @@ unit EditorMain;
 // Future ideas
 // - code insight
 // - verschiedene php versionen?
-// - webbrowser1 nur laden, wenn man den tab anwählt?
-// - doppelklick auf tab soll diesen schließen
+// - webbrowser1 nur laden, wenn man den tab anwï¿½hlt?
+// - doppelklick auf tab soll diesen schlieï¿½en
 // - Onlinehelp (www) aufrufen oder CHM datei
 // - Let all colors be adjustable
 // - code in bildschirmmitte (horizontal)?
@@ -57,7 +56,8 @@ uses
   Dialogs, StdCtrls, OleCtrls, ComCtrls, ExtCtrls, ToolWin, IniFiles,
   SynEditHighlighter, SynHighlighterPHP, SynEdit, ShDocVw, FindReplace,
   ActnList, SynEditMiscClasses, SynEditSearch, RunPHP, ImgList, SynUnicode,
-  System.ImageList, System.Actions, Vcl.Menus, Vcl.Themes, System.UITypes;
+  System.ImageList, System.Actions, Vcl.Menus, Vcl.Themes, System.UITypes,
+  SynEditCodeFolding;
 
 {.$DEFINE OnlineHelp}
 
@@ -554,12 +554,18 @@ begin
   try
     ActionSave.Execute; // TODO: if it is not the scrap file: do not save the file, since the user did not intended to save... better create a temporary file and run it instead.
 
-    // TODO 70421 * <fastphp> flush() mittels ContentCallBack implementieren... ich möchte bei langen scripts statusanzeigen realisieren können mit javascript das stück für stück geladen wird !!!!!!!!
-    // TODO 70422 * <fastphp> wenn ein script hängt, soll man es abwürgen dürfen!!!!!!
-    memo2.Lines.Text := RunPHPScript(GetScrapFile, Sender=ActionLint, False);
+    // TODO 70421 * <fastphp> implement flush() with ContentCallBack implementieren... For long running scripts I want to see status changes via javascript which are loaded step by step
+    // TODO 70422 * <fastphp> when a script has an endless loop, i want to have a possibility to cancel it
+    if SynEdit1.Lines.Encoding = TEncoding.UTF8 then
+      memo2.Lines.Text := Utf8Decode(RunPHPScript(GetScrapFile, Sender=ActionLint, False)) // if we have a UTF-8 file, then the DOS output is double-UTF8 encoded
+    else
+      memo2.Lines.Text := RunPHPScript(GetScrapFile, Sender=ActionLint, False);
 
     {$REGION 'Show in Web Browser'}
-    Webbrowser1.LoadHTML(MarkUpLineReference(memo2.Lines.Text), GetScrapFile);
+    if SynEdit1.Lines.Encoding = TEncoding.UTF8 then
+      Webbrowser1.LoadHTML(MarkUpLineReference('<meta charset="utf-8">'+memo2.Lines.Text), GetScrapFile)
+    else
+      Webbrowser1.LoadHTML(MarkUpLineReference(memo2.Lines.Text), GetScrapFile);
 
     // Alternatively:
     (*

@@ -1,7 +1,7 @@
 object Form1: TForm1
   Left = 0
   Top = 0
-  Caption = 'ViaThinkSoft FastPHP 0.5'
+  Caption = 'ViaThinkSoft FastPHP 0.6'
   ClientHeight = 661
   ClientWidth = 1120
   Color = clBtnFace
@@ -114,14 +114,11 @@ object Form1: TForm1
         Font.Height = -13
         Font.Name = 'Courier New'
         Font.Style = []
+        Font.Quality = fqClearTypeNatural
         TabOrder = 0
         OnMouseWheelDown = SynEdit1MouseWheelDown
         OnMouseWheelUp = SynEdit1MouseWheelUp
-        CodeFolding.CollapsedLineColor = clGrayText
-        CodeFolding.FolderBarLinesColor = clGrayText
         CodeFolding.ShowCollapsedLine = True
-        CodeFolding.IndentGuidesColor = clGray
-        CodeFolding.IndentGuides = True
         UseCodeFolding = False
         Gutter.AutoSize = True
         Gutter.Font.Charset = DEFAULT_CHARSET
@@ -135,13 +132,13 @@ object Form1: TForm1
         Highlighter = SynPHPSyn1
         Options = [eoAutoIndent, eoDragDropEditing, eoDropFiles, eoEnhanceHomeKey, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoKeepCaretX, eoScrollByOneLess, eoShowScrollHint, eoTabIndent]
         SearchEngine = SynEditSearch1
+        TabWidth = 4
         WantTabs = True
         OnChange = SynEdit1Change
         OnDropFiles = SynEdit1DropFiles
         OnGutterClick = SynEdit1GutterClick
         OnMouseCursor = SynEdit1MouseCursor
         OnPaintTransient = SynEdit1PaintTransient
-        FontSmoothing = fsmNone
         RemovedKeystrokes = <
           item
             Command = ecUndo
