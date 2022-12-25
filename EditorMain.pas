@@ -1293,9 +1293,8 @@ begin
     end;
 
     // Unitfy line-endings
-    str := StringReplace(str, #13#10, eolStyle, [rfReplaceAll]);
-    str := StringReplace(str, #10, eolStyle, [rfReplaceAll]);
     str := StringReplace(str, #13, '', [rfReplaceAll]);
+    str := StringReplace(str, #10, eolStyle, [rfReplaceAll]);
 
     // Replace all trailing linebreaks by a single line break
     // Note: Removing all line breaks is not good, since Linux's "nano" will
