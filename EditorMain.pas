@@ -126,6 +126,7 @@ type
     ActionSaveAs: TAction;
     ActionGoToPHPDir: TAction;
     ActionPHPInteractiveShell: TAction;
+    FontSizeTimer: TTimer;
     procedure Run(Sender: TObject);
     procedure RunConsole(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -190,6 +191,7 @@ type
     procedure ActionPHPInteractiveShellExecute(Sender: TObject);
     procedure SynEdit1KeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure FontSizeTimerTimer(Sender: TObject);
   private
     hMutex: THandle;
     CurSearchTerm: string;
@@ -1053,6 +1055,12 @@ begin
     end;
   end;
   FileModTimer.Enabled := true;
+end;
+
+procedure TForm1.FontSizeTimerTimer(Sender: TObject);
+begin
+  if Memo2.Font.Size <> SynEdit1.Font.Size then
+    Memo2.Font.Size := SynEdit1.Font.Size;
 end;
 
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);

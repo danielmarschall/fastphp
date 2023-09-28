@@ -1,7 +1,7 @@
 object Form1: TForm1
   Left = 0
   Top = 0
-  Caption = 'ViaThinkSoft FastPHP 0.6'
+  Caption = 'ViaThinkSoft FastPHP 0.7'
   ClientHeight = 661
   ClientWidth = 1120
   Color = clBtnFace
@@ -116,6 +116,7 @@ object Form1: TForm1
         Font.Style = []
         Font.Quality = fqClearTypeNatural
         TabOrder = 0
+        OnKeyDown = SynEdit1KeyDown
         OnMouseWheelDown = SynEdit1MouseWheelDown
         OnMouseWheelUp = SynEdit1MouseWheelUp
         CodeFolding.ShowCollapsedLine = True
@@ -177,8 +178,14 @@ object Form1: TForm1
         Height = 321
         Align = alLeft
         Color = clCream
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Courier New'
+        Font.Style = []
         Images = ImageList1
         Indent = 19
+        ParentFont = False
         ReadOnly = True
         TabOrder = 1
         OnDblClick = TreeView1DblClick
@@ -889,5 +896,10 @@ object Form1: TForm1
     OnTimer = FileModTimerTimer
     Left = 356
     Top = 276
+  end
+  object FontSizeTimer: TTimer
+    OnTimer = FontSizeTimerTimer
+    Left = 60
+    Top = 460
   end
 end

@@ -95,7 +95,7 @@ class MyFastPHPCodeExplorer {
 			$value = (!is_array($data)) ? null : $data[1];
 			$line  = (!is_array($data)) ? null : $data[2];
 
-			if ($value == '${') $dep++;
+			if ($value == '${') $dep++; // TODO: "${...}" ??? "{$...}" ???
 
 			if ($wait_function && ($data == '{')) {
 				$wait_function = false; // Anonymous functions do not have a name
