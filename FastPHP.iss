@@ -4,9 +4,9 @@
 
 [Setup]
 AppName=FastPHP
-AppVerName=FastPHP 0.6
-AppVersion=0.6     
-AppCopyright=© Copyright 2016 - 2022 ViaThinkSoft.
+AppVerName=FastPHP 0.7
+AppVersion=0.7     
+AppCopyright=© Copyright 2016 - 2023 ViaThinkSoft.
 AppPublisher=ViaThinkSoft
 AppPublisherURL=http://www.viathinksoft.de/
 AppSupportURL=http://www.daniel-marschall.de/
@@ -14,10 +14,10 @@ AppUpdatesURL=http://www.viathinksoft.de/
 DefaultDirName={commonpf}\FastPHP
 DefaultGroupName=FastPHP
 VersionInfoCompany=ViaThinkSoft
-VersionInfoCopyright=© Copyright 2016 - 2022 ViaThinkSoft.
+VersionInfoCopyright=© Copyright 2016 - 2023 ViaThinkSoft.
 VersionInfoDescription=FastPHP Setup
 VersionInfoTextVersion=1.0.0.0
-VersionInfoVersion=0.6
+VersionInfoVersion=0.7
 Compression=zip/9
 ChangesAssociations=yes
 OutputBaseFilename=FastPHP

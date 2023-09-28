@@ -128,8 +128,8 @@
         <BT_BuildType>Debug</BT_BuildType>
         <Debugger_RunParams>D:\_test\scrap.php</Debugger_RunParams>
         <VerInfo_MajorVer>0</VerInfo_MajorVer>
-        <VerInfo_MinorVer>6</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Browser;FileVersion=0.6.0.0;InternalName=FastPHP Browser;LegalCopyright=(C) 2016-2022 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHPBrowser.exe;ProductName=FastPHP;ProductVersion=0.6;Comments=www.viathinksoft.com</VerInfo_Keys>
+        <VerInfo_MinorVer>7</VerInfo_MinorVer>
+        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Browser;FileVersion=0.7.0.0;InternalName=FastPHP Browser;LegalCopyright=(C) 2016-2023 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHPBrowser.exe;ProductName=FastPHP;ProductVersion=0.7;Comments=www.viathinksoft.com</VerInfo_Keys>
         <Icon_MainIcon>FastPHP_Icon2.ico</Icon_MainIcon>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
@@ -165,8 +165,12 @@
                     <Source Name="MainSource">FastPHPBrowser.dpr</Source>
                 </Source>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k270.bpl">Microsoft Office 2000 Beispiele für gekapselte Komponenten für Automatisierungsserver</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclofficexp270.bpl">Microsoft Office XP Beispiele für gekapselte Komponenten für Automation Server</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\21.0\Bpl\KInfoPower.bpl">(Unbenannt)</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\21.0\Bpl\KFirstClass.bpl">(Unbenannt)</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\ipstudiowinclient270.bpl">Woll2Woll InfoPower Studio Midas</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\ipstudiowinwordxp270.bpl">Woll2Woll InfoPower RichEdit 4K for MSWord XP</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k270.bpl">Microsoft Office 2000 Beispiele für gekapselte Komponenten für Automatisierungsserver</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>

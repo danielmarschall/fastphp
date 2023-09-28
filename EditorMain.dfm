@@ -94,7 +94,7 @@ object Form1: TForm1
     object CodeTabsheet: TTabSheet
       Caption = 'Code'
       object Splitter2: TSplitter
-        Left = 273
+        Left = 329
         Top = 0
         Height = 321
         ExplicitLeft = 328
@@ -102,9 +102,9 @@ object Form1: TForm1
         ExplicitHeight = 100
       end
       object SynEdit1: TSynEdit
-        Left = 276
+        Left = 332
         Top = 0
-        Width = 836
+        Width = 780
         Height = 321
         Align = alClient
         Color = clCream
@@ -140,6 +140,8 @@ object Form1: TForm1
         OnGutterClick = SynEdit1GutterClick
         OnMouseCursor = SynEdit1MouseCursor
         OnPaintTransient = SynEdit1PaintTransient
+        ExplicitLeft = 276
+        ExplicitWidth = 836
         RemovedKeystrokes = <
           item
             Command = ecUndo
@@ -174,7 +176,7 @@ object Form1: TForm1
       object TreeView1: TTreeView
         Left = 0
         Top = 0
-        Width = 273
+        Width = 329
         Height = 321
         Align = alLeft
         Color = clCream
