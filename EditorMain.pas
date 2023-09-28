@@ -188,6 +188,8 @@ type
     procedure ActionSaveAsExecute(Sender: TObject);
     procedure ActionGoToPHPDirExecute(Sender: TObject);
     procedure ActionPHPInteractiveShellExecute(Sender: TObject);
+    procedure SynEdit1KeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     hMutex: THandle;
     CurSearchTerm: string;
@@ -624,6 +626,21 @@ begin
   TSynEdit(Sender).CaretY := Line;
   TSynEdit(Sender).SelLength := Length(TSynEdit(Sender).LineText);
   *)
+end;
+
+procedure TForm1.SynEdit1KeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Shift = [ssCtrl, ssShift]) and (Key = ord('C')) then
+  begin
+    // Disable "Column Select Mode" (https://github.com/SynEdit/SynEdit/blob/master/Source/SynEditKeyCmds.pas#L879)
+    // which can be enabled by pressing Ctrl+Shift+C
+    // Reasons why we disable it:
+    // 1. I think nobody needs this, and sometimes you accidentally press it
+    // 2. Ctrl+Shift+L would the combination to disable column select mode,
+    //    but you cannot use it, because it is already in use for linting
+    Key := 0;
+  end;
 end;
 
 procedure TForm1.SynEdit1MouseCursor(Sender: TObject; const aLineCharPos: TBufferCoord; var aCursor: TCursor);
