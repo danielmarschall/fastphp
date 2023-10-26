@@ -1059,8 +1059,8 @@ end;
 
 procedure TForm1.FontSizeTimerTimer(Sender: TObject);
 begin
-  if Memo2.Font.Size <> SynEdit1.Font.Size then
-    Memo2.Font.Size := SynEdit1.Font.Size;
+  if Memo2.Font.Size <> (SynEdit1.Font.Size-3) then
+    Memo2.Font.Size := (SynEdit1.Font.Size-3);
 end;
 
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -1654,7 +1654,7 @@ var
       p := Pos(LowerCase(toFind), LowerCase(line));
     if p <> 0 then
     begin
-      line := copy(line, p+length(toFind), 99);
+      line := copy(line, p+length(toFind), 99); // TODO: "(test.php:123)" does not work, because "123)" will be tried to convert to Integer
       if not TryStrToInt(line, lineno) then exit;
       GotoLineNo(lineno);
     end;

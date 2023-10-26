@@ -61,6 +61,10 @@ class MyFastPHPCodeExplorer {
 		// $verify=file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secret}&response={$response}");
 		$code = str_replace('{$', '{', $code);
 
+		// Quick'n'Dirty fix to correctly parse the line
+		// $handler = function(MqttClient $client, string $topic, string $message, int $qualityOfService, bool $retained) use (&$msg_count) {};
+		$code = preg_replace('@function\s*\\(@is', '(', $code);
+
 		$token = token_get_all($code);
 		$wait_function = false;
 		$wait_const = false;
