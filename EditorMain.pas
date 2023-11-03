@@ -127,6 +127,7 @@ type
     ActionGoToPHPDir: TAction;
     ActionPHPInteractiveShell: TAction;
     FontSizeTimer: TTimer;
+    RefreshModifySignTimer: TTimer;
     procedure Run(Sender: TObject);
     procedure RunConsole(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -192,6 +193,7 @@ type
     procedure SynEdit1KeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FontSizeTimerTimer(Sender: TObject);
+    procedure RefreshModifySignTimerTimer(Sender: TObject);
   private
     hMutex: THandle;
     CurSearchTerm: string;
@@ -244,6 +246,8 @@ procedure TForm1.RefreshModifySign;
 var
   tmp: string;
 begin
+  if SynEdit1 = nil then exit;
+
   tmp := Caption;
 
   tmp := StringReplace(tmp, '*', '', [rfReplaceAll]);
@@ -904,6 +908,13 @@ begin
   // TODO: Insert a small online help hint
   //Caption := gOnlineHelpWord;
   {$ENDIF}
+end;
+
+procedure TForm1.RefreshModifySignTimerTimer(Sender: TObject);
+begin
+  // This timer is a workaround for this bug:
+  // https://github.com/TurboPack/SynEdit/issues/246
+  RefreshModifySign;
 end;
 
 procedure TForm1.TreeView1DblClick(Sender: TObject);

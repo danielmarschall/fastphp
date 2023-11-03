@@ -140,8 +140,6 @@ object Form1: TForm1
         OnGutterClick = SynEdit1GutterClick
         OnMouseCursor = SynEdit1MouseCursor
         OnPaintTransient = SynEdit1PaintTransient
-        ExplicitLeft = 276
-        ExplicitWidth = 836
         RemovedKeystrokes = <
           item
             Command = ecUndo
@@ -903,5 +901,11 @@ object Form1: TForm1
     OnTimer = FontSizeTimerTimer
     Left = 60
     Top = 460
+  end
+  object RefreshModifySignTimer: TTimer
+    Interval = 100
+    OnTimer = RefreshModifySignTimerTimer
+    Left = 908
+    Top = 260
   end
 end
