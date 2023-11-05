@@ -127,7 +127,6 @@ type
     ActionGoToPHPDir: TAction;
     ActionPHPInteractiveShell: TAction;
     FontSizeTimer: TTimer;
-    RefreshModifySignTimer: TTimer;
     procedure Run(Sender: TObject);
     procedure RunConsole(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -178,7 +177,6 @@ type
       TransientType: TTransientType);
     procedure ActionLintExecute(Sender: TObject);
     procedure ActionRunConsoleExecute(Sender: TObject);
-    procedure SynEdit1Change(Sender: TObject);
     procedure BtnSpecialCharsClick(Sender: TObject);
     procedure WebBrowser1WindowClosing(ASender: TObject;
       IsChildWindow: WordBool; var Cancel: WordBool);
@@ -193,7 +191,7 @@ type
     procedure SynEdit1KeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FontSizeTimerTimer(Sender: TObject);
-    procedure RefreshModifySignTimerTimer(Sender: TObject);
+    procedure SynEdit1StatusChange(Sender: TObject; Changes: TSynStatusChanges);
   private
     hMutex: THandle;
     CurSearchTerm: string;
@@ -462,7 +460,7 @@ procedure TForm1.ActionSpaceToTabExecute(Sender: TObject);
       end;
       if somethingchanged then
       begin
-        SynEdit1Change(SynEdit1); // set the "changed" flag
+        RefreshModifySign;
       end;
     end;
 
@@ -596,11 +594,6 @@ procedure TForm1.RunConsole(Sender: TObject);
 begin
   ActionSave.Execute; // TODO: if it is not the scrap file: do not save the file, since the user did not intended to save... better create a temporary file and run it instead.
   RunPHPScript(GetScrapFile, Sender=ActionLint, True);
-end;
-
-procedure TForm1.SynEdit1Change(Sender: TObject);
-begin
-  RefreshModifySign;
 end;
 
 procedure TForm1.SynEdit1DropFiles(Sender: TObject; X, Y: Integer;
@@ -846,6 +839,13 @@ begin
   end;
 end;
 
+procedure TForm1.SynEdit1StatusChange(Sender: TObject;
+  Changes: TSynStatusChanges);
+begin
+  if scModified in Changes then
+    RefreshModifySign;
+end;
+
 procedure TForm1.SynEditFocusTimerTimer(Sender: TObject);
 begin
   SynEditFocusTimer.Enabled := false;
@@ -908,13 +908,6 @@ begin
   // TODO: Insert a small online help hint
   //Caption := gOnlineHelpWord;
   {$ENDIF}
-end;
-
-procedure TForm1.RefreshModifySignTimerTimer(Sender: TObject);
-begin
-  // This timer is a workaround for this bug:
-  // https://github.com/TurboPack/SynEdit/issues/246
-  RefreshModifySign;
 end;
 
 procedure TForm1.TreeView1DblClick(Sender: TObject);

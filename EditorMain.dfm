@@ -135,10 +135,10 @@ object Form1: TForm1
         SearchEngine = SynEditSearch1
         TabWidth = 4
         WantTabs = True
-        OnChange = SynEdit1Change
         OnDropFiles = SynEdit1DropFiles
         OnGutterClick = SynEdit1GutterClick
         OnMouseCursor = SynEdit1MouseCursor
+        OnStatusChange = SynEdit1StatusChange
         OnPaintTransient = SynEdit1PaintTransient
         RemovedKeystrokes = <
           item
@@ -901,11 +901,5 @@ object Form1: TForm1
     OnTimer = FontSizeTimerTimer
     Left = 60
     Top = 460
-  end
-  object RefreshModifySignTimer: TTimer
-    Interval = 100
-    OnTimer = RefreshModifySignTimerTimer
-    Left = 908
-    Top = 260
   end
 end
