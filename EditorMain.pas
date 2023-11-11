@@ -35,8 +35,8 @@
 // Future ideas
 // - code insight
 // - verschiedene php versionen?
-// - webbrowser1 nur laden, wenn man den tab anw�hlt?
-// - doppelklick auf tab soll diesen schlie�en
+// - webbrowser1 nur laden, wenn man den tab anwaehlt?
+// - doppelklick auf tab soll diesen schliessen
 // - Onlinehelp (www) aufrufen oder CHM datei
 // - Let all colors be adjustable
 // - code in bildschirmmitte (horizontal)?
@@ -1156,6 +1156,8 @@ begin
   if FormShowRanOnce then exit; // If the theme is changed from normal to dark, OnShow will be called another time
   FormShowRanOnce := true;
 
+  DoubleBuffered := true;
+
   ScrapFile := GetScrapFile;
   if ScrapFile = '' then
   begin
@@ -1176,16 +1178,25 @@ begin
   end;
   SynEdit1.Options := opts;
 
+  PageControl1.ActivePage := PlaintextTabSheet;
+
+  PageControl2.ActivePage := CodeTabsheet;
+  HelpTabsheet.TabVisible := false;
+
+  tmpFontSize := TFastPHPConfig.FontSize;
+  if tmpFontSize <> -1 then SynEdit1.Font.Size := tmpFontSize;
+
   if FileExists(ScrapFile) then
   begin
     if hMutex = 0 then
     begin
-      hMutex := CreateMutex(nil, True, PChar('FastPHP'+md5(UpperCase(ScrapFile))));
+      hMutex := CreateMutex(nil, True, PChar('FastPHP'+md5(UpperCase(ScrapFile)))); // do not translate
       if GetLastError = ERROR_ALREADY_EXISTS then
       begin
         // TODO: It would be great if the window of that FastPHP instance would switched to foreground
         ShowMessageFmt(SFileAlreadyOpen, [ScrapFile]);
-        Close;
+        Application.Terminate; // Close;
+        exit;
       end;
 
       SynEdit1.Lines.LoadFromFile(ScrapFile);
@@ -1194,16 +1205,8 @@ begin
   else
     SynEdit1.Lines.Clear;
 
-  PageControl1.ActivePage := PlaintextTabSheet;
-
-  PageControl2.ActivePage := CodeTabsheet;
-  HelpTabsheet.TabVisible := false;
-
-  tmpFontSize := TFastPHPConfig.FontSize;
-  if tmpFontSize <> -1 then SynEdit1.Font.Size := tmpFontSize;
   SynEdit1.SetFocus;
 
-  DoubleBuffered := true;
   StartCodeExplorer;
 
   DragAcceptFiles(Handle, True);
