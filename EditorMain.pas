@@ -53,7 +53,7 @@ uses
   SynEditHighlighter, SynHighlighterPHP, SynEdit, ShDocVw, FindReplace,
   ActnList, SynEditMiscClasses, SynEditSearch, RunPHP, ImgList, SynUnicode,
   System.ImageList, System.Actions, Vcl.Menus, Vcl.Themes, System.UITypes,
-  SynEditCodeFolding;
+  SynEditCodeFolding, WebBrowserUtils;
 
 {.$DEFINE OnlineHelp}
 
@@ -234,7 +234,7 @@ implementation
 {$R Cursors.res}
 
 uses
-  Functions, StrUtils, WebBrowserUtils, FastPHPUtils, Math, ShellAPI, RichEdit,
+  Functions, StrUtils, FastPHPUtils, Math, ShellAPI, RichEdit,
   FastPHPTreeView, ImageListEx, FastPHPConfig;
 
 const
@@ -460,6 +460,7 @@ procedure TForm1.ActionSpaceToTabExecute(Sender: TObject);
       end;
       if somethingchanged then
       begin
+        SynEdit1.Modified := true; // seems to be required by Delphi 10.x
         RefreshModifySign;
       end;
     end;
@@ -810,7 +811,11 @@ begin
         if (P.Char > 0) and (P.Line > 0) then
         begin
           Pix := CharToPixels(P);
+          {$IF CompilerVersion >= 35.0} // Added by ViaThinkSoft (not sure about the exact version)
+          if Pix.X > Editor.Gutter.RealGutterWidth then // Added by ViaThinkSoft (not sure about the exact version)
+          {$ELSE}
           if Pix.X > Editor.Gutter.Width then
+          {$IFEND}
           begin
             {$REGION 'Added by ViaThinkSoft'}
             if (TransientType = ttAfter) then
@@ -1204,6 +1209,8 @@ begin
   end
   else
     SynEdit1.Lines.Clear;
+
+  SynEdit1.Modified := false; // is required for Delphi 11
 
   SynEdit1.SetFocus;
 
