@@ -6,7 +6,7 @@
 AppName=FastPHP
 AppVerName=FastPHP 0.7
 AppVersion=0.7     
-AppCopyright=© Copyright 2016 - 2023 ViaThinkSoft.
+AppCopyright=© Copyright 2016 - 2024 ViaThinkSoft.
 AppPublisher=ViaThinkSoft
 AppPublisherURL=http://www.viathinksoft.de/
 AppSupportURL=http://www.daniel-marschall.de/
@@ -14,7 +14,7 @@ AppUpdatesURL=http://www.viathinksoft.de/
 DefaultDirName={commonpf}\FastPHP
 DefaultGroupName=FastPHP
 VersionInfoCompany=ViaThinkSoft
-VersionInfoCopyright=© Copyright 2016 - 2023 ViaThinkSoft.
+VersionInfoCopyright=© Copyright 2016 - 2024 ViaThinkSoft.
 VersionInfoDescription=FastPHP Setup
 VersionInfoTextVersion=1.0.0.0
 VersionInfoVersion=0.7
@@ -22,6 +22,11 @@ Compression=zip/9
 ChangesAssociations=yes
 OutputBaseFilename=FastPHP
 LicenseFile=LICENSE
+; Configure Sign Tool in InnoSetup at "Tools => Configure Sign Tools" (adjust the path to your SVN repository location)
+; Name    = sign_single   
+; Command = "C:\SVN\...\sign_single.bat" $f
+SignTool=sign_single
+SignedUninstaller=yes
 
 [CustomMessages]
 Assoc=File associations:
@@ -42,14 +47,14 @@ Name: fileassocEditor;  Description: "{cm:AssocFileExtension,'FastPHP Editor','.
 Name: fileassocBrowser; Description: "{cm:AssocFileExtension,'FastPHP Browser','.xphp'}";  GroupDescription: "{cm:Assoc}"; Components: browser
 
 [Files]
-Source: "Icons\Icons.dll";          DestDir: "{app}"; Flags: ignoreversion
+Source: "Icons\Icons.dll";          DestDir: "{app}"; Flags: ignoreversion signonce
 
-Source: "FastPHPEditor.exe";        DestDir: "{app}"; Flags: ignoreversion; Components: editor
+Source: "FastPHPEditor.exe";        DestDir: "{app}"; Flags: ignoreversion signonce; Components: editor
 Source: "codeexplorer.bmp";         DestDir: "{app}"; Flags: ignoreversion; Components: editor
 Source: "codeexplorer.php";         DestDir: "{app}"; Flags: ignoreversion; Components: editor
 Source: "codeexplorer_api.inc.php"; DestDir: "{app}"; Flags: ignoreversion; Components: editor
 
-Source: "FastPHPBrowser.exe";       DestDir: "{app}"; Flags: ignoreversion; Components: browser
+Source: "FastPHPBrowser.exe";       DestDir: "{app}"; Flags: ignoreversion signonce; Components: browser
 Source: "fastphp_server.inc.php";   DestDir: "{app}"; Flags: ignoreversion; Components: browser
 
 [Dirs]
