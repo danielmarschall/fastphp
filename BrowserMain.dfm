@@ -10,9 +10,7 @@ object Form2: TForm2
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   Position = poScreenCenter
-  PixelsPerInch = 96
   TextHeight = 13
   object WebBrowser1: TWebBrowser
     Left = 0
@@ -23,10 +21,6 @@ object Form2: TForm2
     TabOrder = 0
     OnBeforeNavigate2 = WebBrowser1BeforeNavigate2
     OnWindowClosing = WebBrowser1WindowClosing
-    ExplicitLeft = 80
-    ExplicitTop = 64
-    ExplicitWidth = 300
-    ExplicitHeight = 150
     ControlData = {
       4C0000002E6800006B4400000000000000000000000000000000000000000000
       000000004C000000000000000000000001000000E0D057007335CF11AE690800

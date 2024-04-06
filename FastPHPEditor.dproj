@@ -7,7 +7,7 @@
         <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Application</AppType>
         <FrameworkType>VCL</FrameworkType>
-        <ProjectVersion>19.2</ProjectVersion>
+        <ProjectVersion>19.5</ProjectVersion>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -105,11 +105,11 @@
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <BT_BuildType>Debug</BT_BuildType>
         <AppDPIAwarenessMode>PerMonitor</AppDPIAwarenessMode>
-        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Editor;FileVersion=0.7.0.0;InternalName=FastPHP Editor;LegalCopyright=(C) 2016-2023 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHPEditor.exe;ProductName=FastPHP Editor;ProductVersion=0.7;Comments=www.viathinksoft.com;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
-        <VerInfo_MinorVer>7</VerInfo_MinorVer>
+        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Editor;FileVersion=0.8.0.0;InternalName=FastPHP Editor;LegalCopyright=(C) 2016-2024 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHPEditor.exe;ProductName=FastPHP Editor;ProductVersion=0.8;Comments=www.viathinksoft.com;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_MinorVer>8</VerInfo_MinorVer>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <Icon_MainIcon>FastPHP_Icon1.ico</Icon_MainIcon>
+        <DCC_ExeOutput>.</DCC_ExeOutput>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
@@ -121,11 +121,10 @@
         <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <DCC_ExeOutput>D:\__fastphp</DCC_ExeOutput>
+        <DCC_ExeOutput>.</DCC_ExeOutput>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Editor;FileVersion=0.6.0.0;InternalName=FastPHP Editor;LegalCopyright=(C) 2016-2022 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHPEditor.exe;ProductName=FastPHP Editor;ProductVersion=0.6;Comments=www.viathinksoft.com;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
-        <VerInfo_MinorVer>6</VerInfo_MinorVer>
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
+        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Editor;FileVersion=0.8.0.0;InternalName=FastPHP Editor;LegalCopyright=(C) 2016-2024 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHPEditor.exe;ProductName=FastPHP Editor;ProductVersion=0.8;Comments=www.viathinksoft.com;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_MinorVer>8</VerInfo_MinorVer>
         <AppDPIAwarenessMode>PerMonitor</AppDPIAwarenessMode>
         <Icon_MainIcon>FastPHP_Icon1.ico</Icon_MainIcon>
         <BT_BuildType>Debug</BT_BuildType>
@@ -150,15 +149,15 @@
         <DCCReference Include="FastPHPTreeView.pas"/>
         <DCCReference Include="ImageListEx.pas"/>
         <DCCReference Include="FastPHPConfig.pas"/>
-        <BuildConfiguration Include="Debug">
-            <Key>Cfg_2</Key>
-            <CfgParent>Base</CfgParent>
-        </BuildConfiguration>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
         <BuildConfiguration Include="Release">
             <Key>Cfg_1</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Debug">
+            <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
         </BuildConfiguration>
     </ItemGroup>
@@ -171,12 +170,8 @@
                     <Source Name="MainSource">FastPHPEditor.dpr</Source>
                 </Source>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp270.bpl">Microsoft Office XP Beispiele für gekapselte Komponenten für Automation Server</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\21.0\Bpl\KInfoPower.bpl">(Unbenannt)</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\21.0\Bpl\KFirstClass.bpl">(Unbenannt)</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\ipstudiowinclient270.bpl">Woll2Woll InfoPower Studio Midas</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\ipstudiowinwordxp270.bpl">Woll2Woll InfoPower RichEdit 4K for MSWord XP</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k270.bpl">Microsoft Office 2000 Beispiele für gekapselte Komponenten für Automatisierungsserver</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k280.bpl">Microsoft Office 2000 Beispiele für gekapselte Komponenten für Automatisierungsserver</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp280.bpl">Microsoft Office XP Beispiele für gekapselte Komponenten für Automation Server</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>

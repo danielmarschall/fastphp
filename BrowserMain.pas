@@ -9,7 +9,7 @@ uses
   //       so you have to change the reference SHDocVw / SHDocVw_TLB yourself
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, OleCtrls, SHDocVw, ExtCtrls, StrUtils,
-  StdCtrls, activex, UrlMon;
+  StdCtrls, activex, UrlMon, WebBrowserUtils;
 
 type
   TForm2 = class(TForm)
@@ -34,7 +34,7 @@ implementation
 {$R *.dfm}
 
 uses
-  WebBrowserUtils, FastPHPUtils, Functions, ShellAPI;
+  FastPHPUtils, Functions, ShellAPI;
 
 // TODO: Add a lot of nice stuff to let the PHP script communicate with this host application
 //       For example, allow window resizing etc.  (See Microsoft HTA for inspiration)

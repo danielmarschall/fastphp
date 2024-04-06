@@ -4,8 +4,8 @@
 
 [Setup]
 AppName=FastPHP
-AppVerName=FastPHP 0.7
-AppVersion=0.7     
+AppVerName=FastPHP 0.8
+AppVersion=0.8
 AppCopyright=© Copyright 2016 - 2024 ViaThinkSoft.
 AppPublisher=ViaThinkSoft
 AppPublisherURL=http://www.viathinksoft.de/
@@ -17,7 +17,7 @@ VersionInfoCompany=ViaThinkSoft
 VersionInfoCopyright=© Copyright 2016 - 2024 ViaThinkSoft.
 VersionInfoDescription=FastPHP Setup
 VersionInfoTextVersion=1.0.0.0
-VersionInfoVersion=0.7
+VersionInfoVersion=0.8
 Compression=zip/9
 ChangesAssociations=yes
 OutputBaseFilename=FastPHP

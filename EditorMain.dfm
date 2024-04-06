@@ -1,7 +1,7 @@
 object Form1: TForm1
   Left = 0
   Top = 0
-  Caption = 'ViaThinkSoft FastPHP 0.7'
+  Caption = 'ViaThinkSoft FastPHP 0.8'
   ClientHeight = 661
   ClientWidth = 1120
   Color = clBtnFace
@@ -10,14 +10,12 @@ object Form1: TForm1
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   WindowState = wsMaximized
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object Splitter1: TSplitter
     Left = 0
@@ -34,9 +32,11 @@ object Form1: TForm1
     Top = 388
     Width = 1120
     Height = 273
-    ActivePage = PlaintextTabSheet
+    ActivePage = HtmlTabSheet
     Align = alBottom
     TabOrder = 0
+    ExplicitTop = 387
+    ExplicitWidth = 1116
     object PlaintextTabSheet: TTabSheet
       Caption = 'Plaintext'
       object Memo2: TMemo
@@ -57,6 +57,7 @@ object Form1: TForm1
         TabOrder = 0
         OnDblClick = Memo2DblClick
         OnKeyDown = Memo2KeyDown
+        ExplicitWidth = 1108
       end
     end
     object HtmlTabSheet: TTabSheet
@@ -71,12 +72,11 @@ object Form1: TForm1
         TabOrder = 0
         OnBeforeNavigate2 = WebBrowser1BeforeNavigate2
         OnWindowClosing = WebBrowser1WindowClosing
-        ExplicitWidth = 348
-        ExplicitHeight = 150
+        ExplicitWidth = 1108
         ControlData = {
           4C000000EE720000521900000000000000000000000000000000000000000000
           000000004C000000000000000000000001000000E0D057007335CF11AE690800
-          2B2E126200000000000000004C0000000114020000000000C000000000000046
+          2B2E126208000000000000004C0000000114020000000000C000000000000046
           8000000000000000000000000000000000000000000000000000000000000000
           00000000000000000100000000000000000000000000000000000000}
       end
@@ -91,6 +91,8 @@ object Form1: TForm1
     Align = alClient
     TabOrder = 1
     OnChanging = PageControl2Changing
+    ExplicitWidth = 1116
+    ExplicitHeight = 348
     object CodeTabsheet: TTabSheet
       Caption = 'Code'
       object Splitter2: TSplitter
@@ -121,18 +123,37 @@ object Form1: TForm1
         OnMouseWheelUp = SynEdit1MouseWheelUp
         CodeFolding.ShowCollapsedLine = True
         UseCodeFolding = False
-        Gutter.AutoSize = True
         Gutter.Font.Charset = DEFAULT_CHARSET
         Gutter.Font.Color = clWindowText
         Gutter.Font.Height = -11
         Gutter.Font.Name = 'Courier New'
         Gutter.Font.Style = []
+        Gutter.Font.Quality = fqClearTypeNatural
         Gutter.ShowLineNumbers = True
         Gutter.Gradient = True
         Gutter.GradientStartColor = cl3DLight
+        Gutter.Bands = <
+          item
+            Kind = gbkMarks
+            Width = 13
+          end
+          item
+            Kind = gbkLineNumbers
+          end
+          item
+            Kind = gbkFold
+          end
+          item
+            Kind = gbkTrackChanges
+          end
+          item
+            Kind = gbkMargin
+            Width = 3
+          end>
         Highlighter = SynPHPSyn1
         Options = [eoAutoIndent, eoDragDropEditing, eoDropFiles, eoEnhanceHomeKey, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoKeepCaretX, eoScrollByOneLess, eoShowScrollHint, eoTabIndent]
         SearchEngine = SynEditSearch1
+        SelectedColor.Alpha = 0.400000005960464500
         TabWidth = 4
         WantTabs = True
         OnDropFiles = SynEdit1DropFiles
@@ -140,6 +161,8 @@ object Form1: TForm1
         OnMouseCursor = SynEdit1MouseCursor
         OnStatusChange = SynEdit1StatusChange
         OnPaintTransient = SynEdit1PaintTransient
+        ExplicitWidth = 776
+        ExplicitHeight = 320
         RemovedKeystrokes = <
           item
             Command = ecUndo
@@ -189,6 +212,7 @@ object Form1: TForm1
         ReadOnly = True
         TabOrder = 1
         OnDblClick = TreeView1DblClick
+        ExplicitHeight = 320
       end
     end
     object HelpTabsheet: TTabSheet
@@ -228,6 +252,7 @@ object Form1: TForm1
     Height = 36
     Align = alTop
     TabOrder = 3
+    ExplicitWidth = 1116
     object BtnSpecialChars: TImage
       Left = 896
       Top = 8
@@ -723,9 +748,6 @@ object Form1: TForm1
     DefaultFilter = 
       'PHP Files (*.php;*.xphp;*.php3;*.phtml;*.inc)|*.php;*.xphp;*.php' +
       '3;*.phtml;*.inc'
-    Options.AutoDetectEnabled = False
-    Options.AutoDetectLineLimit = 0
-    Options.Visible = False
     CommentAttri.Foreground = 33023
     IdentifierAttri.Foreground = 4194304
     KeyAttri.Foreground = 4227072
