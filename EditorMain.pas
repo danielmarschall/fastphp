@@ -127,6 +127,8 @@ type
     ActionGoToPHPDir: TAction;
     ActionPHPInteractiveShell: TAction;
     FontSizeTimer: TTimer;
+    ChooseanotherPHPinterpreter1: TMenuItem;
+    ChooseanotherCHMhelpfile1: TMenuItem;
     procedure Run(Sender: TObject);
     procedure RunConsole(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -192,6 +194,8 @@ type
       Shift: TShiftState);
     procedure FontSizeTimerTimer(Sender: TObject);
     procedure SynEdit1StatusChange(Sender: TObject; Changes: TSynStatusChanges);
+    procedure ChooseanotherPHPinterpreter1Click(Sender: TObject);
+    procedure ChooseanotherCHMhelpfile1Click(Sender: TObject);
   private
     hMutex: THandle;
     CurSearchTerm: string;
@@ -203,7 +207,7 @@ type
     FileModLast: TDateTime;
     FormShowRanOnce: boolean;
     BrowserLoadedOnce: boolean;
-    procedure Help;
+    procedure Help(AForceSelectNewHelpFile: boolean=false);
     function InputRequestCallback(var data: AnsiString): boolean;
     function OutputNotifyCallback(const data: AnsiString): boolean;
     procedure RightTrimAll;
@@ -1227,6 +1231,16 @@ begin
   StartupTimer.Enabled := true;
 end;
 
+procedure TForm1.ChooseanotherCHMhelpfile1Click(Sender: TObject);
+begin
+  Help(true);
+end;
+
+procedure TForm1.ChooseanotherPHPinterpreter1Click(Sender: TObject);
+begin
+  GetPHPExe(true);
+end;
+
 function TForm1.ContainsUnicodeCharsInAnsiFile: boolean;
 var
   lines: TStringList;
@@ -1520,7 +1534,7 @@ begin
   end;
 end;
 
-procedure TForm1.Help;
+procedure TForm1.Help(AForceSelectNewHelpFile: boolean=false);
 var
   IndexFile, chmFile, w, OriginalWord, url: string;
   internalHtmlFile: string;

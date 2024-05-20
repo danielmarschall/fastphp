@@ -57,7 +57,6 @@ object Form1: TForm1
         TabOrder = 0
         OnDblClick = Memo2DblClick
         OnKeyDown = Memo2KeyDown
-        ExplicitWidth = 1108
       end
     end
     object HtmlTabSheet: TTabSheet
@@ -881,6 +880,14 @@ object Form1: TForm1
     end
     object PHPShell1: TMenuItem
       Action = ActionPHPInteractiveShell
+    end
+    object ChooseanotherPHPinterpreter1: TMenuItem
+      Caption = 'Choose another PHP interpreter...'
+      OnClick = ChooseanotherPHPinterpreter1Click
+    end
+    object ChooseanotherCHMhelpfile1: TMenuItem
+      Caption = 'Choose another CHM help file...'
+      OnClick = ChooseanotherCHMhelpfile1Click
     end
   end
   object SavePopup: TPopupMenu
