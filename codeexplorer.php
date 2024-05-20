@@ -168,14 +168,15 @@ class MyFastPHPCodeExplorer {
 				FastPHPWriter::outputIncreaseLevel();
 			}
 
-			if ($wait_const && ($token == T_STRING)) {
-				$desc = "const $value\n";
+			if ($wait_const && ($data == '=')) {
+				$desc = "const $prev_string_token_value\n";
 				$wait_const = false;
 
 				$icon->setType(ICON_TYPE_CONST);
 				FastPHPWriter::outputLeafNode($icon, $line, $desc);
 				$icon->reset();
 			}
+			if ($token == T_STRING) $prev_string_token_value = $value;
 
 			if ((!$wait_abstract_func_list_end) && (count($levelAry) > 0) && (count($insideFuncAry) == 0) && ($token == T_VARIABLE)) {
 				$desc = "$value\n";
