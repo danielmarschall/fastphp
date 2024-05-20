@@ -1216,6 +1216,8 @@ begin
 
   SynEdit1.Modified := false; // is required for Delphi 11
 
+  SynEdit1.ClearUndo; // Avoid that Ctrl+Z deletes a freshly opened file
+
   SynEdit1.SetFocus;
 
   StartCodeExplorer;
