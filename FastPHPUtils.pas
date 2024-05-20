@@ -28,7 +28,7 @@ begin
   begin
     od := TOpenDialog.Create(nil);
     try
-      od.DefaultExt := '.exe';
+      od.DefaultExt := 'exe';
       od.FileName := 'php.exe';
       od.Filter := 'Executable file (*.exe)|*.exe';
       od.Options := [ofReadOnly, ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing];
