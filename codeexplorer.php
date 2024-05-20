@@ -245,7 +245,13 @@ class MyFastPHPCodeExplorer {
 		$x = trim($x);
 		if (substr($x, 0, 1) == '#') return trim(substr($x, 1));
 		if (substr($x, 0, 2) == '//') return trim(substr($x, 2));
-		if (substr($x, 0, 2) == '/*') return trim(substr($x, 2, strlen($x)-4));
+		if (substr($x, 0, 2) == '/*') {
+			if (substr($x, -2) == '*/') {
+				return trim(substr($x, 2, strlen($x)-4));
+			} else {
+				return trim(substr($x, 2, strlen($x)-2));
+			}
+		}
 		return $x;
 	}
 

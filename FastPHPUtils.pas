@@ -9,7 +9,7 @@ uses
 const
   FASTPHP_GOTO_URI_PREFIX = 'fastphp://editor/gotoline/';
 
-function GetPHPExe: string;
+function GetPHPExe(AForceSelectNewInterpreter: boolean=false): string;
 function RunPHPScript(APHPFileName: string; lint: boolean=false; inConsole: boolean=False; ContentCallBack: TContentCallBack=nil): string;
 function ParseCHM(const chmFile: TFileName): boolean;
 function IsValidPHPExe(const exeFile: TFileName): boolean;
@@ -19,12 +19,12 @@ implementation
 uses
   FastPHPConfig;
 
-function GetPHPExe: string;
+function GetPHPExe(AForceSelectNewInterpreter: boolean=false): string;
 var
   od: TOpenDialog;
 begin
   result := TFastPHPConfig.PhpInterpreter;
-  if not FileExists(result) then
+  if not FileExists(result) or AForceSelectNewInterpreter then
   begin
     od := TOpenDialog.Create(nil);
     try
