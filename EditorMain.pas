@@ -1105,6 +1105,10 @@ begin
       ActionSave.Execute;
       CanClose := true;
     end;
+  end
+  else
+  begin
+    CanClose := true;
   end;
 end;
 
