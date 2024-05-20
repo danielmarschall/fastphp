@@ -70,6 +70,7 @@ object Form1: TForm1
         Height = 245
         Align = alClient
         TabOrder = 0
+        SelectedEngine = EdgeIfAvailable
         OnBeforeNavigate2 = WebBrowser1BeforeNavigate2
         OnWindowClosing = WebBrowser1WindowClosing
         ExplicitWidth = 1108
