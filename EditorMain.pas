@@ -1222,6 +1222,8 @@ begin
 
   SynEdit1.ClearUndo; // Avoid that Ctrl+Z deletes a freshly opened file
 
+  SynEdit1.Modified := false; // we do need to do it BEFORE *and* AFTER ClearUndo ( https://github.com/danielmarschall/fastphp/issues/6 )
+
   SynEdit1.SetFocus;
 
   StartCodeExplorer;
