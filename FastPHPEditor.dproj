@@ -105,8 +105,8 @@
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <BT_BuildType>Debug</BT_BuildType>
         <AppDPIAwarenessMode>PerMonitor</AppDPIAwarenessMode>
-        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Editor;FileVersion=0.9.0.0;InternalName=FastPHP Editor;LegalCopyright=(C) 2016-2024 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHPEditor.exe;ProductName=FastPHP Editor;ProductVersion=0.9;Comments=www.viathinksoft.com;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
-        <VerInfo_MinorVer>9</VerInfo_MinorVer>
+        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Editor;FileVersion=0.10.0.0;InternalName=FastPHP Editor;LegalCopyright=(C) 2016-2024 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHPEditor.exe;ProductName=FastPHP Editor;ProductVersion=0.10;Comments=www.viathinksoft.com;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_MinorVer>10</VerInfo_MinorVer>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Icon_MainIcon>FastPHP_Icon1.ico</Icon_MainIcon>
         <DCC_ExeOutput>.</DCC_ExeOutput>
@@ -123,11 +123,12 @@
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <DCC_ExeOutput>.</DCC_ExeOutput>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Editor;FileVersion=0.8.0.0;InternalName=FastPHP Editor;LegalCopyright=(C) 2016-2024 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHPEditor.exe;ProductName=FastPHP Editor;ProductVersion=0.8;Comments=www.viathinksoft.com;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
-        <VerInfo_MinorVer>8</VerInfo_MinorVer>
+        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Editor;FileVersion=0.10.0.0;InternalName=FastPHP Editor;LegalCopyright=(C) 2016-2024 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHPEditor.exe;ProductName=FastPHP Editor;ProductVersion=0.10;Comments=www.viathinksoft.com;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_MinorVer>10</VerInfo_MinorVer>
         <AppDPIAwarenessMode>PerMonitor</AppDPIAwarenessMode>
         <Icon_MainIcon>FastPHP_Icon1.ico</Icon_MainIcon>
         <BT_BuildType>Debug</BT_BuildType>
+        <Debugger_RunParams>&quot;d:\SVN\CORA Delphi\_PHP\DSFinV-K-Konverter\dsfinvk_converter.php&quot;</Debugger_RunParams>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>

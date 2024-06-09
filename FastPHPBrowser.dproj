@@ -126,8 +126,8 @@
         <BT_BuildType>Debug</BT_BuildType>
         <Debugger_RunParams>D:\_test\scrap.php</Debugger_RunParams>
         <VerInfo_MajorVer>0</VerInfo_MajorVer>
-        <VerInfo_MinorVer>9</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Browser;FileVersion=0.9.0.0;InternalName=FastPHP Browser;LegalCopyright=(C) 2016-2024 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHPBrowser.exe;ProductName=FastPHP;ProductVersion=0.9;Comments=www.viathinksoft.com</VerInfo_Keys>
+        <VerInfo_MinorVer>10</VerInfo_MinorVer>
+        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Browser;FileVersion=0.10.0.0;InternalName=FastPHP Browser;LegalCopyright=(C) 2016-2024 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHPBrowser.exe;ProductName=FastPHP;ProductVersion=0.10;Comments=www.viathinksoft.com</VerInfo_Keys>
         <Icon_MainIcon>FastPHP_Icon2.ico</Icon_MainIcon>
         <DCC_ExeOutput>.</DCC_ExeOutput>
     </PropertyGroup>
