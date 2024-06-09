@@ -129,6 +129,8 @@ type
     FontSizeTimer: TTimer;
     ChooseanotherPHPinterpreter1: TMenuItem;
     ChooseanotherCHMhelpfile1: TMenuItem;
+    Button10: TButton;
+    ActionTabToSpace: TAction;
     procedure Run(Sender: TObject);
     procedure RunConsole(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -196,6 +198,7 @@ type
     procedure SynEdit1StatusChange(Sender: TObject; Changes: TSynStatusChanges);
     procedure ChooseanotherPHPinterpreter1Click(Sender: TObject);
     procedure ChooseanotherCHMhelpfile1Click(Sender: TObject);
+    procedure ActionTabToSpaceExecute(Sender: TObject);
   private
     hMutex: THandle;
     CurSearchTerm: string;
@@ -1779,6 +1782,14 @@ end;
 function TForm1.OutputNotifyCallback(const data: AnsiString): boolean;
 begin
   result := TreeView1.FillWithFastPHPData(string(data));
+end;
+
+procedure TForm1.ActionTabToSpaceExecute(Sender: TObject);
+begin
+  // TODO: if something is selected, only process the selected part
+  // TODO: Only change tabs which are at line beginning. Not tabs in the middle of the code.
+  SynEdit1.Text := StringReplace(SynEdit1.Text, #9, '    ', [rfReplaceAll]);
+
 end;
 
 end.

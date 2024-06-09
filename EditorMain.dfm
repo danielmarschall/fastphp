@@ -1,7 +1,7 @@
 object Form1: TForm1
   Left = 0
   Top = 0
-  Caption = 'ViaThinkSoft FastPHP 0.9'
+  Caption = 'ViaThinkSoft FastPHP 0.10'
   ClientHeight = 661
   ClientWidth = 1120
   Color = clBtnFace
@@ -705,7 +705,7 @@ object Form1: TForm1
       Left = 733
       Top = 0
       Width = 75
-      Height = 35
+      Height = 17
       Action = ActionSpaceToTab
       ParentShowHint = False
       ShowHint = True
@@ -717,6 +717,16 @@ object Form1: TForm1
       Width = 75
       Height = 35
       Action = ActionLint
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 11
+    end
+    object Button10: TButton
+      Left = 733
+      Top = 18
+      Width = 75
+      Height = 17
+      Action = ActionTabToSpace
       ParentShowHint = False
       ShowHint = True
       TabOrder = 10
@@ -844,6 +854,12 @@ object Form1: TForm1
       ShortCut = 24660
       OnExecute = ActionSpaceToTabExecute
     end
+    object ActionTabToSpace: TAction
+      Caption = 'TabToSpace'
+      Hint = 'Convert leading tabs to 4 spaces each'
+      ShortCut = 57428
+      OnExecute = ActionTabToSpaceExecute
+    end
     object ActionLint: TAction
       Caption = 'Lint'
       Hint = 'Run PHP Lint (php -l) to check for syntax errors'
@@ -854,8 +870,8 @@ object Form1: TForm1
   object Timer1: TTimer
     Enabled = False
     OnTimer = Timer1Timer
-    Left = 776
-    Top = 8
+    Left = 864
+    Top = 88
   end
   object SynEditSearch1: TSynEditSearch
     Left = 788
