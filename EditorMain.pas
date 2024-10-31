@@ -929,8 +929,9 @@ var
 begin
   tn := TTreeView(Sender).Selected;
   if tn = nil then exit;
+  if tn.Data = nil then exit;
   lineNo := Integer(tn.Data);
-  if lineNo > 0 then GotoLineNo(lineNo);
+  {if lineNo > 0 then} GotoLineNo(lineNo);
 end;
 
 (*

@@ -76,6 +76,7 @@ class MyFastPHPCodeExplorer {
 		$levelAry = array();
 		$dep = 0;
 		$insideFuncAry = array();
+		$data_wait_orig = null;
 
 		if (!$token) {
 			$icon->setType(ICON_TYPE_ERROR);
@@ -171,9 +172,14 @@ class MyFastPHPCodeExplorer {
 			if ($wait_const && ($data == '=')) {
 				$desc = "const $prev_string_token_value\n";
 				$wait_const = false;
+				
+				$token_orig = (!is_array($data_wait_orig)) ? null : $data_wait_orig[0];
+				$value_orig = (!is_array($data_wait_orig)) ? null : $data_wait_orig[1];
+				$line_orig  = (!is_array($data_wait_orig)) ? null : $data_wait_orig[2];
+				$data_wait_orig = null;
 
 				$icon->setType(ICON_TYPE_CONST);
-				FastPHPWriter::outputLeafNode($icon, $line, $desc);
+				FastPHPWriter::outputLeafNode($icon, $line_orig, $desc);
 				$icon->reset();
 			}
 			if ($token == T_STRING) $prev_string_token_value = $value;
@@ -216,6 +222,7 @@ class MyFastPHPCodeExplorer {
 
 			if ($token == T_CONST) {
 				$wait_const = true;
+				$data_wait_orig = $data; // because next token will be '=' which has no line number
 			}
 
 			if (($token == T_COMMENT) && self::isToDoDescription($value)) {
