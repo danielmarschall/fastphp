@@ -7,8 +7,9 @@
         <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Application</AppType>
         <FrameworkType>VCL</FrameworkType>
-        <ProjectVersion>19.5</ProjectVersion>
+        <ProjectVersion>20.1</ProjectVersion>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
+        <ProjectName Condition="'$(ProjectName)'==''">FastPHPEditor</ProjectName>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
         <Base>true</Base>
@@ -105,8 +106,8 @@
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <BT_BuildType>Debug</BT_BuildType>
         <AppDPIAwarenessMode>PerMonitor</AppDPIAwarenessMode>
-        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Editor;FileVersion=0.10.0.0;InternalName=FastPHP Editor;LegalCopyright=(C) 2016-2024 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHPEditor.exe;ProductName=FastPHP Editor;ProductVersion=0.10;Comments=www.viathinksoft.com;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
-        <VerInfo_MinorVer>10</VerInfo_MinorVer>
+        <VerInfo_Keys>CompanyName=ViaThinkSoft;FileDescription=FastPHP Editor;FileVersion=0.11.0.0;InternalName=FastPHP Editor;LegalCopyright=(C) 2016-2025 Daniel Marschall, ViaThinkSoft;LegalTrademarks=;OriginalFilename=FastPHPEditor.exe;ProductName=FastPHP Editor;ProductVersion=0.11;Comments=www.viathinksoft.com</VerInfo_Keys>
+        <VerInfo_MinorVer>11</VerInfo_MinorVer>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Icon_MainIcon>FastPHP_Icon1.ico</Icon_MainIcon>
         <DCC_ExeOutput>.</DCC_ExeOutput>
@@ -171,8 +172,8 @@
                     <Source Name="MainSource">FastPHPEditor.dpr</Source>
                 </Source>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k280.bpl">Microsoft Office 2000 Beispiele für gekapselte Komponenten für Automatisierungsserver</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp280.bpl">Microsoft Office XP Beispiele für gekapselte Komponenten für Automation Server</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k290.bpl">Microsoft Office 2000 Beispiele für gekapselte Komponenten für Automatisierungsserver</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp290.bpl">Microsoft Office XP Beispiele für gekapselte Komponenten für Automation Server</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>

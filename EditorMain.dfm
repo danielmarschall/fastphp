@@ -1,7 +1,7 @@
 object Form1: TForm1
   Left = 0
   Top = 0
-  Caption = 'ViaThinkSoft FastPHP 0.10'
+  Caption = 'ViaThinkSoft FastPHP 0.11'
   ClientHeight = 661
   ClientWidth = 1120
   Color = clBtnFace
@@ -35,8 +35,6 @@ object Form1: TForm1
     ActivePage = HtmlTabSheet
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 387
-    ExplicitWidth = 1116
     object PlaintextTabSheet: TTabSheet
       Caption = 'Plaintext'
       object Memo2: TMemo
@@ -72,7 +70,6 @@ object Form1: TForm1
         SelectedEngine = EdgeIfAvailable
         OnBeforeNavigate2 = WebBrowser1BeforeNavigate2
         OnWindowClosing = WebBrowser1WindowClosing
-        ExplicitWidth = 1108
         ControlData = {
           4C000000EE720000521900000000000000000000000000000000000000000000
           000000004C000000000000000000000001000000E0D057007335CF11AE690800
@@ -91,8 +88,6 @@ object Form1: TForm1
     Align = alClient
     TabOrder = 1
     OnChanging = PageControl2Changing
-    ExplicitWidth = 1116
-    ExplicitHeight = 348
     object CodeTabsheet: TTabSheet
       Caption = 'Code'
       object Splitter2: TSplitter
@@ -161,8 +156,6 @@ object Form1: TForm1
         OnMouseCursor = SynEdit1MouseCursor
         OnStatusChange = SynEdit1StatusChange
         OnPaintTransient = SynEdit1PaintTransient
-        ExplicitWidth = 776
-        ExplicitHeight = 320
         RemovedKeystrokes = <
           item
             Command = ecUndo
@@ -212,7 +205,6 @@ object Form1: TForm1
         ReadOnly = True
         TabOrder = 1
         OnDblClick = TreeView1DblClick
-        ExplicitHeight = 320
       end
     end
     object HelpTabsheet: TTabSheet
@@ -252,7 +244,6 @@ object Form1: TForm1
     Height = 36
     Align = alTop
     TabOrder = 3
-    ExplicitWidth = 1116
     object BtnSpecialChars: TImage
       Left = 896
       Top = 8
