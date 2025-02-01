@@ -22,6 +22,7 @@ uses
 function GetPHPExe(AForceSelectNewInterpreter: boolean=false): string;
 var
   od: TOpenDialog;
+  tmpInitDir: string;
 begin
   result := TFastPHPConfig.PhpInterpreter;
   if not FileExists(result) or AForceSelectNewInterpreter then
@@ -33,6 +34,11 @@ begin
       od.Filter := 'Executable file (*.exe)|*.exe';
       od.Options := [ofReadOnly, ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing];
       od.Title := 'Please choose your PHP interpreter (php.exe)';
+
+      tmpInitDir := result;
+      if tmpInitDir <> '' then tmpInitDir := ExtractFilePath(tmpInitDir);
+      if (tmpInitDir <> '') and DirectoryExists(tmpInitDir) then
+        od.InitialDir := tmpInitDir;
 
       if not od.Execute then exit;
       if not FileExists(od.FileName) then exit;

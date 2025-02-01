@@ -1546,6 +1546,8 @@ procedure TForm1.Help(AForceSelectNewHelpFile: boolean=false);
 var
   IndexFile, chmFile, w, OriginalWord, url: string;
   internalHtmlFile: string;
+  od: TOpenDialog;
+  tmpInitDir: string;
 resourcestring
   SChmFileNotAValidPHPDocumentation = 'The CHM file is not a valid PHP documentation. Cannot use help.';
   SUnknownErrorCannotUseHelp = 'Unknown error. Cannot use help.';
@@ -1575,10 +1577,26 @@ begin
 
   if not Assigned(ChmIndex) then
   begin
-    if not OpenDialog1.Execute then exit;
+    od := TOpenDialog.Create(nil);
+    try
+      od.DefaultExt := 'chm';
+      od.FileName := 'php_manual_en.chm';
+      od.Filter := 'Help files (*.chm)|*.chm';
+      od.Options := [ofReadOnly, ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing];
+      od.Title := 'Please select your PHP Help file (CHM format)';
 
-    chmFile := OpenDialog1.FileName;
-    if not FileExists(chmFile) then exit;
+      tmpInitDir := TFastPHPConfig.HelpIndex;
+      if tmpInitDir <> '' then tmpInitDir := ExtractFilePath(tmpInitDir);
+      if (tmpInitDir <> '') and DirectoryExists(tmpInitDir) then
+        od.InitialDir := tmpInitDir;
+
+      if not od.Execute then exit;
+      if not FileExists(od.FileName) then exit;
+      chmFile := od.FileName;
+      if not FileExists(chmFile) then exit;
+    finally
+      od.Free;
+    end;
 
     IndexFile := ChangeFileExt(chmFile, '.ini');
 
