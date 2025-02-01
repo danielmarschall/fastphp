@@ -1061,6 +1061,7 @@ begin
       if MessageDlg(SChangeConflict, mtWarning, mbYesNoCancel, 0) = mrYes then
       begin
         SynEdit1.Lines.LoadFromFile(GetScrapFile);
+        SynEdit1.Modified := false;
       end;
     end
     else
@@ -1068,6 +1069,7 @@ begin
       if MessageDlg(SChangeNotify, mtConfirmation, mbYesNoCancel, 0) = mrYes then
       begin
         SynEdit1.Lines.LoadFromFile(GetScrapFile);
+        SynEdit1.Modified := false;
       end;
     end;
   end;
