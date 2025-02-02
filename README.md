@@ -49,4 +49,6 @@ Features:
 
 ## Example screenshot
 
-![Light theme](https://www.viathinksoft.com/screenshot/25/FastPHP.png)
+![Dark theme](ScreenshotDarkDesign.png)
+
+![Light theme](ScreenshotLightDesign.png)
