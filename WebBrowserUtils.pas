@@ -159,9 +159,16 @@ begin
     loader := TLoadHTMLMoniker.Create;
     loader.InitLoader(AHTML, url);
   except
-    if Assigned(loader) then FreeAndNil(loader);
-    result := false;
-    exit;
+    on E: EAbort do
+    begin
+      Abort;
+    end;
+    on E: Exception do
+    begin
+      if Assigned(loader) then FreeAndNil(loader);
+      result := false;
+      exit;
+    end;
   end;
 
   result := pPM.Load(true, loader, bindctx, STGM_READ) = S_OK;
@@ -210,9 +217,16 @@ begin
     loader := TLoadHTMLMoniker.Create;
     loader.InitLoaderStream(AStream, url);
   except
-    if Assigned(loader) then FreeAndNil(loader);
-    result := false;
-    exit;
+    on E: EAbort do
+    begin
+      Abort;
+    end;
+    on E: Exception do
+    begin
+      if Assigned(loader) then FreeAndNil(loader);
+      result := false;
+      exit;
+    end;
   end;
 
   result := pPM.Load(true, loader, bindctx, STGM_READ) = S_OK;

@@ -1450,6 +1450,10 @@ begin
           try
             SaveToFile(result);
           except
+            on E: EAbort do
+            begin
+              Abort;
+            end;
             on E: Exception do
             begin
               MessageDlg(E.Message, mtError, [mbOk], 0);
@@ -1526,6 +1530,10 @@ begin
           //SynEdit1.Lines.Clear;
           SaveToFile(result);
         except
+          on E: EAbort do
+          begin
+            Abort;
+          end;
           on E: Exception do
           begin
             MessageDlg(E.Message, mtError, [mbOk], 0);

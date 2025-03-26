@@ -170,6 +170,10 @@ begin
 
     result := DoFillWithFastPHPData(PChar(data));
   except
+    on E: EAbort do
+    begin
+      Abort;
+    end;
     on E: Exception do
     begin
       Self.Items.Clear;
@@ -230,10 +234,12 @@ begin
     end;
   except
     on E: EAbort do
+    begin
       if tn = nil then
         exit
       else
-        raise;
+        raise
+    end
     else
       raise;
   end;
