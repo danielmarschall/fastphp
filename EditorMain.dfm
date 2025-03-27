@@ -1,7 +1,7 @@
 object Form1: TForm1
   Left = 0
   Top = 0
-  Caption = 'ViaThinkSoft FastPHP 0.11'
+  Caption = 'ViaThinkSoft FastPHP 0.12'
   ClientHeight = 661
   ClientWidth = 1120
   Color = clBtnFace
