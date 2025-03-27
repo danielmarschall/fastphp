@@ -108,6 +108,9 @@ procedure TSynEditFindReplace.DoFind(dialog: TFindDialog; direction: TFindDirect
 var
   opt: TSynSearchOptions;
   found: boolean;
+resourcestring
+  SBofReached = 'Begin of document reached.';
+  SEofReached = 'End of document reached.';
 begin
   if direction = sdDefault then direction := GetDirection(dialog);
 
@@ -120,7 +123,7 @@ begin
     end
     else
     begin
-      // Links von Selektion springen
+      // Jump left to selection
       fEditor.SelLength := 0;
     end;
   end;
@@ -131,8 +134,8 @@ begin
   //if frReplace in dialog.Options then Include(opt, ssoReplace);
   //if frReplaceAll in dialog.Options then Include(opt, ssoReplaceAll);
   if direction = sdBackwards then Include(opt, ssoBackwards);
-  //Include(opt, ssoPrompt); // TODO: test. geht nicht?
-  //if fEditor.SelAvail then Include(opt, ssoSelectedOnly);  // TODO: geht nicht, weil er bei einer suche ja dann etwas selektirert und dann nicht weitergeht
+  //Include(opt, ssoPrompt); // TODO: test. does not work?
+  //if fEditor.SelAvail then Include(opt, ssoSelectedOnly);  // TODO: doesn't work because when you search it selects something and then doesn't go any further
   Exclude(opt, ssoEntireScope); // TODO: ok?
 
   found := fEditor.SearchReplace(dialog.FindText, '', opt) > 0;
@@ -141,9 +144,9 @@ begin
   begin
     // TODO: If single replace was chosen, behave like Notepad and select the last replaced word
     if direction = sdForwards then
-      MessageDlg('End of document reached.', mtInformation, [mbOk], 0)
+      MessageDlg(SEofReached, mtInformation, [mbOk], 0)
     else
-      MessageDlg('Begin of document reached.', mtInformation, [mbOk], 0);
+      MessageDlg(SBofReached, mtInformation, [mbOk], 0);
   end;
 
   if fAutofocus and fEditor.CanFocus then fEditor.SetFocus;
@@ -153,9 +156,10 @@ procedure TSynEditFindReplace.DoReplace(dialog: TReplaceDialog; direction: TFind
 var
   opt: TSynSearchOptions;
   numReplacements: integer;
-  bakSelLenght: Integer;
-  stmp: string;
-  bakSelStart: Integer;
+  bakSelLenght, bakSelStart, bakSizeOld: Integer;
+resourcestring
+  SReplaceAllDoneEntireScope = '%d replaced in entire scope.';
+  SReplaceAllDoneSelectionOnly = '%d replaced in selection.';
 begin
   try
     if direction = sdDefault then direction := GetDirection(dialog);
@@ -166,9 +170,17 @@ begin
     if frReplace in dialog.Options then Include(opt, ssoReplace);
     if frReplaceAll in dialog.Options then Include(opt, ssoReplaceAll);
     if direction = sdBackwards then Include(opt, ssoBackwards);
-    Include(opt, ssoPrompt); // TODO: test. geht nicht?
-    if fEditor.SelAvail then Include(opt, ssoSelectedOnly);
-    Exclude(opt, ssoEntireScope); // TODO: ok?
+    Include(opt, ssoPrompt); // TODO: test. does not work?
+    if fEditor.SelAvail then
+    begin
+      Include(opt, ssoSelectedOnly);
+      Exclude(opt, ssoEntireScope);
+    end
+    else
+    begin
+      Include(opt, ssoEntireScope);
+      Exclude(opt, ssoSelectedOnly);
+    end;
 
     if not (ssoReplaceAll in opt) then
     begin
@@ -179,56 +191,60 @@ begin
       end;
     end;
 
-    fEditor.BeginUpdate; // TODO: geht nicht?
-    //fEditor.BeginUndoBlock;
+    fEditor.BeginUpdate; // For "replace all": avoid that the user sees how the program scrolls through the document and do replacements
+    fEditor.BeginUndoBlock; // For "replace all": avoid that every replacement gets their own undo step
     try
-      bakSelLenght := 0; // avoid compiler warning
-      if ssoReplaceAll in opt then
+      // will be needed later
+      bakSelLenght := fEditor.SelLength;
+      bakSelStart := fEditor.SelStart;
+      bakSizeOld := Length(fEditor.Text);
+
+      if (ssoReplaceAll in opt) and (ssoEntireScope in opt) then
       begin
-        // Remember the selection length
-        bakSelLenght := fEditor.SelLength;
-        //bakSelStart := fEditor.SelStart;
-
-        // Remember the selection start (we don't backup fEditor.SelStart, since the replacement might change the location)!
+        // Remember the selection start (we don't backup fEditor.SelStart, since the replacement might change the location)! by adding this character to the current cursor position
         // We assume that character #1 will not be in a text file!
-        stmp := fEditor.Text;
-        Insert(chr(1), stmp, fEditor.SelStart+1);
-        //showmessage(inttostr(ord(stmp[fEditor.SelStart-1])));
-        //showmessage(inttostr(ord(stmp[fEditor.SelStart])));
-        //showmessage(inttostr(ord(stmp[fEditor.SelStart+1])));
-        fEditor.Text := stmp;
-
-        // When the user presses "Replace all", then we want to replace from the very beginning!
-        fEditor.SelStart := 0;
         fEditor.SelLength := 0;
+        fEditor.SelText := chr(1);
       end;
 
       numReplacements := fEditor.SearchReplace(dialog.FindText, dialog.ReplaceText, opt);
 
+      // Restore position and selection after replacement
+      // TODO: The SelStart and SelLength were kept, but the scrollposition did not. What can we do?
       if ssoReplaceAll in opt then
       begin
-        stmp := fEditor.Text;
-        bakSelStart := AnsiPos(chr(1), stmp)-1;
-        Delete(stmp, bakSelStart+1, 1);
-        fEditor.Text := stmp;
-
-        fEditor.SelStart := bakSelStart;
-        fEditor.SelLength := bakSelLenght;
-
-        // TODO: The SelStart and SelLength were kept, but the scrollposition did not. What can we do?
+        if ssoEntireScope in opt then
+        begin
+          // Remove the temporary marker chr(1) and jump to that spot
+          fEditor.SelStart := AnsiPos(chr(1), fEditor.Text)-1;
+          fEditor.SelLength := 1;
+          fEditor.SelText := ''; // remove the chr(1) again
+          // restore initial select length
+          fEditor.SelLength := bakSelLenght;
+        end
+        else if (ssoSelectedOnly in opt) then
+        begin
+          // restore initial selection
+          fEditor.SelStart := bakSelStart;
+          fEditor.SelLength := bakSelLenght + (Length(fEditor.Text) - bakSizeOld); // length will be adjusted, depending if the replacement changed length
+        end;
       end;
     finally
-      //fEditor.EndUndoBlock;
+      fEditor.EndUndoBlock;
       fEditor.EndUpdate;
     end;
 
-    if not (ssoReplaceAll in opt) then
+    if (ssoReplaceAll in opt) and (ssoEntireScope in opt) then
     begin
-      DoFind(dialog, sdForwards);
+      ShowMessageFmt(SReplaceAllDoneEntireScope, [numReplacements]);
+    end
+    else if (ssoReplaceAll in opt) and (ssoSelectedOnly in opt) then
+    begin
+      ShowMessageFmt(SReplaceAllDoneSelectionOnly, [numReplacements]);
     end
     else
     begin
-      ShowMessageFmt('%d replaced.', [numReplacements]);
+      DoFind(dialog, sdForwards);
     end;
   finally
     if fAutofocus and fEditor.CanFocus then fEditor.SetFocus;
